@@ -32,7 +32,7 @@ export const clearChat = () => {
                 id: `msg_init_${Date.now()}`,
                 role: "tutor",
                 content:
-                    "こんにちは！ 👋 Aku **Alisa**, tutor bahasa Jepang virtualmu untuk level **N5**.\n\nPilih mode interaksi di atas:\n- 💬 **Discovery** — Tanya bebas tentang Kanji, Kosakata, Grammar\n- ⚔️ **Quest** — Kuis berhadiah XP\n- 🎤 **Voice** — Latihan percakapan suara\n\nAyo mulai belajar! **がんばって！** ✨",
+                    "こんにちは！ 👋 Aku **A.L.I.S.A**, tutor bahasa Jepang virtualmu untuk level **N5**.\n\nPilih mode interaksi di atas:\n- 💬 **Discovery** — Tanya bebas tentang Kanji, Kosakata, Grammar\n- ⚔️ **Quest** — Kuis berhadiah XP\n- 🎤 **Voice** — Latihan percakapan suara\n\nAyo mulai belajar! **がんばって！** ✨",
                 vocab: [],
                 grammar: [],
                 suggestions: [

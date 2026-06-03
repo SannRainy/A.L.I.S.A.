@@ -255,6 +255,11 @@ class AiCorrectionRequest(BaseModel):
     user_answer: str
     correct_answer: str
     node_id: Optional[str] = None
+    grammar_focus: Optional[str] = None
+    question_type: Optional[str] = None
+    hint: Optional[str] = None
+    options: Optional[List[str]] = None
+
 
 # Mapping frontend node_id to Neo4j database node IDs
 FRONTEND_TO_NEO4J_MAP = {
@@ -367,7 +372,12 @@ async def ai_correction(request: AiCorrectionRequest):
         data = await llm_agent.get_correction_feedback(
             question=request.question,
             user_answer=request.user_answer,
-            correct_answer=request.correct_answer
+            correct_answer=request.correct_answer,
+            grammar_focus=request.grammar_focus,
+            question_type=request.question_type,
+            hint=request.hint,
+            options=request.options,
+            node_id=request.node_id
         )
         feedback = data.get("feedback")
         audio_url = data.get("audio_url")

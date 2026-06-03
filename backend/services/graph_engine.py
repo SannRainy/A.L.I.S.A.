@@ -455,6 +455,35 @@ class GraphEngine:
             """, level=level, limit=limit)
             return [dict(r) for r in result]
 
+    def get_quest_correction_context(self, grammar_id: str) -> dict | None:
+        """
+        Ambil data lengkap Grammar node untuk koreksi quest:
+        - Rules (aturan pemakaian)
+        - Common Errors (kesalahan umum siswa)
+        - Example Sentences (contoh kalimat)
+        """
+        with self.driver.session() as session:
+            result = session.run("""
+                MATCH (g:Grammar)
+                WHERE g.id = $grammar_id OR g.name = $grammar_id
+                OPTIONAL MATCH (g)-[:HAS_RULE]->(r:Rule)
+                OPTIONAL MATCH (g)-[:HAS_COMMON_ERROR]->(e:ErrorPattern)
+                OPTIONAL MATCH (g)<-[:APPLIES_GRAMMAR]-(s:Sentence)
+                RETURN g.id AS id,
+                       g.name AS name,
+                       g.level AS level,
+                       collect(DISTINCT r.description) AS rules,
+                       collect(DISTINCT e.description) AS common_errors,
+                       collect(DISTINCT {
+                           text: s.japanese_text,
+                           romaji: s.romaji,
+                           meaning: s.indonesian_translation
+                       })[..3] AS examples
+                LIMIT 1
+            """, grammar_id=grammar_id)
+            rec = result.single()
+            return dict(rec) if rec else None
+
     # ──────────────────────────────────────────────────────────────────────────
     # Kanji Queries
     # ──────────────────────────────────────────────────────────────────────────

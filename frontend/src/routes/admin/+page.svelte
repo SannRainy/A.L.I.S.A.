@@ -62,7 +62,7 @@
 </script>
 
 <svelte:head>
-    <title>TVJP Admin Dashboard</title>
+    <title>A.L.I.S.A. Admin Dashboard</title>
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
         rel="stylesheet"
@@ -81,7 +81,7 @@
             <div class="admin-brand">
                 <span class="brand-icon">🏯</span>
                 <div>
-                    <h1>TVJP Admin</h1>
+                    <h1>A.L.I.S.A. Admin</h1>
                     <p>{adminProfile?.email}</p>
                 </div>
             </div>

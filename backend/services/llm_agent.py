@@ -291,7 +291,7 @@ _MAX_KG_CHARS   = 1800
 _MAX_HIST_CHARS = 200
 
 _SYSTEM_BASE = """\
-Kamu adalah Alisa, tutor Bahasa Jepang virtual yang hangat dan suportif bergaya Onee-san.
+Kamu adalah A.L.I.S.A., tutor Bahasa Jepang virtual yang hangat dan suportif bergaya Onee-san.
 Gunakan bahasa Indonesia santai (aku/kamu), natural, dan to-the-point.
 
 ATURAN:
@@ -311,12 +311,14 @@ Arti: Kalimat bahasa Jepang
 """
 
 _QUEST_FEEDBACK_PROMPT = """\
-Kamu adalah Alisa. Evaluasi jawaban siswa dengan gaya Onee-san yang suportif tapi tegas.
+Kamu adalah A.L.I.S.A., tutor Jepang yang ramah. Jelaskan mengapa jawaban kuis N5 siswa salah.
 Aturan:
-1. Sangat ringkas (Maksimal 2 kalimat).
-2. Langsung sebutkan letak kesalahan dan berikan jawaban benarnya.
-3. Tanpa basa-basi, tanpa blok DATA, tanpa JSON.
+1. Maksimal 2-3 kalimat pendek secara santai (kamu/aku).
+2. Kalimat 1: Sebutkan letak kesalahan jawaban siswa secara langsung & ramah.
+3. Kalimat 2: Berikan aturan tata bahasa & jawaban benar dari [KONTEKS KG] jika tersedia.
+4. Jangan ulangi soal. Tanpa markdown/JSON.
 """
+
 
 _MODE_QUEST     = "\n[MODE: QUEST] Umpan balik instan, koreksi langsung, tanpa penjelasan panjang.\n"
 _MODE_VOICE     = "\n[MODE: VOICE] Respon lisan. Super singkat, maksimal 1 kalimat. Abaikan markdown.\n"
@@ -332,10 +334,10 @@ Jika tidak ada contoh sama sekali di konteks, tulis: "(Contoh kalimat belum ters
 
 _MODE_SPEAKING = """
 [MODE: SPEAKING PRACTICE — Latihan Percakapan Kasual]
-Kamu adalah Alisa, teman ngobrol ramah yang membantu user berlatih berbicara bahasa Jepang secara kasual.
+Kamu adalah A.L.I.S.A., teman ngobrol ramah yang membantu user berlatih berbicara bahasa Jepang secara kasual.
 
 BALAS SELALU dalam format PERSIS berikut ini (jangan ubah urutan, jangan tambah teks lain di luar format):
-JP: [balasan Alisa dalam bahasa Jepang kasual, 1-2 kalimat pendek]
+JP: [balasan A.L.I.S.A. dalam bahasa Jepang kasual, 1-2 kalimat pendek]
 ROM: [romaji dari JP]
 ID: [terjemahan JP dalam bahasa Indonesia]
 
@@ -1154,13 +1156,81 @@ class LLMAgent:
             {"id": 10, "type": "fill", "question": "'Saya' dalam bahasa Jepang (romaji)?", "correct": "watashi", "explanation": "私 = watashi"},
         ]}
 
-    async def get_correction_feedback(self, question: str, user_answer: str, correct_answer: str) -> dict:
-        prompt = (
-            f"Pertanyaan: {question}\n"
-            f"Jawaban Siswa: {user_answer}\n"
-            f"Jawaban Benar: {correct_answer}\n\n"
-            "Tolong jelaskan singkat dan ramah ya!"
-        )
+    async def _get_quest_kg_context(self, node_id: str) -> str:
+        """
+        Ambil konteks KG untuk koreksi quest.
+        Resolve frontend node_id -> Neo4j grammar_id, lalu query data lengkap.
+        """
+        if not self.graph or not node_id:
+            return ""
+
+        from api.chat_router import FRONTEND_TO_NEO4J_MAP
+        neo4j_id = FRONTEND_TO_NEO4J_MAP.get(node_id, node_id)
+
+        try:
+            data = await asyncio.to_thread(
+                self.graph.get_quest_correction_context, neo4j_id
+            )
+            if not data or not data.get("id"):
+                return ""
+
+            lines = [f"Grammar: {data['name']} [{data.get('level', 'N5')}]"]
+
+            # Rules
+            rules = [r for r in data.get("rules", []) if r]
+            if rules:
+                lines.append(f"Aturan: {' | '.join(rules)}")
+
+            # Common Errors
+            errors = [e for e in data.get("common_errors", []) if e]
+            if errors:
+                lines.append(f"Kesalahan Umum: {' | '.join(errors)}")
+
+            # Example Sentences (max 2)
+            examples = [e for e in data.get("examples", []) if e.get("text")]
+            for ex in examples[:2]:
+                lines.append(
+                    f"Contoh: {ex['text']}"
+                    f" ({ex.get('romaji', '')})"
+                    f" = {ex.get('meaning', '')}"
+                )
+
+            return "\n".join(lines)
+        except Exception as e:
+            logger.warning(f"[Quest KG] Gagal ambil konteks: {e}")
+            return ""
+
+    async def get_correction_feedback(
+        self,
+        question: str,
+        user_answer: str,
+        correct_answer: str,
+        grammar_focus: str = None,
+        question_type: str = None,
+        hint: str = None,
+        options: list[str] = None,
+        node_id: str = None
+    ) -> dict:
+        kg_context = await self._get_quest_kg_context(node_id)
+
+        lines = []
+        if grammar_focus:
+            lines.append(f"Topik: {grammar_focus}")
+        lines.append(f"Soal: {question}")
+        if question_type == "mcq" and options:
+            lines.append(f"Pilihan: {' | '.join(options)}")
+        lines.append(f"Jawaban Siswa: {user_answer}")
+        lines.append(f"Jawaban Benar: {correct_answer}")
+
+        if kg_context:
+            lines.append(f"\n[KONTEKS KG]\n{kg_context}")
+
+        if hint:
+            lines.append(f"Petunjuk: {hint}")
+
+        lines.append("\nJelaskan kesalahan siswa secara singkat menggunakan data di atas.")
+        prompt = "\n".join(lines)
+
         try:
             # ── HuggingFace Cloud provider ────────────────────────────────
             if _active_provider == "hf_cloud":
@@ -1195,6 +1265,7 @@ class LLMAgent:
             logger.error(f"Feedback error: {e}")
             return {"feedback": f"Maaf, gagal membuat feedback: {e}", "audio_url": None}
 
+
     async def stream_pure_response(
         self,
         query: str,
@@ -1206,7 +1277,7 @@ class LLMAgent:
         Mendukung provider: local (Llama.cpp) dan hf_cloud (HuggingFace Inference API).
         """
         messages = [
-            {"role": "system", "content": "Kamu adalah Alisa, tutor Bahasa Jepang virtual yang ramah. Jawab pertanyaan user dengan ringkas dan jelas."}
+            {"role": "system", "content": "Kamu adalah A.L.I.S.A., tutor Bahasa Jepang virtual yang ramah. Jawab pertanyaan user dengan ringkas dan jelas."}
         ]
         if history:
             for h in history:

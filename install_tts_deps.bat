@@ -1,5 +1,5 @@
 @echo off
-echo [TVJP] Installing TTS dependencies...
+echo [A.L.I.S.A.] Installing TTS dependencies...
 echo.
 
 :: Install PyTorch dulu (skip jika sudah ada)
@@ -18,4 +18,4 @@ echo [3/3] Ensuring protobuf compatibility...
 venv-tts\Scripts\python.exe -m pip install "protobuf>=5.26.1,<6.0.0" --quiet
 
 echo.
-echo [TVJP] TTS dependencies installed successfully!
+echo [A.L.I.S.A.] TTS dependencies installed successfully!

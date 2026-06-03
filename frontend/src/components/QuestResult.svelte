@@ -87,7 +87,7 @@
             <p class="text-slate-700 font-medium italic text-sm leading-relaxed">
                 "{message}"
             </p>
-            <p class="text-xs text-indigo-400 font-bold mt-2">— Alisa Sensei</p>
+            <p class="text-xs text-indigo-400 font-bold mt-2">— A.L.I.S.A</p>
         </div>
 
         <!-- Breakdown Node -->
@@ -132,11 +132,11 @@
         <!-- Rekomendasi -->
         {#if rank === 'C' || rank === 'B'}
             <div class="p-4 rounded-2xl bg-amber-50 border border-amber-200 mb-6 text-sm" in:fade>
-                <p class="font-black text-amber-800 mb-1">💡 Rekomendasi Alisa</p>
+                <p class="font-black text-amber-800 mb-1">💡 Rekomendasi A.L.I.S.A.</p>
                 <p class="text-amber-700 font-medium">
                     {rank === 'C'
                         ? 'Ulangi misi ini dulu sebelum lanjut ke level berikutnya. Gunakan petunjuk jika perlu!'
-                        : 'Coba ulangi soal yang salah, atau tanyakan ke Alisa di mode Chat untuk penjelasan lebih dalam.'}
+                        : 'Coba ulangi soal yang salah, atau tanyakan ke A.L.I.S.A. di mode Chat untuk penjelasan lebih dalam.'}
                 </p>
             </div>
         {/if}

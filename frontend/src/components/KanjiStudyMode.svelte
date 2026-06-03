@@ -290,8 +290,8 @@
                     {activeSetData.icon}
                 </div>
                 <div>
-                    <h3 class="font-black text-slate-900 text-sm">{activeSetData.title}</h3>
-                    <p class="text-[10px] text-slate-400 font-semibold">Fase 1 dari 2 — Hafal Kartu</p>
+                    <h3 class="font-black text-white text-sm">{activeSetData.title}</h3>
+                    <p class="text-[10px] text-slate-300 font-semibold">Fase 1 dari 2 — Hafal Kartu</p>
                 </div>
                 <div class="ml-auto text-xs font-black text-slate-400">
                     {activeSetIndex + 1} / {activeSetData.kanji.length}
@@ -325,7 +325,7 @@
                     </div>
                     <span class="text-xs font-black text-slate-400">{quizIndex + 1}/{quizQueue.length}</span>
                 </div>
-                <p class="text-[10px] font-black text-amber-600 uppercase tracking-widest text-center">Fase 2 — Ujian Kanji</p>
+                <p class="text-[10px] font-black text-amber-400 uppercase tracking-widest text-center">Fase 2 — Ujian Kanji</p>
             </div>
 
             <!-- Soal Kanji -->

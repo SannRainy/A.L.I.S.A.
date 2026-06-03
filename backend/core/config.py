@@ -8,7 +8,7 @@ _ENV_FILE = Path(__file__).resolve().parent.parent / ".env"
 
 
 class Settings(BaseSettings):
-    PROJECT_NAME: str = "TVJP - Japanese Virtual Tutor"
+    PROJECT_NAME: str = "A.L.I.S.A. (Adaptive Language Intelligent Symbolic Assistant)"
 
     # --- Neo4j ---
     NEO4J_URI: str = "bolt://localhost:7687"

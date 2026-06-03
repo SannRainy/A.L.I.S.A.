@@ -24,7 +24,6 @@
     import QuestMode from "../components/QuestMode.svelte";
     import VoiceMode from "../components/VoiceMode.svelte";
 
-
     let mainTab = "study"; // 'study' | 'profile' | 'achievement'
     if (browser) {
         mainTab = localStorage.getItem("tvjp_main_tab") || "study";
@@ -125,7 +124,11 @@
             } else {
                 clearInterval(typeInterval);
                 typeInterval = null;
-                if (sentencePlaybackQueue.length === 0 && isStreamDone && !isPlayingAudio) {
+                if (
+                    sentencePlaybackQueue.length === 0 &&
+                    isStreamDone &&
+                    !isPlayingAudio
+                ) {
                     finalizeStream();
                 }
             }
@@ -149,7 +152,6 @@
         }
     }
 
-
     let chatContainer;
     let email = "";
     let password = "";
@@ -159,7 +161,6 @@
     let isRegistering = false;
     let messageIdCounter = 0;
     let openAccuracyPopups = {};
-
 
     let toast = { show: false, message: "", type: "info" };
     function showToast(msg, type = "info") {
@@ -275,7 +276,7 @@
                         id: nextMsgId(),
                         role: "tutor",
                         content:
-                            "こんにちは！ 👋 Aku **Alisa**, tutor bahasa Jepang virtualmu untuk level **N5**.\n\nPilih mode interaksi di atas:\n- 💬 **Discovery** — Tanya bebas tentang Kanji, Kosakata, Grammar\n- ⚔️ **Quest** — Kuis berhadiah XP\n- 🎤 **Voice** — Latihan percakapan suara\n\nAyo mulai belajar! **がんばって！** ✨",
+                            "こんにちは！ 👋 Aku **A.L.I.S.A**, tutor bahasa Jepang virtualmu untuk level **N5**.\n\nPilih mode interaksi di atas:\n- 💬 **Discovery** — Tanya bebas tentang Kanji, Kosakata, Grammar\n- ⚔️ **Quest** — Kuis berhadiah XP\n- 🎤 **Voice** — Latihan percakapan suara\n\nAyo mulai belajar! **がんばって！** ✨",
                         vocab: [],
                         grammar: [],
                         suggestions: [
@@ -323,11 +324,16 @@
             const loggedInUser = await login(email, password);
             if (loggedInUser) {
                 // Fetch profile to verify role immediately
-                const res = await fetch(`http://localhost:8000/api/v1/user/profile/${loggedInUser.id}`);
+                const res = await fetch(
+                    `http://localhost:8000/api/v1/user/profile/${loggedInUser.id}`,
+                );
                 if (res.ok) {
                     const profileData = await res.json();
                     if (profileData.role === "admin") {
-                        showToast("Selamat datang, Admin! Mengalihkan...", "success");
+                        showToast(
+                            "Selamat datang, Admin! Mengalihkan...",
+                            "success",
+                        );
                         await fetchFullProfile(loggedInUser.id);
                         goto("/admin");
                         return;
@@ -346,41 +352,206 @@
 
     // ── Countries List (ISO-compliant complete list in Indonesian, without 'Lainnya') ──
     const countries = [
-        "Indonesia", "Jepang", "Malaysia", "Singapura", "Thailand", "Filipina", "Vietnam", 
-        "Brunei Darussalam", "Kamboja", "Laos", "Myanmar", "Timor Leste", "Afganistan", 
-        "Afrika Selatan", "Albania", "Aljazair", "Amerika Serikat", "Andorra", "Angola", 
-        "Antigua dan Barbuda", "Arab Saudi", "Argentina", "Armenia", "Australia", "Austria", 
-        "Azerbaijan", "Bahama", "Bahrain", "Bangladesh", "Barbados", "Belanda", "Belarus", 
-        "Belgia", "Belize", "Benin", "Bhutan", "Bolivia", "Bosnia dan Herzegovina", "Botswana", 
-        "Brasil", "Britania Raya", "Bulgaria", "Burkina Faso", "Burundi", "Ceko", "Chad", 
-        "Chili", "China", "Denmark", "Djibouti", "Dominika", "Ekuador", "El Salvador", 
-        "Eritrea", "Estonia", "Eswatini", "Ethiopia", "Fiji", "Finlandia", "Gabon", "Gambia", 
-        "Georgia", "Ghana", "Grenada", "Guatemala", "Guinea", "Guinea Khatulistiwa", "Guinea-Bissau", 
-        "Guyana", "Haiti", "Honduras", "Hong Kong", "Hongaria", "India", "Irak", "Iran", 
-        "Irlandia", "Islandia", "Israel", "Italia", "Jamaika", "Jerman", "Kamerun", "Kanada", 
-        "Kazakhstan", "Kenya", "Kepulauan Marshall", "Kepulauan Solomon", "Kirgistan", "Kiribati", 
-        "Kolombia", "Komoro", "Kongo", "Korea Selatan", "Korea Utara", "Kosta Rika", "Kroasia", 
-        "Kuba", "Kuwait", "Latvia", "Lebanon", "Lesotho", "Liberia", "Libia", "Liechtenstein", 
-        "Lituania", "Luksemburg", "Madagaskar", "Makedonia Utara", "Maladewa", "Malawi", 
-        "Mali", "Malta", "Maroko", "Mauritania", "Mauritius", "Meksiko", "Mesir", "Mikronesia", 
-        "Moldova", "Monako", "Mongolia", "Montenegro", "Mozambik", "Namibia", "Nauru", 
-        "Nepal", "Niger", "Nigeria", "Nikaragua", "Norwegia", "Oman", "Pakistan", "Palau", 
-        "Panama", "Papua Nugini", "Paraguay", "Prancis", "Peru", "Polandia", "Portugal", 
-        "Qatar", "Republik Afrika Tengah", "Republik Demokratik Kongo", "Republik Dominika", 
-        "Rumania", "Rusia", "Rwanda", "Saint Kitts dan Nevis", "Saint Lucia", "Saint Vincent dan Grenadines", 
-        "Samoa", "San Marino", "Sao Tome dan Principe", "Selandia Baru", "Senegal", "Serbia", 
-        "Seychelles", "Siprus", "Slovakia", "Slovenia", "Somalia", "Spanyol", "Sri Lanka", 
-        "Sudan", "Sudan Selatan", "Suriname", "Swedia", "Swiss", "Suriah", "Taiwan", "Tajikistan", 
-        "Tanjung Verde", "Tanzania", "Togo", "Tonga", "Trinidad dan Tobago", "Tunisia", "Turki", 
-        "Turkmenistan", "Tuvalu", "Uganda", "Ukraina", "Uruguay", "Uzbekistan", "Vanuatu", "Vatikan", 
-        "Venezuela", "Yaman", "Yordania", "Yunani", "Zambia", "Zimbabwe"
+        "Indonesia",
+        "Jepang",
+        "Malaysia",
+        "Singapura",
+        "Thailand",
+        "Filipina",
+        "Vietnam",
+        "Brunei Darussalam",
+        "Kamboja",
+        "Laos",
+        "Myanmar",
+        "Timor Leste",
+        "Afganistan",
+        "Afrika Selatan",
+        "Albania",
+        "Aljazair",
+        "Amerika Serikat",
+        "Andorra",
+        "Angola",
+        "Antigua dan Barbuda",
+        "Arab Saudi",
+        "Argentina",
+        "Armenia",
+        "Australia",
+        "Austria",
+        "Azerbaijan",
+        "Bahama",
+        "Bahrain",
+        "Bangladesh",
+        "Barbados",
+        "Belanda",
+        "Belarus",
+        "Belgia",
+        "Belize",
+        "Benin",
+        "Bhutan",
+        "Bolivia",
+        "Bosnia dan Herzegovina",
+        "Botswana",
+        "Brasil",
+        "Britania Raya",
+        "Bulgaria",
+        "Burkina Faso",
+        "Burundi",
+        "Ceko",
+        "Chad",
+        "Chili",
+        "China",
+        "Denmark",
+        "Djibouti",
+        "Dominika",
+        "Ekuador",
+        "El Salvador",
+        "Eritrea",
+        "Estonia",
+        "Eswatini",
+        "Ethiopia",
+        "Fiji",
+        "Finlandia",
+        "Gabon",
+        "Gambia",
+        "Georgia",
+        "Ghana",
+        "Grenada",
+        "Guatemala",
+        "Guinea",
+        "Guinea Khatulistiwa",
+        "Guinea-Bissau",
+        "Guyana",
+        "Haiti",
+        "Honduras",
+        "Hong Kong",
+        "Hongaria",
+        "India",
+        "Irak",
+        "Iran",
+        "Irlandia",
+        "Islandia",
+        "Israel",
+        "Italia",
+        "Jamaika",
+        "Jerman",
+        "Kamerun",
+        "Kanada",
+        "Kazakhstan",
+        "Kenya",
+        "Kepulauan Marshall",
+        "Kepulauan Solomon",
+        "Kirgistan",
+        "Kiribati",
+        "Kolombia",
+        "Komoro",
+        "Kongo",
+        "Korea Selatan",
+        "Korea Utara",
+        "Kosta Rika",
+        "Kroasia",
+        "Kuba",
+        "Kuwait",
+        "Latvia",
+        "Lebanon",
+        "Lesotho",
+        "Liberia",
+        "Libia",
+        "Liechtenstein",
+        "Lituania",
+        "Luksemburg",
+        "Madagaskar",
+        "Makedonia Utara",
+        "Maladewa",
+        "Malawi",
+        "Mali",
+        "Malta",
+        "Maroko",
+        "Mauritania",
+        "Mauritius",
+        "Meksiko",
+        "Mesir",
+        "Mikronesia",
+        "Moldova",
+        "Monako",
+        "Mongolia",
+        "Montenegro",
+        "Mozambik",
+        "Namibia",
+        "Nauru",
+        "Nepal",
+        "Niger",
+        "Nigeria",
+        "Nikaragua",
+        "Norwegia",
+        "Oman",
+        "Pakistan",
+        "Palau",
+        "Panama",
+        "Papua Nugini",
+        "Paraguay",
+        "Prancis",
+        "Peru",
+        "Polandia",
+        "Portugal",
+        "Qatar",
+        "Republik Afrika Tengah",
+        "Republik Demokratik Kongo",
+        "Republik Dominika",
+        "Rumania",
+        "Rusia",
+        "Rwanda",
+        "Saint Kitts dan Nevis",
+        "Saint Lucia",
+        "Saint Vincent dan Grenadines",
+        "Samoa",
+        "San Marino",
+        "Sao Tome dan Principe",
+        "Selandia Baru",
+        "Senegal",
+        "Serbia",
+        "Seychelles",
+        "Siprus",
+        "Slovakia",
+        "Slovenia",
+        "Somalia",
+        "Spanyol",
+        "Sri Lanka",
+        "Sudan",
+        "Sudan Selatan",
+        "Suriname",
+        "Swedia",
+        "Swiss",
+        "Suriah",
+        "Taiwan",
+        "Tajikistan",
+        "Tanjung Verde",
+        "Tanzania",
+        "Togo",
+        "Tonga",
+        "Trinidad dan Tobago",
+        "Tunisia",
+        "Turki",
+        "Turkmenistan",
+        "Tuvalu",
+        "Uganda",
+        "Ukraina",
+        "Uruguay",
+        "Uzbekistan",
+        "Vanuatu",
+        "Vatikan",
+        "Venezuela",
+        "Yaman",
+        "Yordania",
+        "Yunani",
+        "Zambia",
+        "Zimbabwe",
     ];
 
     // ── Searchable Country Dropdown State ──
     let countrySearchQuery = "Indonesia";
     let showCountryDropdown = false;
-    $: filteredCountries = countries.filter(c => 
-        c.toLowerCase().includes(countrySearchQuery.toLowerCase())
+    $: filteredCountries = countries.filter((c) =>
+        c.toLowerCase().includes(countrySearchQuery.toLowerCase()),
     );
     $: {
         if (countries.includes(countrySearchQuery)) {
@@ -474,12 +645,20 @@
 
     /** Lazily open (or reuse) a persistent WebSocket connection. */
     function getWS() {
-        if (_ws && (_ws.readyState === WebSocket.OPEN || _ws.readyState === WebSocket.CONNECTING)) {
+        if (
+            _ws &&
+            (_ws.readyState === WebSocket.OPEN ||
+                _ws.readyState === WebSocket.CONNECTING)
+        ) {
             return _ws;
         }
         _ws = new WebSocket(WS_URL);
-        _ws.onclose = () => { _ws = null; };
-        _ws.onerror = (e) => { console.warn("[WS] error", e); };
+        _ws.onclose = () => {
+            _ws = null;
+        };
+        _ws.onerror = (e) => {
+            console.warn("[WS] error", e);
+        };
         return _ws;
     }
 
@@ -541,7 +720,11 @@
         /** Handler scoped to this conversation turn. */
         function handleMessage(evt) {
             let ev;
-            try { ev = JSON.parse(evt.data); } catch { return; }
+            try {
+                ev = JSON.parse(evt.data);
+            } catch {
+                return;
+            }
 
             if (ev.type === "metadata") {
                 currentMetadata = ev;
@@ -551,19 +734,26 @@
                     isStreaming = true; // Switch from thinking bubble to typing bubble
                 }
 
-                let cleanContent = (ev.content || "")
-                    .replace(/Wiki\s*Link:\s*\[.*?\]/gi, "");
+                let cleanContent = (ev.content || "").replace(
+                    /Wiki\s*Link:\s*\[.*?\]/gi,
+                    "",
+                );
 
                 if (cleanContent) {
                     finalRawText += cleanContent;
 
                     // Decode base64 audio → Blob URL (zero extra HTTP requests!)
-                    let audioUrl = null, blobUrl = false;
+                    let audioUrl = null,
+                        blobUrl = false;
                     if (ev.audio_b64) {
                         audioUrl = b64ToUrl(ev.audio_b64);
-                        blobUrl  = true;
+                        blobUrl = true;
                     }
-                    sentencePlaybackQueue.push({ text: cleanContent, audioUrl, blobUrl });
+                    sentencePlaybackQueue.push({
+                        text: cleanContent,
+                        audioUrl,
+                        blobUrl,
+                    });
                     if (!isPlayingAudio) playNextAudio();
                 }
             } else if (ev.type === "profile_update") {
@@ -575,7 +765,10 @@
                         const newLevel = $profile?.level || 1;
                         if (newXp > oldXp) sfx.playXpGain();
                         else sfx.playWikiSync();
-                        if (newLevel > oldLevel) { sfx.playLevelUp(); shootConfetti(); }
+                        if (newLevel > oldLevel) {
+                            sfx.playLevelUp();
+                            shootConfetti();
+                        }
                     });
                 }
             } else if (ev.type === "error") {
@@ -593,23 +786,28 @@
                     const acc = ev.accuracy;
                     console.groupCollapsed(
                         `%c[KG Verify] ${acc.pct}% — ${acc.verified}/${acc.total} fakta terverifikasi`,
-                        `color: ${acc.pct >= 90 ? '#4ade80' : acc.pct >= 70 ? '#facc15' : '#f97316'}; font-weight:bold`
+                        `color: ${acc.pct >= 90 ? "#4ade80" : acc.pct >= 70 ? "#facc15" : "#f97316"}; font-weight:bold`,
                     );
-                    console.table(acc.facts_detail.map(f => ({
-                        status:   f.match ? '✅' : '❌',
-                        tipe:     f.type,
-                        subjek:   f.subject,
-                        props:    f.props.join(' | ') || '(none)',
-                        cocok:    f.matched_prop ?? '—',
-                    })));
+                    console.table(
+                        acc.facts_detail.map((f) => ({
+                            status: f.match ? "✅" : "❌",
+                            tipe: f.type,
+                            subjek: f.subject,
+                            props: f.props.join(" | ") || "(none)",
+                            cocok: f.matched_prop ?? "—",
+                        })),
+                    );
                     console.groupEnd();
                 }
 
-                if (!isPlayingAudio && sentencePlaybackQueue.length === 0 && !typeInterval) {
+                if (
+                    !isPlayingAudio &&
+                    sentencePlaybackQueue.length === 0 &&
+                    !typeInterval
+                ) {
                     finalizeStream();
                 }
             }
-
         }
 
         function dispatch() {
@@ -618,12 +816,14 @@
                 ws.removeEventListener("message", _currentWsHandler);
             }
             _currentWsHandler = handleMessage;
-            ws.send(JSON.stringify({
-                query:      userText,
-                student_id: $user?.id || "default_user",
-                mode,
-                history:    historyData,
-            }));
+            ws.send(
+                JSON.stringify({
+                    query: userText,
+                    student_id: $user?.id || "default_user",
+                    mode,
+                    history: historyData,
+                }),
+            );
             ws.addEventListener("message", handleMessage);
         }
 
@@ -639,10 +839,13 @@
         let currentMetadata = { vocab: [], grammar: [], suggestions: [] };
         let historyData = [];
         const unsub = chatStore.subscribe((s) => {
-            historyData = s.messages.slice(0, -1).slice(-10).map((m) => ({
-                role: m.role === "tutor" ? "assistant" : "user",
-                content: m.content,
-            }));
+            historyData = s.messages
+                .slice(0, -1)
+                .slice(-10)
+                .map((m) => ({
+                    role: m.role === "tutor" ? "assistant" : "user",
+                    content: m.content,
+                }));
         });
         unsub();
         try {
@@ -659,7 +862,8 @@
             if (!res.ok) throw new Error(`Server error: ${res.status}`);
             const reader = res.body.getReader();
             const decoder = new TextDecoder();
-            let buffer = "", done = false;
+            let buffer = "",
+                done = false;
             while (!done) {
                 const { value, done: d } = await reader.read();
                 done = d;
@@ -675,24 +879,37 @@
                             if (ev.type === "metadata") {
                                 currentMetadata = ev;
                             } else if (ev.type === "sentence") {
-                                if (loading && (ev.content || "").trim()) loading = false;
-                                let cleanContent = (ev.content || "")
-                                    .replace(/Wiki\s*Link:\s*\[.*?\]/gi, "");
+                                if (loading && (ev.content || "").trim())
+                                    loading = false;
+                                let cleanContent = (ev.content || "").replace(
+                                    /Wiki\s*Link:\s*\[.*?\]/gi,
+                                    "",
+                                );
                                 if (cleanContent) {
                                     finalRawText += cleanContent;
                                     const audioUrl = ev.audio
                                         ? `http://localhost:8000/api/v1/get-audio/${ev.audio}`
                                         : null;
-                                    sentencePlaybackQueue.push({ text: cleanContent, audioUrl, blobUrl: false });
+                                    sentencePlaybackQueue.push({
+                                        text: cleanContent,
+                                        audioUrl,
+                                        blobUrl: false,
+                                    });
                                     if (!isPlayingAudio) playNextAudio();
                                 }
                             } else if (ev.type === "done") {
                                 isStreamDone = true;
                                 finalMetadata = currentMetadata;
                                 finalAccuracy = ev.accuracy || null;
-                                if (!isPlayingAudio && sentencePlaybackQueue.length === 0) finalizeStream();
+                                if (
+                                    !isPlayingAudio &&
+                                    sentencePlaybackQueue.length === 0
+                                )
+                                    finalizeStream();
                             }
-                        } catch { /* ignore */ }
+                        } catch {
+                            /* ignore */
+                        }
                     }
                 }
             }
@@ -706,8 +923,11 @@
                     {
                         id: nextMsgId(),
                         role: "tutor",
-                        content: "⚠️ Maaf, koneksi ke server terputus. Pastikan backend aktif.",
-                        vocab: [], grammar: [], suggestions: [],
+                        content:
+                            "⚠️ Maaf, koneksi ke server terputus. Pastikan backend aktif.",
+                        vocab: [],
+                        grammar: [],
+                        suggestions: [],
                     },
                 ],
             }));
@@ -726,7 +946,7 @@
                 audio: true,
             });
             const mimeType = MediaRecorder.isTypeSupported(
-                "audio/webm;codecs=opus"
+                "audio/webm;codecs=opus",
             )
                 ? "audio/webm;codecs=opus"
                 : "audio/webm";
@@ -743,21 +963,32 @@
             voiceRecordingCancelled = false; // Reset status batal
 
             // Init Real-time Speech Recognition for visual feedback (nonaktifkan di Voice Mode)
-            if (browser && mode !== "voice" && (window.SpeechRecognition || window.webkitSpeechRecognition)) {
-                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (
+                browser &&
+                mode !== "voice" &&
+                (window.SpeechRecognition || window.webkitSpeechRecognition)
+            ) {
+                const SpeechRecognition =
+                    window.SpeechRecognition || window.webkitSpeechRecognition;
                 speechRecognizer = new SpeechRecognition();
                 speechRecognizer.continuous = true;
                 speechRecognizer.interimResults = true;
                 // Gunakan id-ID agar teks mengambang menggunakan alfabet (seperti Romaji)
-                speechRecognizer.lang = 'id-ID'; 
-                
+                speechRecognizer.lang = "id-ID";
+
                 speechRecognizer.onresult = (event) => {
                     // Iterasi hanya dari resultIndex (kalimat baru sejak event terakhir)
-                    for (let i = event.resultIndex; i < event.results.length; ++i) {
+                    for (
+                        let i = event.resultIndex;
+                        i < event.results.length;
+                        ++i
+                    ) {
                         const transcript = event.results[i][0].transcript;
                         if (event.results[i].isFinal) {
                             // Kalimat sudah final → masuk ke buffer permanen
-                            finalTranscriptBuffer += (finalTranscriptBuffer ? ' ' : '') + transcript.trim();
+                            finalTranscriptBuffer +=
+                                (finalTranscriptBuffer ? " " : "") +
+                                transcript.trim();
                         }
                     }
                     // Kumpulkan interim (belum final) dari hasil terkini
@@ -768,9 +999,11 @@
                         }
                     }
                     // liveTranscript = semua kalimat final + interim yang sedang diucapkan
-                    liveTranscript = finalTranscriptBuffer + (interim ? ' ' + interim.trim() : '');
+                    liveTranscript =
+                        finalTranscriptBuffer +
+                        (interim ? " " + interim.trim() : "");
                 };
-                
+
                 speechRecognizer.start();
             }
         } catch (err) {
@@ -784,7 +1017,9 @@
             voiceRecordingCancelled = isCancelled;
             // Stop speech recognizer FIRST to avoid race condition with MediaRecorder onstop
             if (speechRecognizer) {
-                try { speechRecognizer.stop(); } catch (_) {}
+                try {
+                    speechRecognizer.stop();
+                } catch (_) {}
                 speechRecognizer = null;
             }
 
@@ -804,7 +1039,8 @@
         }
         loading = true;
         // Snapshot seluruh teks: finalBuffer (semua kalimat final) atau liveTranscript
-        const captured = (finalTranscriptBuffer.trim() || liveTranscript.trim()) || "";
+        const captured =
+            finalTranscriptBuffer.trim() || liveTranscript.trim() || "";
         liveTranscript = "";
         finalTranscriptBuffer = "";
         const blob = new Blob(audioChunks, { type: "audio/webm" });
@@ -818,10 +1054,13 @@
             });
             const d = await res.json();
             // Prioritas: Jika voice mode, abaikan liveTranscript (Web Speech) karena tidak aktif, andalkan Whisper sepenuhnya.
-            const finalText = (mode === "voice") ? (d.text || d.transcript || null) : (captured || d.text || d.transcript || null);
-            
+            const finalText =
+                mode === "voice"
+                    ? d.text || d.transcript || null
+                    : captured || d.text || d.transcript || null;
+
             loading = false;
-            
+
             if (finalText) {
                 // Mode voice: kirim ke VoiceMode speaking practice (bukan sendChat biasa)
                 if (mode === "voice" && voiceModeRef) {
@@ -882,7 +1121,7 @@
     };
     $: cfg = modeConfig[mode];
 
-    // SIMPLE CONFETTI SCRIPT 
+    // SIMPLE CONFETTI SCRIPT
     function shootConfetti() {
         const duration = 3 * 1000;
         const end = Date.now() + duration;
@@ -895,29 +1134,38 @@
             el.style.left = Math.random() * 100 + "vw";
             el.style.top = "-50px";
             document.body.appendChild(el);
-            
+
             const animation = el.animate(
                 [
-                    { transform: "translate3d(0,0,0) rotate(0deg)", opacity: 1 },
-                    { transform: `translate3d(${Math.random()*200 - 100}px, 100vh, 0) rotate(${Math.random()*360}deg)`, opacity: 0 }
+                    {
+                        transform: "translate3d(0,0,0) rotate(0deg)",
+                        opacity: 1,
+                    },
+                    {
+                        transform: `translate3d(${Math.random() * 200 - 100}px, 100vh, 0) rotate(${Math.random() * 360}deg)`,
+                        opacity: 0,
+                    },
                 ],
-                { duration: Math.random() * 1000 + 1000, easing: "cubic-bezier(.37,0,.63,1)" }
+                {
+                    duration: Math.random() * 1000 + 1000,
+                    easing: "cubic-bezier(.37,0,.63,1)",
+                },
             );
-            
+
             animation.onfinish = () => el.remove();
 
             if (Date.now() < end) {
                 requestAnimationFrame(frame);
             }
-        }());
+        })();
     }
 </script>
 
 <svelte:head>
-    <title>Alisa Sensei — Japanese Virtual Tutor N5</title>
+    <title>A.L.I.S.A — Japanese Virtual Tutor N5</title>
     <meta
         name="description"
-        content="Belajar bahasa Jepang N5 bersama Alisa Sensei, tutor virtual berbasis AI & Knowledge Graph."
+        content="Belajar bahasa Jepang N5 bersama A.L.I.S.A, tutor virtual berbasis AI & Knowledge Graph."
     />
 </svelte:head>
 
@@ -936,7 +1184,7 @@
                 <span class="login-avatar-badge"></span>
             </div>
 
-            <h1 class="login-title">Alisa Sensei</h1>
+            <h1 class="login-title">A.L.I.S.A</h1>
             <p class="login-sub">Tutor Virtual Bahasa Jepang N5</p>
 
             <!-- Japanese decorative text -->
@@ -959,7 +1207,9 @@
                     />
                 </div>
                 <div class="input-group">
-                    <label for="login-password" class="input-label">Password</label>
+                    <label for="login-password" class="input-label"
+                        >Password</label
+                    >
                     <input
                         id="login-password"
                         type="password"
@@ -975,38 +1225,72 @@
                 {#if isRegistering}
                     <div class="register-demographics">
                         <div class="input-group">
-                            <label for="reg-fullname" class="input-label">Nama Lengkap</label>
-                            <input id="reg-fullname" type="text" bind:value={regFullName} class="login-input" placeholder="Nama lengkap" />
+                            <label for="reg-fullname" class="input-label"
+                                >Nama Lengkap</label
+                            >
+                            <input
+                                id="reg-fullname"
+                                type="text"
+                                bind:value={regFullName}
+                                class="login-input"
+                                placeholder="Nama lengkap"
+                            />
                         </div>
                         <div class="demo-row">
                             <div class="input-group" style="flex:1">
-                                <label for="reg-age" class="input-label">Umur</label>
-                                <input id="reg-age" type="number" bind:value={regAge} class="login-input" placeholder="22" min="10" max="99" />
+                                <label for="reg-age" class="input-label"
+                                    >Umur</label
+                                >
+                                <input
+                                    id="reg-age"
+                                    type="number"
+                                    bind:value={regAge}
+                                    class="login-input"
+                                    placeholder="22"
+                                    min="10"
+                                    max="99"
+                                />
                             </div>
                             <div class="input-group" style="flex:1">
-                                <label for="reg-gender" class="input-label">Gender</label>
-                                <select id="reg-gender" bind:value={regGender} class="login-input">
+                                <label for="reg-gender" class="input-label"
+                                    >Gender</label
+                                >
+                                <select
+                                    id="reg-gender"
+                                    bind:value={regGender}
+                                    class="login-input"
+                                >
                                     <option value="male">Laki-laki</option>
                                     <option value="female">Perempuan</option>
-                                    <option value="prefer_not_to_say">Lainnya</option>
+                                    <option value="prefer_not_to_say"
+                                        >Lainnya</option
+                                    >
                                 </select>
                             </div>
                         </div>
                         <div class="input-group" style="position: relative;">
-                            <label for="reg-country" class="input-label">Asal Negara</label>
-                            <input 
+                            <label for="reg-country" class="input-label"
+                                >Asal Negara</label
+                            >
+                            <input
                                 id="reg-country"
-                                type="text" 
+                                type="text"
                                 bind:value={countrySearchQuery}
-                                on:focus={() => showCountryDropdown = true}
-                                on:blur={() => setTimeout(() => showCountryDropdown = false, 200)}
+                                on:focus={() => (showCountryDropdown = true)}
+                                on:blur={() =>
+                                    setTimeout(
+                                        () => (showCountryDropdown = false),
+                                        200,
+                                    )}
                                 class="login-input"
                                 placeholder="Cari asal negara..."
                             />
                             {#if showCountryDropdown}
-                                <div class="absolute z-[100] left-0 right-0 mt-1 max-h-48 overflow-y-auto bg-[#1e1b4b] border border-white/10 rounded-xl shadow-2xl custom-scroll">
+                                <div
+                                    class="absolute z-[100] left-0 right-0 mt-1 max-h-48 overflow-y-auto bg-[#1e1b4b] border border-white/10 rounded-xl shadow-2xl custom-scroll"
+                                >
                                     {#each filteredCountries as c}
-                                        <button 
+                                        <button
                                             type="button"
                                             on:click={() => {
                                                 countrySearchQuery = c;
@@ -1018,27 +1302,53 @@
                                         </button>
                                     {/each}
                                     {#if filteredCountries.length === 0}
-                                        <div class="px-4 py-2.5 text-sm text-slate-400">Negara tidak ditemukan</div>
+                                        <div
+                                            class="px-4 py-2.5 text-sm text-slate-400"
+                                        >
+                                            Negara tidak ditemukan
+                                        </div>
                                     {/if}
                                 </div>
                             {/if}
                         </div>
                         <div class="input-group">
-                            <label for="reg-purpose" class="input-label">Tujuan Belajar</label>
-                            <select id="reg-purpose" bind:value={regPurpose} class="login-input">
+                            <label for="reg-purpose" class="input-label"
+                                >Tujuan Belajar</label
+                            >
+                            <select
+                                id="reg-purpose"
+                                bind:value={regPurpose}
+                                class="login-input"
+                            >
                                 <option value="">-- Pilih --</option>
-                                <option value="akademik">Akademik / Sekolah</option>
+                                <option value="akademik"
+                                    >Akademik / Sekolah</option
+                                >
                                 <option value="kerja">Bekerja di Jepang</option>
-                                <option value="hobi">Hobi / Anime / Manga</option>
+                                <option value="hobi"
+                                    >Hobi / Anime / Manga</option
+                                >
                                 <option value="wisata">Wisata ke Jepang</option>
                             </select>
                         </div>
                         <div class="input-group">
-                            <label for="reg-level" class="input-label">Level Bahasa Jepang</label>
-                            <select id="reg-level" bind:value={regLevel} class="login-input">
-                                <option value="beginner">Pemula (belum bisa)</option>
-                                <option value="basic">Dasar (tahu sedikit)</option>
-                                <option value="intermediate">Menengah (bisa percakapan dasar)</option>
+                            <label for="reg-level" class="input-label"
+                                >Level Bahasa Jepang</label
+                            >
+                            <select
+                                id="reg-level"
+                                bind:value={regLevel}
+                                class="login-input"
+                            >
+                                <option value="beginner"
+                                    >Pemula (belum bisa)</option
+                                >
+                                <option value="basic"
+                                    >Dasar (tahu sedikit)</option
+                                >
+                                <option value="intermediate"
+                                    >Menengah (bisa percakapan dasar)</option
+                                >
                             </select>
                         </div>
                     </div>
@@ -1155,7 +1465,7 @@
         <div class="vrm-status-card">
             <div class="vrm-status-dot"></div>
             <div>
-                <p class="vrm-status-name">Alisa Sensei</p>
+                <p class="vrm-status-name">A.L.I.S.A</p>
                 <p class="vrm-status-sub">Online • N5 Specialist</p>
             </div>
         </div>
@@ -1211,7 +1521,7 @@
                         <span class="chat-avatar-online"></span>
                     </div>
                     <div>
-                        <h2 class="chat-title">Alisa Sensei</h2>
+                        <h2 class="chat-title">A.L.I.S.A</h2>
                         <p class="chat-subtitle">Tutor Bahasa Jepang N5</p>
                     </div>
                 </div>
@@ -1317,8 +1627,6 @@
                     {/each}
                 </div>
 
-
-
                 <audio bind:this={audioPlayer} class="hidden"></audio>
 
                 <!-- ── MAIN CONTENT ── -->
@@ -1352,24 +1660,29 @@
                                         <div class="msg-avatar-sm">A</div>
                                     {/if}
                                     <div
-                                        class="msg-bubble-wrap {msg.role === 'user'
+                                        class="msg-bubble-wrap {msg.role ===
+                                        'user'
                                             ? 'items-end'
                                             : 'items-start'}"
                                     >
                                         <div
-                                            class="msg-bubble {msg.role === 'user'
+                                            class="msg-bubble {msg.role ===
+                                            'user'
                                                 ? 'bubble-user'
                                                 : 'bubble-tutor'}"
                                         >
                                             <div class="markdown-content">
-                                                {@html renderMarkdown(msg.content)}
+                                                {@html renderMarkdown(
+                                                    msg.content,
+                                                )}
                                             </div>
                                         </div>
                                         {#if msg.role === "tutor" && msg.suggestions?.length > 0}
                                             <div class="suggestions-row">
                                                 {#each msg.suggestions as s}
                                                     <button
-                                                        on:click={() => sendChat(s)}
+                                                        on:click={() =>
+                                                            sendChat(s)}
                                                         class="suggestion-chip"
                                                         >{s}</button
                                                     >
@@ -1381,54 +1694,170 @@
                                             <div class="accuracy-container">
                                                 <button
                                                     type="button"
-                                                    class="accuracy-badge accuracy-{msg.accuracy.category} {msg.accuracy.category === 'grounded' ? 'accuracy-badge-clickable' : ''} {msg.accuracy.category === 'grounded' ? (msg.accuracy.pct >= 90 ? 'accuracy-pct-high' : msg.accuracy.pct >= 70 ? 'accuracy-pct-med' : msg.accuracy.pct >= 50 ? 'accuracy-pct-low' : 'accuracy-pct-critical') : ''}"
+                                                    class="accuracy-badge accuracy-{msg
+                                                        .accuracy.category} {msg
+                                                        .accuracy.category ===
+                                                    'grounded'
+                                                        ? 'accuracy-badge-clickable'
+                                                        : ''} {msg.accuracy
+                                                        .category === 'grounded'
+                                                        ? msg.accuracy.pct >= 90
+                                                            ? 'accuracy-pct-high'
+                                                            : msg.accuracy
+                                                                    .pct >= 70
+                                                              ? 'accuracy-pct-med'
+                                                              : msg.accuracy
+                                                                      .pct >= 50
+                                                                ? 'accuracy-pct-low'
+                                                                : 'accuracy-pct-critical'
+                                                        : ''}"
                                                     on:click={() => {
-                                                        if (msg.accuracy.category === 'grounded') {
-                                                            openAccuracyPopups[msg.id] = !openAccuracyPopups[msg.id];
+                                                        if (
+                                                            msg.accuracy
+                                                                .category ===
+                                                            "grounded"
+                                                        ) {
+                                                            openAccuracyPopups[
+                                                                msg.id
+                                                            ] =
+                                                                !openAccuracyPopups[
+                                                                    msg.id
+                                                                ];
                                                         }
                                                     }}
                                                 >
-                                                    {#if msg.accuracy.category === 'no_data'}
-                                                        <span class="accuracy-icon">📭</span>
-                                                        <span class="accuracy-text">{msg.accuracy.label || 'Data Tidak Tersedia'}</span>
-                                                    {:else if msg.accuracy.category === 'casual'}
-                                                        <span class="accuracy-icon">💬</span>
-                                                        <span class="accuracy-text">{msg.accuracy.label || 'Casual Chat'}</span>
+                                                    {#if msg.accuracy.category === "no_data"}
+                                                        <span
+                                                            class="accuracy-icon"
+                                                            >📭</span
+                                                        >
+                                                        <span
+                                                            class="accuracy-text"
+                                                            >{msg.accuracy
+                                                                .label ||
+                                                                "Data Tidak Tersedia"}</span
+                                                        >
+                                                    {:else if msg.accuracy.category === "casual"}
+                                                        <span
+                                                            class="accuracy-icon"
+                                                            >💬</span
+                                                        >
+                                                        <span
+                                                            class="accuracy-text"
+                                                            >{msg.accuracy
+                                                                .label ||
+                                                                "Casual Chat"}</span
+                                                        >
                                                     {:else}
-                                                        <span class="accuracy-icon">🛡️</span>
-                                                        <span class="accuracy-text">
-                                                            {msg.accuracy.pct}% KG Verified ({msg.accuracy.verified}/{msg.accuracy.total})
+                                                        <span
+                                                            class="accuracy-icon"
+                                                            >🛡️</span
+                                                        >
+                                                        <span
+                                                            class="accuracy-text"
+                                                        >
+                                                            {msg.accuracy.pct}%
+                                                            KG Verified ({msg
+                                                                .accuracy
+                                                                .verified}/{msg
+                                                                .accuracy
+                                                                .total})
                                                         </span>
-                                                        <span class="accuracy-chevron">{openAccuracyPopups[msg.id] ? '▲' : '▼'}</span>
+                                                        <span
+                                                            class="accuracy-chevron"
+                                                            >{openAccuracyPopups[
+                                                                msg.id
+                                                            ]
+                                                                ? "▲"
+                                                                : "▼"}</span
+                                                        >
                                                     {/if}
                                                 </button>
 
                                                 {#if openAccuracyPopups[msg.id] && msg.accuracy.facts_detail && msg.accuracy.facts_detail.length > 0}
                                                     <!-- svelte-ignore a11y-click-events-have-key-events -->
                                                     <!-- svelte-ignore a11y-no-static-element-interactions -->
-                                                    <div class="accuracy-popup" transition:fade={{ duration: 150 }} on:click|stopPropagation>
-                                                        <div class="popup-header">
-                                                            <span class="popup-title">Detail Verifikasi</span>
-                                                            <button class="popup-close" on:click={() => openAccuracyPopups[msg.id] = false}>&times;</button>
+                                                    <div
+                                                        class="accuracy-popup"
+                                                        transition:fade={{
+                                                            duration: 150,
+                                                        }}
+                                                        on:click|stopPropagation
+                                                    >
+                                                        <div
+                                                            class="popup-header"
+                                                        >
+                                                            <span
+                                                                class="popup-title"
+                                                                >Detail
+                                                                Verifikasi</span
+                                                            >
+                                                            <button
+                                                                class="popup-close"
+                                                                on:click={() =>
+                                                                    (openAccuracyPopups[
+                                                                        msg.id
+                                                                    ] = false)}
+                                                                >&times;</button
+                                                            >
                                                         </div>
-                                                        <div class="popup-body custom-scroll">
+                                                        <div
+                                                            class="popup-body custom-scroll"
+                                                        >
                                                             {#each msg.accuracy.facts_detail as fact}
-                                                                <div class="fact-row {fact.match ? 'fact-success' : 'fact-fail'}">
-                                                                    <span class="fact-status-icon">{fact.match ? '✅' : '❌'}</span>
-                                                                    <div class="fact-info">
-                                                                        <div class="fact-subject-row">
-                                                                            <span class="fact-type-badge type-{fact.type}">{fact.type}</span>
-                                                                            <strong class="fact-subject">{fact.subject}</strong>
+                                                                <div
+                                                                    class="fact-row {fact.match
+                                                                        ? 'fact-success'
+                                                                        : 'fact-fail'}"
+                                                                >
+                                                                    <span
+                                                                        class="fact-status-icon"
+                                                                        >{fact.match
+                                                                            ? "✅"
+                                                                            : "❌"}</span
+                                                                    >
+                                                                    <div
+                                                                        class="fact-info"
+                                                                    >
+                                                                        <div
+                                                                            class="fact-subject-row"
+                                                                        >
+                                                                            <span
+                                                                                class="fact-type-badge type-{fact.type}"
+                                                                                >{fact.type}</span
+                                                                            >
+                                                                            <strong
+                                                                                class="fact-subject"
+                                                                                >{fact.subject}</strong
+                                                                            >
                                                                         </div>
-                                                                        <div class="fact-details-text">
+                                                                        <div
+                                                                            class="fact-details-text"
+                                                                        >
                                                                             {#if fact.match}
-                                                                                <span class="text-success">Cocok: "{fact.matched_prop}"</span>
+                                                                                <span
+                                                                                    class="text-success"
+                                                                                    >Cocok:
+                                                                                    "{fact.matched_prop}"</span
+                                                                                >
                                                                             {:else}
-                                                                                <span class="text-fail">Tidak cocok</span>
+                                                                                <span
+                                                                                    class="text-fail"
+                                                                                    >Tidak
+                                                                                    cocok</span
+                                                                                >
                                                                             {/if}
                                                                             {#if fact.props && fact.props.length > 0}
-                                                                                <div class="fact-props-list" title={fact.props.join(', ')}>
-                                                                                    Ref: {fact.props.join(', ')}
+                                                                                <div
+                                                                                    class="fact-props-list"
+                                                                                    title={fact.props.join(
+                                                                                        ", ",
+                                                                                    )}
+                                                                                >
+                                                                                    Ref:
+                                                                                    {fact.props.join(
+                                                                                        ", ",
+                                                                                    )}
                                                                                 </div>
                                                                             {/if}
                                                                         </div>
@@ -1442,7 +1871,6 @@
                                         {/if}
                                     </div>
                                 </div>
-
                             {/each}
 
                             {#if isStreaming}
@@ -1455,7 +1883,8 @@
                                             <div class="markdown-content">
                                                 {@html renderMarkdown(
                                                     activeStreamText,
-                                                )}<span class="cursor-blink"></span>
+                                                )}<span class="cursor-blink"
+                                                ></span>
                                             </div>
                                         </div>
                                     </div>
@@ -1466,12 +1895,20 @@
                                 <div class="msg-row msg-row-tutor animate-msg">
                                     <div class="msg-avatar-sm">A</div>
                                     <div class="msg-bubble-wrap items-start">
-                                        <div class="msg-bubble bubble-tutor thinking-bubble">
+                                        <div
+                                            class="msg-bubble bubble-tutor thinking-bubble"
+                                        >
                                             <div class="thinking-content">
-                                                <div class="thinking-dots-premium">
-                                                    <span></span><span></span><span></span>
+                                                <div
+                                                    class="thinking-dots-premium"
+                                                >
+                                                    <span></span><span
+                                                    ></span><span></span>
                                                 </div>
-                                                <p class="thinking-label">Alisa sedang berpikir...</p>
+                                                <p class="thinking-label">
+                                                    A.L.I.S.A. sedang
+                                                    berpikir...
+                                                </p>
                                             </div>
                                             <div class="thinking-shimmer"></div>
                                         </div>
@@ -1492,7 +1929,6 @@
                         </div>
                     {/if}
                 </div>
-
             {/if}
         </div>
     </aside>
@@ -1654,13 +2090,21 @@
         flex-direction: column;
         gap: 10px;
         padding: 14px 0 4px;
-        border-top: 1px solid rgba(255,255,255,0.06);
+        border-top: 1px solid rgba(255, 255, 255, 0.06);
         margin-top: 4px;
         animation: demo-slide 0.35s ease-out;
     }
     @keyframes demo-slide {
-        from { opacity: 0; max-height: 0; transform: translateY(-8px); }
-        to   { opacity: 1; max-height: 600px; transform: translateY(0); }
+        from {
+            opacity: 0;
+            max-height: 0;
+            transform: translateY(-8px);
+        }
+        to {
+            opacity: 1;
+            max-height: 600px;
+            transform: translateY(0);
+        }
     }
     .demo-row {
         display: flex;
@@ -2237,13 +2681,24 @@
         position: relative;
         overflow: hidden;
         min-width: 200px;
-        background: linear-gradient(135deg, rgba(99, 102, 241, 0.08), rgba(139, 92, 246, 0.12)) !important;
+        background: linear-gradient(
+            135deg,
+            rgba(99, 102, 241, 0.08),
+            rgba(139, 92, 246, 0.12)
+        ) !important;
         border-color: rgba(139, 92, 246, 0.25) !important;
         animation: think-pulse 2s ease-in-out infinite;
     }
     @keyframes think-pulse {
-        0%, 100% { border-color: rgba(139, 92, 246, 0.2); box-shadow: 0 0 0 0 rgba(139, 92, 246, 0); }
-        50% { border-color: rgba(139, 92, 246, 0.4); box-shadow: 0 0 20px 0 rgba(139, 92, 246, 0.08); }
+        0%,
+        100% {
+            border-color: rgba(139, 92, 246, 0.2);
+            box-shadow: 0 0 0 0 rgba(139, 92, 246, 0);
+        }
+        50% {
+            border-color: rgba(139, 92, 246, 0.4);
+            box-shadow: 0 0 20px 0 rgba(139, 92, 246, 0.08);
+        }
     }
     .thinking-content {
         display: flex;
@@ -2265,11 +2720,23 @@
         animation: think-bounce 1.4s infinite ease-in-out;
         box-shadow: 0 0 8px rgba(139, 92, 246, 0.4);
     }
-    .thinking-dots-premium span:nth-child(2) { animation-delay: 0.16s; }
-    .thinking-dots-premium span:nth-child(3) { animation-delay: 0.32s; }
+    .thinking-dots-premium span:nth-child(2) {
+        animation-delay: 0.16s;
+    }
+    .thinking-dots-premium span:nth-child(3) {
+        animation-delay: 0.32s;
+    }
     @keyframes think-bounce {
-        0%, 80%, 100% { transform: translateY(0) scale(1); opacity: 0.5; }
-        40% { transform: translateY(-8px) scale(1.2); opacity: 1; }
+        0%,
+        80%,
+        100% {
+            transform: translateY(0) scale(1);
+            opacity: 0.5;
+        }
+        40% {
+            transform: translateY(-8px) scale(1.2);
+            opacity: 1;
+        }
     }
     .thinking-label {
         font-size: 12px;
@@ -2279,13 +2746,20 @@
         animation: label-fade 2s ease-in-out infinite;
     }
     @keyframes label-fade {
-        0%, 100% { opacity: 0.6; }
-        50% { opacity: 1; }
+        0%,
+        100% {
+            opacity: 0.6;
+        }
+        50% {
+            opacity: 1;
+        }
     }
     .thinking-shimmer {
         position: absolute;
-        top: 0; left: -100%;
-        width: 100%; height: 100%;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
         background: linear-gradient(
             90deg,
             transparent 0%,
@@ -2297,8 +2771,12 @@
         animation: shimmer 2.5s ease-in-out infinite;
     }
     @keyframes shimmer {
-        0% { left: -100%; }
-        100% { left: 200%; }
+        0% {
+            left: -100%;
+        }
+        100% {
+            left: 200%;
+        }
     }
 
     /* ─── KG Accuracy Badge ─── */
@@ -2318,8 +2796,14 @@
         user-select: none;
     }
     @keyframes badge-fade-in {
-        from { opacity: 0; transform: translateY(4px); }
-        to   { opacity: 1; transform: translateY(0); }
+        from {
+            opacity: 0;
+            transform: translateY(4px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
     .accuracy-grounded {
         background: rgba(34, 197, 94, 0.1);
@@ -2401,14 +2885,22 @@
         background: rgba(15, 23, 42, 0.95);
         border: 1px solid rgba(255, 255, 255, 0.15);
         border-radius: 14px;
-        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
+        box-shadow:
+            0 10px 25px -5px rgba(0, 0, 0, 0.5),
+            0 8px 10px -6px rgba(0, 0, 0, 0.5);
         backdrop-filter: blur(12px);
         overflow: hidden;
         animation: popup-scale-in 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
     @keyframes popup-scale-in {
-        from { opacity: 0; transform: scale(0.95) translateY(4px); }
-        to { opacity: 1; transform: scale(1) translateY(0); }
+        from {
+            opacity: 0;
+            transform: scale(0.95) translateY(4px);
+        }
+        to {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+        }
     }
     .popup-header {
         display: flex;
@@ -2536,7 +3028,6 @@
     }
     /* ─── Input Row (wrapper area) ─── */
     /* Styling input & send button dikelola di DiscoveryMode.svelte */
-
 
     /* ─── Message Animation ─── */
     .animate-msg {

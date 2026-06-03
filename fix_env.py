@@ -8,7 +8,7 @@ OLLAMA_BASE_URL=http://localhost:11434
 OLLAMA_MODEL=alisa-tutor:latest
 
 # === APP CONFIG ===
-PROJECT_NAME=TVJP - Japanese Virtual Tutor
+PROJECT_NAME=A.L.I.S.A. (Adaptive Language Intelligent Symbolic Assistant)
 """
 
 # Tulis dengan encoding UTF-8 tanpa BOM

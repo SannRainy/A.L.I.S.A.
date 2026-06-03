@@ -241,7 +241,7 @@
         }
 
         // Build history — use JP field if available, otherwise raw
-        const history = turns.slice(-8).map(t => {
+        const history = turns.slice(0, -1).slice(-8).map(t => {
             if (t.role === "alisa") {
                 let aiContent = t.jp || "";
                 if (t.rom) aiContent += `\nROM: ${t.rom}`;
@@ -611,7 +611,7 @@
                             <div class="thinking-dots-premium">
                                 <span></span><span></span><span></span>
                             </div>
-                            <p class="thinking-label">Alisa sedang berpikir...</p>
+                            <p class="thinking-label">A.L.I.S.A. sedang berpikir...</p>
                         </div>
                         <div class="thinking-shimmer"></div>
                     </div>
@@ -644,7 +644,7 @@
                 {:else if loading}
                     ⏳ Memproses suara...
                 {:else if isAiTurn}
-                    ✨ Alisa sedang menjawab...
+                    ✨ A.L.I.S.A. sedang menjawab...
                 {:else}
                     Tahan untuk berbicara
                 {/if}

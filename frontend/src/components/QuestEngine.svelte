@@ -174,6 +174,20 @@
     }
     $: isHintVisible = currentQuestion && hintUsed[currentQuestion.id];
 
+    function buildFallbackFeedback(question, userAnswer, correctAnswer) {
+        const type = question.type;
+        const focus = question.grammar_focus || "";
+        const hint = question.hint || "";
+        
+        if (type === 'mcq') {
+            return `Jawaban yang benar adalah "${correctAnswer}". ${focus ? `Topik: ${focus}. ` : ''}${hint}`;
+        } else if (type === 'translate') {
+            return `Kalimat yang benar: "${correctAnswer}". Perhatikan urutan kata dalam pola bahasa Jepang. ${hint}`;
+        } else { // fill
+            return `Yang benar adalah "${correctAnswer}". ${hint}`;
+        }
+    }
+
     // ── AI Feedback ────────────────────────────────────────────────
     async function requestAIFeedback(userAnswer) {
         showAiFeedback = true;
@@ -203,7 +217,10 @@
                     grammar_focus: currentQuestion.grammar_focus || "",
                     user_answer: lastUserAnswer,
                     correct_answer: correctAnswerDisplay,
-                    node_id: currentQuestion.node_id
+                    node_id: currentQuestion.node_id,
+                    question_type: currentQuestion.type || "",
+                    hint: currentQuestion.hint || "",
+                    options: currentQuestion.options || null
                 })
             });
 
@@ -215,7 +232,7 @@
             // Typewriter effect
             aiFeedbackText = "";
             let i = 0;
-            const textToType = data.feedback || `Jawaban yang benar adalah: "${correctAnswerDisplay}". Coba lagi!`;
+            const textToType = data.feedback || buildFallbackFeedback(currentQuestion, lastUserAnswer, correctAnswerDisplay);
 
             const typeInterval = setInterval(() => {
                 if (i < textToType.length) {
@@ -239,7 +256,7 @@
             }
         } catch (error) {
             isAiThinking = false;
-            aiFeedbackText = `Koneksi terputus. Jawaban yang benar adalah: "${correctAnswerDisplay}". Perhatikan pola: ${currentQuestion.hint}`;
+            aiFeedbackText = buildFallbackFeedback(currentQuestion, lastUserAnswer, correctAnswerDisplay);
         }
     }
 
@@ -287,7 +304,7 @@
     };
 </script>
 
-<div class="quest-engine h-full flex flex-col items-center justify-center p-6 text-slate-800">
+<div class="quest-engine h-full flex flex-col items-center justify-center p-6 text-slate-200">
     <div class="w-full max-w-2xl glass-panel rounded-[2.5rem] p-10 shadow-2xl relative overflow-hidden flex flex-col min-h-[520px] max-h-full">
         <!-- Subtle Glow -->
         <div class="absolute -top-20 -right-20 w-64 h-64 bg-indigo-200/20 rounded-full blur-[80px] pointer-events-none"></div>
@@ -333,7 +350,7 @@
                                 {#if currentQuestion.grammar_focus}
                                     <p class="text-xs text-indigo-400 font-semibold mb-3 opacity-80">📚 {currentQuestion.grammar_focus}</p>
                                 {/if}
-                                <h3 class="text-2xl md:text-[1.65rem] font-black text-slate-900 leading-tight">
+                                <h3 class="text-2xl md:text-[1.65rem] font-black text-white leading-tight">
                                     {currentQuestion.question}
                                 </h3>
                             </div>
@@ -346,7 +363,7 @@
                                             <button
                                                 on:click={() => handleAnswer(i)}
                                                 disabled={isEvaluating || showAiFeedback}
-                                                class="glass-card p-5 font-bold text-lg text-slate-700 hover:border-indigo-400 hover:bg-white/50 hover:shadow-indigo-500/10 transition-all disabled:opacity-50 text-left flex items-center gap-4"
+                                                class="glass-card p-5 font-bold text-lg text-slate-200 hover:text-white hover:border-indigo-400 hover:bg-indigo-600/20 hover:shadow-indigo-500/10 transition-all disabled:opacity-50 text-left flex items-center gap-4"
                                             >
                                                 <div class="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center text-xs text-indigo-500 font-black shrink-0">
                                                     {String.fromCharCode(65 + i)}
@@ -366,8 +383,8 @@
                                             bind:value={fillAnswer}
                                             disabled={isEvaluating || showAiFeedback}
                                             placeholder="Ketik jawabanmu di sini..."
-                                            class="w-full p-5 text-center rounded-2xl bg-white/40 border-2 transition-all text-xl font-bold text-slate-800 placeholder:text-slate-400 shadow-inner
-                                                {lastAnswerWrong ? 'border-rose-400 bg-rose-50/30 focus:border-rose-400' : 'border-white/60 focus:border-indigo-400 focus:bg-white/60'}
+                                            class="w-full p-5 text-center rounded-2xl bg-white/90 border-2 transition-all text-xl font-bold text-slate-900 placeholder:text-slate-400 shadow-inner
+                                                {lastAnswerWrong ? 'border-rose-400 bg-rose-50 focus:border-rose-400' : 'border-white/60 focus:border-indigo-400 focus:bg-white'}
                                                 focus:outline-none focus:ring-4 focus:ring-indigo-500/5"
                                             on:keydown={(e) => e.key === 'Enter' && handleAnswer(fillAnswer)}
                                         />
@@ -388,7 +405,7 @@
                             {:else if currentQuestion.type === 'translate'}
                                 {#if !showAiFeedback}
                                     <div class="flex flex-col items-center">
-                                        <div class="w-full mb-3 p-4 bg-amber-50/60 border border-amber-200/60 rounded-2xl text-sm text-amber-800 font-medium text-center">
+                                        <div class="w-full mb-3 p-4 bg-amber-500/10 border border-amber-500/25 rounded-2xl text-sm text-amber-300 font-medium text-center">
                                             💡 Tulis dalam romaji atau hiragana. Tidak perlu huruf kapital atau tanda baca.
                                         </div>
                                         <textarea
@@ -396,8 +413,8 @@
                                             disabled={isEvaluating || showAiFeedback}
                                             placeholder="Ketik terjemahan kalimat Jepangmu di sini..."
                                             rows="2"
-                                            class="w-full p-5 text-center rounded-2xl bg-white/40 border-2 transition-all text-lg font-bold text-slate-800 placeholder:text-slate-400 shadow-inner resize-none
-                                                {lastAnswerWrong ? 'border-rose-400 bg-rose-50/30' : 'border-white/60 focus:border-amber-400 focus:bg-white/60'}
+                                            class="w-full p-5 text-center rounded-2xl bg-white/90 border-2 transition-all text-lg font-bold text-slate-900 placeholder:text-slate-400 shadow-inner resize-none
+                                                {lastAnswerWrong ? 'border-rose-400 bg-rose-50' : 'border-white/60 focus:border-amber-400 focus:bg-white'}
                                                 focus:outline-none focus:ring-4 focus:ring-amber-500/10"
                                             on:keydown={(e) => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), handleAnswer(fillAnswer))}
                                         ></textarea>
@@ -426,7 +443,7 @@
                                             🔍 Lihat Petunjuk <span class="opacity-60">(−2 XP)</span>
                                         </button>
                                     {:else}
-                                        <div class="inline-block px-4 py-3 bg-slate-100/80 rounded-xl text-sm text-slate-600 font-medium" in:fly={{ y: 5 }}>
+                                        <div class="inline-block px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-sm text-slate-200 font-medium" in:fly={{ y: 5 }}>
                                             💡 {currentQuestion.hint}
                                         </div>
                                     {/if}
@@ -442,13 +459,13 @@
                 <div class="flex flex-col gap-6" in:fly={{ y: 20, duration: 400 }}>
                     <!-- Comparative display -->
                     <div class="flex flex-col sm:flex-row gap-4 w-full">
-                        <div class="flex-1 p-4 bg-rose-500/5 border border-rose-500/10 rounded-2xl flex flex-col shadow-sm backdrop-blur-sm">
-                            <span class="text-[10px] text-rose-500 font-bold uppercase tracking-wider mb-1">Jawaban Kamu</span>
-                            <span class="text-sm font-bold text-rose-700 line-through leading-relaxed">{lastUserAnswer || '-'}</span>
+                        <div class="flex-1 p-4 bg-rose-500/10 border border-rose-500/20 rounded-2xl flex flex-col shadow-sm backdrop-blur-sm">
+                            <span class="text-[10px] text-rose-400 font-bold uppercase tracking-wider mb-1">Jawaban Kamu</span>
+                            <span class="text-sm font-bold text-rose-200 line-through leading-relaxed">{lastUserAnswer || '-'}</span>
                         </div>
-                        <div class="flex-1 p-4 bg-emerald-500/5 border border-emerald-500/10 rounded-2xl flex flex-col shadow-sm backdrop-blur-sm">
-                            <span class="text-[10px] text-emerald-500 font-bold uppercase tracking-wider mb-1">Jawaban Benar</span>
-                            <span class="text-sm font-bold text-emerald-700 leading-relaxed">{correctAnswerDisplay || '-'}</span>
+                        <div class="flex-1 p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl flex flex-col shadow-sm backdrop-blur-sm">
+                            <span class="text-[10px] text-emerald-400 font-bold uppercase tracking-wider mb-1">Jawaban Benar</span>
+                            <span class="text-sm font-bold text-emerald-200 leading-relaxed">{correctAnswerDisplay || '-'}</span>
                         </div>
                     </div>
 
@@ -458,8 +475,8 @@
                         <div class="flex items-center gap-3 mb-4">
                             <div class="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-xl">👩‍🏫</div>
                             <div>
-                                <h4 class="font-black text-slate-900 text-sm">Alisa Sensei</h4>
-                                <p class="text-[10px] text-indigo-500 font-bold uppercase tracking-wider">Penjelasan Pembelajaran</p>
+                                <h4 class="font-black text-white text-sm">A.L.I.S.A</h4>
+                                <p class="text-[10px] text-indigo-400 font-bold uppercase tracking-wider">Penjelasan Pembelajaran</p>
                             </div>
                         </div>
                         
@@ -468,10 +485,10 @@
                                 <div class="thinking-dots-premium">
                                     <span></span><span></span><span></span>
                                 </div>
-                                <p class="thinking-label">Alisa sedang merangkai penjelasan...</p>
+                                <p class="thinking-label">A.L.I.S.A. sedang merangkai penjelasan...</p>
                             </div>
                         {:else}
-                            <p class="text-slate-700 font-semibold leading-relaxed mb-6 italic">"{aiFeedbackText}"</p>
+                            <p class="text-slate-200 font-semibold leading-relaxed mb-6 italic">"{aiFeedbackText}"</p>
 
                             <button
                                 on:click={continueAfterFeedback}

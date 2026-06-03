@@ -1,8 +1,8 @@
 {
 	"info": {
 		"_postman_id": "tvjp-api-collection-2026",
-		"name": "TVJP AI Tutor API",
-		"description": "Collection untuk testing API TVJP (FastAPI Backend)",
+		"name": "A.L.I.S.A. AI Tutor API",
+		"description": "Collection untuk testing API A.L.I.S.A. (FastAPI Backend)",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
@@ -127,7 +127,7 @@
 			"name": "Chat & LLM",
 			"item": [
 				{
-					"name": "Chat with Alisa",
+					"name": "Chat with A.L.I.S.A.",
 					"request": {
 						"method": "POST",
 						"header": [

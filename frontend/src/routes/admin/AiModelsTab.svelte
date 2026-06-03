@@ -176,7 +176,7 @@
     <div class="model-switcher-card">
         <h3>Pilih Model AI Aktif</h3>
         <p class="model-desc">
-            Ganti model bahasa lokal yang melayani asisten belajar Alisa. Model 8B memiliki penalaran yang lebih kuat namun memerlukan kapasitas VRAM/RAM yang lebih tinggi daripada model 4B.
+            Ganti model bahasa lokal yang melayani asisten belajar A.L.I.S.A. Model 8B memiliki penalaran yang lebih kuat namun memerlukan kapasitas VRAM/RAM yang lebih tinggi daripada model 4B.
         </p>
 
         {#if modelLoading}
@@ -266,7 +266,7 @@
                 <div class="playground-msg" class:user={msg.role === "user"}>
                     <div class="msg-avatar">{msg.role === "user" ? "👤" : "🤖"}</div>
                     <div class="msg-content">
-                        <div class="msg-sender">{msg.role === "user" ? "Anda" : "Alisa (" + activeModel + ")"}</div>
+                        <div class="msg-sender">{msg.role === "user" ? "Anda" : "A.L.I.S.A. (" + activeModel + ")"}</div>
                         <div class="msg-text">
                             {#if msg.content === "" && playgroundStreaming && msg === playgroundMessages[playgroundMessages.length - 1]}
                                 <span class="thinking-dots"><span>.</span><span>.</span><span>.</span></span>

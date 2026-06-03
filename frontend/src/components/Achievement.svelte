@@ -279,7 +279,7 @@
                             <span class="text-4xl mb-4">🌱</span>
                             <p class="text-slate-300 font-black text-center">Peta penguasaan masih kosong.</p>
                             <p class="text-xs text-slate-300 text-center mt-2 max-w-xs leading-relaxed">
-                                Mulai obrolan dengan Alisa atau kerjakan Quest untuk mengisi Knowledge Graph pertamamu!
+                                Mulai obrolan dengan A.L.I.S.A. atau kerjakan Quest untuk mengisi Knowledge Graph pertamamu!
                             </p>
                         </div>
                     {/if}
