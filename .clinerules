@@ -1,0 +1,12 @@
+PROYEK INI ADALAH SKRIPSI SISTEM TUTOR BAHASA JEPANG N5.
+
+ATURAN ARSITEKTUR:
+1. FRONTEND = MURNI SVELTE (tanpa Nuxt, tanpa Meta-framework).
+2. BACKEND = MURNI PYTHON (FastAPI).
+3. LOGIKA UTAMA = MURNI GRAF (Knowledge Graph).
+4. JANGAN CAMPUR-CAMPUR;
+   - Jangan menyarankan backend Node.js.
+   - Jangan menyarankan database SQL murni.
+   - Jangan menyarankan frontend framework selain Svelte.
+5. Fokus pada pengembangan fitur utama (Audio Synthesis, Graph Expansion, Visual Analytics).
+6. Selalu prioritaskan efisiensi kode karena keterbatasan hardware (RTX 3050).

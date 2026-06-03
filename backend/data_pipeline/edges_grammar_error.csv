@@ -1,0 +1,8 @@
+grammar_id,error_id,relationship_type
+"Partikel subject は、も、 が","ERR001","HAS_COMMON_ERROR"
+"Partikel object を、に、へ、 で","ERR002","HAS_COMMON_ERROR"
+"Memahami Konjugasi Kata Kerja, Kata Benda dan Kata Sifat (Positif, Negatif, Lampau, Negatif Lampau)","ERR003","HAS_COMMON_ERROR"
+"Akhiran です、 だ","ERR004","HAS_COMMON_ERROR"
+"Memahami Konjugasi Kata Kerja, Kata Benda dan Kata Sifat (Positif, Negatif, Lampau, Negatif Lampau)","ERR005","HAS_COMMON_ERROR"
+"Tata bahasa ~のほうが　~よ り","ERR006","HAS_COMMON_ERROR"
+"Partikel object を、に、へ、 で","ERR007","HAS_COMMON_ERROR"

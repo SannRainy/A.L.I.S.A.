@@ -1,0 +1,6 @@
+vocab_id,rule_id,relationship_type
+"ん","Aturan Bunyi Karakter","HAS_PHONETIC_RULE"
+"さんぽ","ん dibaca m (sebelum b/p)","HAS_PHONETIC_RULE"
+"たんぼ","ん dibaca m (sebelum b/p)","HAS_PHONETIC_RULE"
+"さんかくえい","ん dibaca ng (sebelum g/k)","HAS_PHONETIC_RULE"
+"まんが","ん dibaca ng (sebelum g/k)","HAS_PHONETIC_RULE"

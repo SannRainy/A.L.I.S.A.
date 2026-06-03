@@ -1,0 +1,47 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --glass-bg: rgba(255, 255, 255, 0.2);
+    --glass-border: rgba(255, 255, 255, 0.3);
+    --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+  }
+
+  body {
+    @apply antialiased text-slate-800;
+    font-family: 'Outfit', 'Inter', system-ui, sans-serif;
+    background-color: transparent;
+  }
+}
+
+@layer components {
+  .glass-panel {
+    @apply backdrop-blur-2xl bg-slate-900/60 border border-white/20 shadow-2xl;
+  }
+  
+  .glass-card {
+    @apply backdrop-blur-md bg-slate-800/70 border border-white/25 rounded-[1.5rem] shadow-sm transition-all duration-300;
+  }
+
+  /* Custom Scrollbar */
+  .custom-scroll::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+  }
+
+  .custom-scroll::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .custom-scroll::-webkit-scrollbar-thumb {
+    @apply bg-indigo-500/20 rounded-full hover:bg-indigo-500/40 transition-colors;
+  }
+}
+
+@layer utilities {
+  .text-shadow-sm {
+    text-shadow: 0 1px 2px rgba(255, 255, 255, 0.5);
+  }
+}

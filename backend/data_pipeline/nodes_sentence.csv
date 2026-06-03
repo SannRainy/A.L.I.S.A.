@@ -1,0 +1,191 @@
+sentence_id,japanese_text,romaji,indonesian_translation,level
+S001,私は魚が好すきです。でも肉も好きです。,watashi wa sakana ga suki desu. demo niku mo suki desu.,"Saya suka ikan, tapi juga suka daging.",N5
+S002,パン屋に行きました。でも、何も買いませんでした。,"panya ni ikimashita. demo, nanimo kaimasen deshita.","Aku pergi ke kios kue, tapi nggak beli apa-apa.",N5
+S003,動物が好きです。でも、犬が一ばん好きです。,"doubutsu ga suki desu. demo, inu ga ichiban suki desu.","Saya suka hewan, tapi saya paling suka anjing.",N5
+S004,ベトナムはどんな国ですか。,betonamu wa donna kuni desu ka.,Apa saja karakteristik negara Vietnam?,N5
+S005,どんな仕事をするのですか。,donna shigoto o suru no desu ka?,Apa saja pekerjaan yang kamu lakukan?,N5
+S006,どんな食べ物が好きですか。,donna tabemono ga suki desu ka.,Apa makanan favoritmu?,N5
+S007,どんなパソコンを持っていますか。,donna pasokon o motteimasu ka.,Komputer apa yang kamu miliki?,N5
+S008,どうして来ないの?,doushite konai no?,Mengapa kamu tidak datang?,N5
+S009,駅までどうやって行きますか。,eki made douyatte ikimasu ka.,Bagaimana cara ke stasiun?,N5
+S010,これはどうやって使いますか。,kore wa douyatte tsukaimasu ka.,"Pakai ini gimana, ya?",N5
+S011,これはどうやって食べますか。,kore wa douyatte tabemasu ka.,"Cara makan ini gimana, ya?",N5
+S012,リサさんは毎日どうやって学校へ来ますか。,risa san wa mainichi douyatte gakkou e kimasu ka.,"Lisa, cara kamu ke sekolah setiap hari apa ya?",N5
+S013,もっとお金が欲しいです。,motto okane ga hoshii desu.,Aku mau lebih banyak uang.,N5
+S014,彼女がほしい。,kanojo ga hoshii.,Aku pengen punya pacar.,N5
+S015,お金がたくさんほしい。,okane ga takusan hoshii.,Aku pengin banyak uang. (boleh bagiin が dan ほしい),N5
+S016,疲れたら、早く寝たほうがいい。,"tsukaretara, hayaku neta hou ga ii.","Jika kamu merasa lelah, lebih baik langsung tidur dulu.",N5
+S017,彼がいちばん働いた。,kare ga ichiban hataraita.,Dia kerja paling giat.,N5
+S018,秋が一番好きな季節です。,aki ga ichiban suki na kisetsu desu.,Musim gugur itu favorit saya.,N5
+S019,私はブロッコリーが一番嫌いだ。,watashi wa burokkorii ga ichiban kirai da.,Saya paling tidak suka brokoli.,N5
+S020,一緒に日本語を勉強しましょう。,isshoni nihongo o benkyou shimashou.,Ayo belajar bahasa Jepang bareng-bareng!,N5
+S021,彼はいつも元気ですね。,kare wa itsumo genki desu ne.,Dia selalu energetik.,N5
+S022,妹はいつも寝ている。,imouto wa itsumo neteiru.,Saudara perempuan saya selalu tidur saja.,N5
+S023,いつも夜10時に寝ます。,itsumo yoru juuji ni nemasu.,Saya selalu tidur pukul 10.,N5
+S024,何ですか?,nan desu ka?,Waduh?,N5
+S025,明日は雨かどうか分からない。,ashita wa ame ka dou ka wakaranai.,Aku nggak yakin apakah besok akan hujan atau tidak.,N5
+S026,パソコンの使いかたがわかりません。,pasokon no tsukai kata ga wakarimasen.,Aku tidak tahu cara pakai komputer.,N5
+S027,仕事は辛いけど楽しい。,shigoto wa tsurai kedo tanoshii.,"Kerja itu susah, tapi seru.",N5
+S028,金はないけど夢はある。,kane wa nai kedo yume wa aru.,"Saya tidak punya uang, tapi saya punya mimpi.",N5
+S029,スポーツは上手じゃないけど、好きです。,"supootsu wa jouzu janai kedo, suki desu.","Saya nggak mahir main olahraga, tapi saya suka olahraga itu.",N5
+S030,このカメラは高かったけれど、すぐ壊れてしまいました。,"kono kamera wa takaaktta keredo, sugu kowarete shimaimashita.","Kamera ini memang mahal, tapi langsung rusak segera saja.",N5
+S031,外は暑いけれど、家の中は暖かいです。,"soto wa atsui keredo, ie no naka wa atatakai desu.","Luar sana dingin, tapi di dalam rumah ini hangat.",N5
+S032,バスはまだ来ていません。,basu wa mada kiteimasen.,Busnya masih belum tiba.,N5
+S033,まだ、決まっていません。,"mada, kimatteimasen.",Belum ditentukan sih.,N5
+S034,私はまだ朝ごはんを食べていません。,watashi wa mada asagohan o tabete imasen.,Aku belum makan sarapan belum.,N5
+S035,今週の新しい単語をまだ覚えていません。,konshuu no atarashii tango o mada oboete imasen.,Aku belum bisa hafal kata-kata baru minggu ini.,N5
+S036,昨日までお休みでした。,kinou made o yasumi deshita.,Saya liburan sampai kemarin saja.,N5
+S037,ここからそこまでは遠いですよ。,koko kara soko made wa tooi desu yo.,Jauh banget dari sini!,N5
+S038,駅まで行きたいんですが、どう行ったらいいですか。,"eki made ikitai ndesu ga, dou ittara ii desu ka.",Bagaimana cara ke stasiun?,N5
+S039,ドアを開ける前にノックぐらいしてください。,doa o akeru mae ni nokku gurai shite kudasai.,"Sebelum buka pintu, mohon tekan dulu ya.",N5
+S040,コンビニの前にじてんしゃがたくさんあります。,konbini no mae ni jitensha ga takusan arimasu.,Di depan toko kelontong banyak sepeda.,N5
+S041,旅行の前に切符を買っておきます。,ryokou no mae ni kippu o katte okimasu.,Aku akan beli tiket sebelum perjalanan.,N5
+S042,今日一緒に食べませんか?,kyou isshoni tabemasen ka?,"Mau makan bareng hari ini, kan?",N5
+S043,うちで映画を見ませんか。,uchi de eiga o mimasen ka.,Ingin nonton film di tempat saya?,N5
+S044,行きましょう!,iki mashou!,Ayo ya!,N5
+S045,駅で会いましょう!,eki de ai mashou!,Ayo ketemu di stasiun!,N5
+S046,もうご飯の時間だよ、早く食べましょう!,"mou gohan no jikan dayo, hayaku tabe mashou!","Waktu makan sudah tiba, ayo cepat makan ya!",N5
+S047,帰る前に教室をきれいにしましょう。,kaeru mae ni kyoushitsu o kirei ni shi mashou.,"Sebelum pulang, ayo bersihkan kelas ini ya!",N5
+S048,マドを開けましょうか。,mado o ake mashouka?,Aku buka jendela?,N5
+S049,手伝いましょうか。,tetsudai mashouka?,Ingin bantuan?,N5
+S050,荷物を持ちましょうか。,nimotsu o mochi mashouka?,Ingin saya bantu membawa bagasi kamu?,N5
+S051,タクシーを呼びましょうか。,takushii o yobi mashouka?,"Aku bisa panggil ojek untuk kamu, ya?",N5
+S052,私もできる。,watashi mo dekiru.,Aku juga bisa nih.,N5
+S053,甘いものも辛いものも好きです。,amai mono mo karai mono mo suki desu.,Saya juga suka makanan manis dan pedas.,N5
+S054,たくさんの人がいるなあ。,takusan no hito ga iru naa.,"Wah, banyak orang di sini!",N5
+S055,これ、美味しいなあ。,"kore, oishii naa.",Ini benar-benar enak banget!,N5
+S056,コーヒーには、いつもさとうを入れないで飲みます。,"koohii ni wa, itsumo satou o irenaide nomimasu.",Aku selalu minum kopi tanpa gula.,N5
+S057,彼女はカサを持たないで出てしまった。,kanojo wa kasa o mota naide deteshimatta.,Dia pergi tanpa membawa payung.,N5
+S058,昨日は疲れていて、電気を消さないで寝てしまった。,"kinou wa tsukarete ite, denki o kesanaide nete shimatta.","Kemarin aku terlalu lelah, langsung tidur tanpa matikan lampu.",N5
+S059,今朝、朝ごはんを食べないで仕事に来ました。,"kesa, asa gohan o tabenaide shigoto ni kimashita.",Aku datang kerja tadi pagi tanpa makan sarapan.,N5
+S060,明日は休みだから、学校に行かなくてもいい。,"ashita wa yasumi dakara, gakkou ni ikanaku temoii.","Besok libur, jadi aku tidak perlu pergi ke sekolah.",N5
+S061,空港まで来なくてもいいよ。,kuukou made konaku temo ii yo.,Kamu tidak perlu datang sampai ke bandara.,N5
+S062,好きじゃないなら、食べなくてもいいですよ。,"suki janai nara, tabenaku temo ii desu yo.","Jika kamu tidak suka, tidak perlu makan ya.",N5
+S063,来なくてもいいですよ。私一人で行くから。,konaku temo ii desu yo. watashi hitori de iku kara.,Kamu tidak perlu datang. Aku akan pergi sendiri saja.,N5
+S064,本当にすぐ行かなくてはいけない。,hontouni sugu ika nakute wa ikenai.,Aku harus pergi sekarang.,N5
+S065,急がなくてはいけない。,isoga nakute wa ikenai.,Aku harus buru-buru.,N5
+S066,急がなくてはならない。,isoga nakute wa naranai.,Aku harus buru-buru.,N5
+S067,本当にすぐ行かなくてはならない。,hontouni sugu ika nakute wa naranai.,Aku harus pergi sekarang ya.,N5
+S068,大きくなっているね!,ookiku natteiru ne!,Kamu semakin besar! 😊,N5
+S069,かわいいね。,kawaii ne.,"Keren banget, bukan? / Kamu keren, ya?",N5
+S070,そうですね。,sou desu ne.,"Iya, begitu ya?",N5
+S071,今日の天気はいいですね。,kyou no tenki wa ii desu ne.,"Cuaca hari ini enak, bukan?",N5
+S072,友だちの家に遊びに行く。,tomodachi no ie ni asobi ni iku.,Aku akan pergi ke rumah teman-teman aku untuk ngobrol aja.,N5
+S073,日本に勉強しに行くつもりなのです。,nihon ni benkyou shini iku tsumori nano desu.,Aku planning pergi ke Jepang untuk belajar!,N5
+S074,どれにする?,dore ni suru?,Yang mau kamu pilih?,N5
+S075,飲み物は何にする?,nomimono wa nani ni suru?,Apa yang mau kamu minum?,N5
+S076,お茶にする。,ocha ni suru.,Aku mau minum teh.,N5
+S077,あなたの名前は何ですか?,anata no namae wa nan desu ka?,"Namanya apa, ya?",N5
+S078,あなたの犬ですか?,anata no inu desu ka?,"Anak anjing ini milik kamu, ya?",N5
+S079,これはだれのカバンですか?,kore wa dare no kaban desu ka?,Siapa bagasi ini?,N5
+S080,彼はおはしを使うのが下手だ。,kare wa ohashi o tsukau no ga heta da.,Dia tidak mahir pakai sendok makan.,N5
+S081,母は料理をするのが下手だ。,haha wa ryouri o suru no ga heta da.,Ibu saya kurang mahir memasak.,N5
+S082,あなたは教えるのが上手です。,anata wa oshieru no ga jouzu desu.,Kamu bagus banget ajari orang lain.,N5
+S083,私は寝るのが好きです。,watashi neru no ga suki desu.,Saya suka tidur.,N5
+S084,漫画を読むのが好きだ。,manga o yomu no ga suki da.,Saya suka baca manga.,N5
+S085,妹は料理をするのが好きです。,imouto wa ryouri o suru no ga suki desu.,Saudara kandung saya yang lebih muda suka memasak.,N5
+S086,家族のなかで父がいちばん背が高いです。,kazoku no naka de chichi ga ichiban se ga takai desu.,"Di keluarga saya, ayah saya yang paling tinggi.",N5
+S087,チームの中で山田が一番強い!,chiimu no naka de yamada ga ichiban tsuyoi!,"Di tim kami, Yamada paling kuat!",N5
+S088,日本の食べ物の中でラーメンが一番好きだ。,nihon no tabemono no naka de raamen ga ichiban suki da.,"Dari semua makanan Jepang, ramen adalah yang paling saya suka.",N5
+S089,クラスの中でジェシカが一番頭いい。,kurasu no naka de jeshika ga ichiban atama ii.,"Di kelas kami, Jessica yang paling cerdas.",N5
+S090,日本語をべんきょうしています。,nihongo o benkyou shiteimasu.,Saya sedang belajar bahasa Jepang.,N5
+S091,日本語を話します。,nihongo o hanashimasu.,Saya bicara bahasa Jepang.,N5
+S092,すみません、お水をください。,"sumimasen, omizu o kudasai.","Maaf, boleh kasih saya air sedikit ya?",N5
+S093,これをください。,kore o kudasai.,Berikan saja ini ke saya (saya ambil ini).,N5
+S094,コーヒーを二つください。,koohii o futatsu kudasai.,"Berikan saya 2 cangkir kopi, ya.",N5
+S095,少し時間をください。,sukoshi jikan o kudasai.,Aku butuh sedikit waktu saja.,N5
+S096,しかしなぜ?,shikashi naze?,Tapi kenapa? (menunjukkan ketidaksetujuan),N5
+S097,日本は大好きです。しかし、日本の夏がとても暑いです。,"nihon wa daisuki desu. shikashi, nihon no natsu ga totemo atsui desu.",Aku suka Jepang. Tapi musim panasnya sangat panas!,N5
+S098,今日のクラスはむずかしかったです。しかし楽しかったです。,"kyou no kurasu wa muzukashikatta desu. shikashi, tanoshikatta desu!",Kelas hari ini agak sulit... Tapi sangat seru!,N5
+S099,これを見たことがある。,kore o mita koto ga aru.,Aku sudah lihat ini sebelumnya.,N5
+S100,フランスに行ったことある。,furansu ni itta koto ga aru.,Saya pernah ke Prancis dulu.,N5
+S101,それを聞いたことがある。,sore o kiita koto ga aru.,Aku sudah pernah dengar itu sebelumnya.,N5
+S102,一度だけカラオケをやったことがあります。,ichido dake karaoke o yatta koto ga arimasu.,Saya cuma coba karaoke sekali dulu.,N5
+S103,休みの日は水曜日だったり、日曜日だったりです。,"yasumi no hi wa suiyoubi dattari, nichiyoubi dattari desu.",Kami tutup hari Rabu dan Minggu.,N5
+S104,日曜日は買い物したり、映画を見たりした。,"nichiyoubi wa kaimono shitari, eiga o mitari shita.",Minggu ini saya pergi belanja dan nonton film.,N5
+S105,トイレを使ってから、手を洗わないといけません。,"toire o tsukatte kara, te o arawanai to ikemasen.",Kita harus mencuci tangan setelah menggunakan kamar mandi.,N5
+S106,買い物をしてから家に帰ります。,kaimono o shite kara ie ni kaerimasu.,Saya pulang setelah selesai berbelanja.,N5
+S107,ご飯を食べてから散歩しました。,gohan o tabete kara sanpo shimashita.,"Setelah makan, aku jalan-jalan.",N5
+S108,今日は、起きてからまだ何も食べていません。,"kyou wa, okite kara mada nanimo tabeteimasen.",Saya belum makan apa-apa sejak bangun tadi.,N5
+S109,ちょっと待ってください。,chotto matte kudasai,"Tunggu sebentar, ya.",N5
+S110,やめてください!,yamete kudasai!,Parelah!,N5
+S111,もっとゆっくり言ってください。,motto yukkuri itte kudasai.,Bisakah kamu bicara lebih perlahan ya?,N5
+S112,静かにしてください。,shizukani shite kudasai,Silahkan tenang ya.,N5
+S113,窓を開けてはいけない。,mado o akete wa ikenai.,Jangan buka jendela.,N5
+S114,嘘をついてはいけない。,uso o tsuite wa ikenai.,Kamu tidak boleh berbohong.,N5
+S115,ろうかを走ってはいけませんよ。,rouka o hashitte wa ikemasen yo.,Tidak boleh berlari di koridor.,N5
+S116,トイレに行ってもいいですか?,toire ni ittemo ii desu ka?,Boleh aku pergi ke kamar mandi?,N5
+S117,うん、行ってもいいですよ!,"un, ittemo ii desu yo!","Tentu saja, silakan lanjutkan!",N5
+S118,それを食べてもいいですか。,sore o tabetemo ii desu ka?,Bisakah aku makan yang itu?,N5
+S119,お母さんと買い物に行った。,okaasan to kaimono ni itta.,Aku pergi belanja bareng ibu saya.,N5
+S120,彼女と仲がいいです。,kanojo to naka ga ii desu.,Kita komunikasi dengan baik.,N5
+S121,分からないときは、早く先生に聞きましょうね。,"wakaranai toki wa, hayaku sensei ni kikimashou ne.","Ketika kamu tidak paham, langsung tanya guru ya!",N5
+S122,道を渡るとき、車に気をつけてください。,"michi o wataru toki, kuruma ni ki o tsukete kudasai.","Ketika lintas jalan, hati-hati dengan mobilnya ya.",N5
+S123,今日はとても暑いですね。,kyou wa totemo atsui desu ne.,"Hari ini sangat panas, bukan?",N5
+S124,1月と2月はとても寒いです。,ichigatsu to nigatsu wa totemo samui desu.,Satu bulan dan dua bulan itu terus saja dingin ya.,N5
+S125,このカレーはとても辛いですね。,kono karee wa totemo karai desu ne.,Curinya ini sangat pedas!,N5
+S126,彼らはとても似ている。,karera wa totemo niteiru.,Mereka mirip banget ya.,N5
+S127,今日はラーメンを食べるつもりだ。,kyou wa raamen o taberu tsumori da.,"Hari ini, aku plan makan ramen.",N5
+S128,あなたたちも行くつもりですか?,anatatachi mo iku tsumori desu ka?,"Kalian juga merencanakan pergi, kan?",N5
+S129,私はジョンです。,watashi wa jon desu.,Saya John.,N5
+S130,それは面白い。,sore wa omoshiroi.,Yang itu menarik banget.,N5
+S131,今日は電車で来ました。,kyou wa densha de kimashita.,Aku datang dengan kereta hari ini.,N5
+S132,本は映画より面白いです。,hon wa eiga yori omoshiroi desu.,Buku lebih menarik daripada film.,N5
+S133,今日は昨日より忙しいです。,kyou wa kinou yori isogashii desu.,Hari ini lebih ramai dari kemarin.,N5
+S134,電車はバスより速いです。,densha wa basu yori hayai desu.,Relatif lebih cepat daripada bus.,N5
+S135,アメリカ人は日本人より背が高いです。,amerika jin wa nihon jin yori se ga takai.,Orang Amerika lebih tinggi dari orang Jepang.,N5
+S136,明日はどうですか。,ashita wa dou desu ka?,Apa tentang besok?,N5
+S137,日本はどうですか?,nihon wa dou desu ka?,Apa pendapat kamu tentang Jepang?,N5
+S138,天気はどうですか。,tenki wa dou desu ka.,Apa cuacanya?,N5
+S139,買い物に行くのはどうですか。,kaimono ni iku no wa dou desu ka.,Apa pendapat kamu tentang belanja?,N5
+S140,毎朝、パンやベーコンなどを食べています。,"mai asa, pan ya beekon nado wo tabeteimasu.","Setiap pagi aku makan roti dan bacon, dll.",N5
+S141,スーパーで肉や野菜を買いました。,suupaa de niku ya yasai wo kaimashita.,Aku beli daging dan sayuran (dan sebagainya) di pasar modern.,N5
+S142,あなたのおすすめの音楽や本を私に教えてください。,anata no osusume no ongaku ya hon wo watashi ni oshiete kudasai.,Bisakah kamu ceritain musik atau buku yang kamu rekomendasikan?,N5
+S143,電車やバスでの旅は好きです。,densha ya basu de no tabi wa suki desu.,Saya suka berpergian dengan kereta dan bus (dan sebagainya).,N5
+S144,行くよ。,iku yo.,Ayo kita mulai!,N5
+S145,私は猫より、犬のほうが好きです。,"watashi wa neko yori, inu no hou ga suki desu.",Saya lebih suka anjing daripada kucing.,N5
+S146,昨日より今日の方が暑いです。,kinou yori kyou no hou ga atsui desu.,Hari ini lebih panas dari kemarin.,N5
+S147,彼女より、君の方がきれいだよ。,kanojo yori kimi no hou ga kirei da yo.,Kamu lebih cantik dari dia.,N5
+S148,日本語を読むより、話す方が上手だ。,"nihongo o yomu yori, hanasu hou ga jouzu da.",Saya lebih mahir berbicara bahasa Jepang daripada membaca.,N5
+S149,世界の中で日本が一番安全な国です。,sekai no naka de nihon ga ichiban anzen na kuni desu.,Jepang adalah negara yang paling aman di dunia.,N5
+S150,交差点を右に曲がってください。,kousaten o migi ni magatte kudasai.,Silakan belok kanan di persimpangan.,N5
+S151,このペンは百円です。,kono pen wa hyaku en desu.,Pena ini harganya seratus yen.,N5
+S152,来週の月曜日か火曜日に京都に行きます。,raishuu no getsuyoubi ka kayoubi ni kyouto ni ikimasu.,Saya akan pergi ke Kyoto pada hari Senin atau Selasa depan.,N5
+S153,花の水やりをしなくてはいけません。,hana no mizu yari o shi nakute wa ikemasen.,Kamu harus menyiram bunga.,N5
+S154,九時に駅で会いましょう。,ku ji ni eki de aimashou.,Mari kita bertemu di stasiun pada jam sembilan.,N5
+S155,あの古い図書館は静かです。,ano furui toshokan wa shizuka desu.,Perpustakaan tua itu tenang.,N5
+S156,りんごが五つあります。,ringo ga itsutsu arimasu.,Ada lima buah apel.,N5
+S157,ご飯の後で、歯を磨いた方がいいですよ。,"gohan no ato de, ha o migaita hou ga ii desu yo.",Lebih baik menyikat gigi setelah makan.,N5
+S158,午前中が一番調子がいい。,gozen chuu ga ichiban choushi ga ii.,Saya merasa paling sehat pada waktu pagi hari.,N5
+S159,夜には学校の入り口が閉めてある。,yoru ni wa gakkou no iriguchi ga shimete aru.,"Pada malam hari, pintu masuk sekolah ditutup.",N5
+S160,左手で食べようとしたが、難しかったのでやめました。,"hidari te de tabeyou to shita ga, muzukashikatta node yamemashita.","Saya mencoba makan dengan tangan kiri, tetapi karena sulit, saya berhenti.",N5
+S161,このマンションにはへやが三つあります。,kono manshon niwa heya ga mitsu arimasu.,Ada tiga kamar di apartemen ini.,N5
+S162,私の部屋には窓が四つあります。,watashi no heya ni wa mado ga yotsu arimasu.,Ada empat jendela di kamar saya.,N5
+S163,子どもの前に悪いことばを言っちゃいけません。,kodomo no mae ni warui kotoba o iccha ikemasen.,Kita tidak boleh mengucapkan kata-kata buruk di depan anak-anak.,N5
+S164,ウサギは耳が長いです。,usagi wa mimi ga nagai desu.,Kelinci memiliki telinga yang panjang.,N5
+S165,毎朝七時に起きます。,maiasah shichi ji ni okimasu.,Saya bangun tidur jam tujuh setiap pagi.,N5
+S166,将来は日本の会社で働きたいです。,shourai wa nihon no kaisha de hatarakitai desu.,"Di masa depan, saya ingin bekerja di perusahaan Jepang.",N5
+S167,十個の卵を買いました。,jukko no tamago o kaimashita.,Saya membeli sepuluh butir telur.,N5
+S168,今朝、友だちと一緒に図書館に行きました。,"kesa, tomodachi to issho ni toshokan ni ikimashita.","Pagi ini, saya pergi ke perpustakaan bersama dengan teman.",N5
+S169,小学生以下はお金を払わなくてもいいです。,shougakusei ika wa okane o harawanaku temo ii desu.,Anak-anak sekolah dasar ke bawah tidak perlu membayar uang.,N5
+S170,太陽は西に沈みます。,taiyou wa nishi ni shizumimasu.,Matahari terbenam di sebelah barat.,N5
+S171,この川はとてもきれいです。,kono kawa wa totemo kirei desu.,Sungai ini sangat bersih.,N5
+S172,お財布の中に千円あります。,osaifu no naka ni sen en arimasu.,Ada seribu yen di dalam dompet.,N5
+S173,夏の暑さのせいで私は寝不足です。,natsu no atsusa no sei de watashi wa nebusoku desu.,Saya kurang tidur karena cuaca panas di musim panas.,N5
+S174,図書館では本や雑誌を読んだり、勉強したりする人が多い。,"toshokan de wa hon ya zasshi o yondari, benkyou shi tari suru hito ga ooi.","Di perpustakaan, ada banyak orang yang membaca buku atau majalah, dan belajar.",N5
+S175,彼は金はあるが、バカな男だ。,"kare wa kane wa aru ga, baka na otoko da.","Dia punya uang, tetapi dia adalah pria yang bodoh.",N5
+S176,夏は昼の時間が長いです。,natsu wa hiru no jikan ga nagai desu.,"Di musim panas, waktu siang hari panjang.",N5
+S177,お店は何時から何時まで開いていますか?,omise wa nanji kara nanji made aiteimasu ka?,Toko buka dari jam berapa sampai jam berapa?,N5
+S178,土曜日は学校が休みです。,doyoubi wa gakkou ga yasumi desu.,Hari Sabtu sekolah libur.,N5
+S179,東京駅に観光者がいっぱいいる。,toukyou eki ni kankousha ga ippai iru.,Ada banyak turis di Stasiun Tokyo.,N5
+S180,鳥が南の国へ飛びます。,tori ga minami no kuni he tobimasu.,Burung-burung terbang ke negara selatan.,N5
+S181,今年、私は20歳になります。,"kotoshi, watashi wa hatachi ni narimasu.","Tahun ini, saya akan berusia 20 tahun.",N5
+S182,八時に朝ご飯を食べます。,hachi ji ni asagohan o tabemasu.,Saya sarapan pada jam delapan.,N5
+S183,会議は十一時半から始まります。,kaigi wa juuichi ji han kara hajimarimasu.,Rapat akan dimulai dari jam sebelas setengah.,N5
+S184,図書館には百人以上の学生がいます。,toshokan ni wa hyaku nin ijou no gakusei ga imasu.,Ada lebih dari seratus siswa di perpustakaan.,N5
+S185,北海道は台湾より大きいです。,hokkaidou wa taiwan yori ookii desu.,Hokkaido lebih besar daripada Taiwan.,N5
+S186,あの木の下に大きな犬がいます。,ano ki no shita ni ookina inu ga imasu.,Ada anjing besar di bawah pohon itu.,N5
+S187,このカメラは五万円です。,kono kamera wa go man en desu.,Kamera ini harganya lima puluh ribu yen.,N5
+S188,パソコンを長く見ると、目が疲れます。,"pasokon o nagaku miru to, me ga tsukaremasu.",Mata menjadi lelah jika melihat komputer dalam waktu lama.,N5
+S189,電車の席がなかったので、立っていました。,"densha no seki ga nakatta node, tatte imashita.","Karena tidak ada kursi di kereta, saya berdiri.",N5
+S190,六時の電車に乗ります。,roku ji no densha ni norimasu.,Saya akan naik kereta jam enam.,N5

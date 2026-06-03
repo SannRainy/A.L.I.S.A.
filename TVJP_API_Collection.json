@@ -1,0 +1,162 @@
+{
+	"info": {
+		"_postman_id": "tvjp-api-collection-2026",
+		"name": "TVJP AI Tutor API",
+		"description": "Collection untuk testing API TVJP (FastAPI Backend)",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Auth",
+			"item": [
+				{
+					"name": "Register User",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"testuser@example.com\",\n    \"password\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8000/api/v1/auth/register",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"register"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Quest System",
+			"item": [
+				{
+					"name": "Get Levels",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8000/api/v1/quest/levels",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"v1",
+								"quest",
+								"levels"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Level Data",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8000/api/v1/quest/data/lvl_1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"v1",
+								"quest",
+								"data",
+								"lvl_1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Submit Quest Score",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"user_id\": \"test-user-id\",\n    \"level_id\": \"lvl_1\",\n    \"score\": 85\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8000/api/v1/quest/submit",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"v1",
+								"quest",
+								"submit"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Chat & LLM",
+			"item": [
+				{
+					"name": "Chat with Alisa",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"query\": \"Apa itu partikel WA?\",\n    \"student_id\": \"default\",\n    \"mode\": \"discovery\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8000/api/v1/chat",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"v1",
+								"chat"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}

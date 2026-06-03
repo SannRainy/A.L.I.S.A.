@@ -1,0 +1,62 @@
+# =============================================================
+# REPOSITORIES (PyTorch & Llama.cpp pre-built CUDA wheels)
+# =============================================================
+--extra-index-url https://download.pytorch.org/whl/cu121
+--extra-index-url https://abetlen.github.io/llama-cpp-python/whl/cu121
+
+# =============================================================
+# CORE TORCH (Dibutuhkan untuk Whisper & Sentence-Transformers)
+# =============================================================
+torch==2.3.1+cu121
+torchvision==0.18.1+cu121
+torchaudio==2.3.1+cu121
+numpy>=1.24.0,<2.0.0
+
+# =============================================================
+# THE NEW LLM ENGINE (Selamat tinggal Unsloth!)
+# =============================================================
+llama-cpp-python
+# Pin transformers & tokenizers agar tidak menggunakan versi yang tidak stabil
+transformers==4.46.3
+tokenizers==0.20.3
+accelerate>=0.30.0
+safetensors>=0.4.3
+
+# =============================================================
+# API SERVER
+# =============================================================
+fastapi>=0.111.0
+uvicorn[standard]>=0.29.0
+pydantic>=2.7
+pydantic-settings
+python-dotenv
+python-multipart
+starlette
+websockets>=12.0
+
+# =============================================================
+# DATABASE
+# =============================================================
+neo4j
+supabase
+httpx>=0.27.0
+
+# =============================================================
+# AI / ML / NLP
+# =============================================================
+openai-whisper
+keybert
+sentence-transformers
+deep-translator
+pykakasi
+
+# =============================================================
+# UTILITIES
+# =============================================================
+markdown
+GPUtil
+imageio-ffmpeg
+soundfile>=0.12.1
+protobuf>=5.26.1,<6.0.0
+psutil
+huggingface-hub

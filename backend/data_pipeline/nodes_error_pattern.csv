@@ -1,0 +1,8 @@
+error_id,description,level
+"ERR001","Tertukar penggunaan partikel は (wa) sebagai penanda topik dan が (ga) sebagai penanda subjek baru","N5"
+"ERR002","Tertukar penggunaan partikel に (ni) untuk titik keberadaan dan で (de) untuk tempat terjadinya aktivitas","N5"
+"ERR003","Lupa membuang akhiran 'i' (い) saat mengkonjugasi Kata Sifat-i ke bentuk negatif (kunai) atau lampau (katta)","N5"
+"ERR004","Menambahkan 'desu' (です) atau 'da' (だ) langsung di belakang Kata Kerja, yang seharusnya dikonjugasi ke bentuk masu-kei","N5"
+"ERR005","Lupa menyisipkan 'na' (な) di antara Kata Sifat-na dan Kata Benda yang dimodifikasinya","N5"
+"ERR006","Terbalik dalam menyusun objek perbandingan antara pola '~no hou ga' dan '~yori'","N5"
+"ERR007","Tertukar menggunakan partikel を (wo) alih-alih に (ni) untuk kata kerja arah seperti 'bertemu' (会う)","N5"
