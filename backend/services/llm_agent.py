@@ -557,21 +557,51 @@ class LLMAgent:
         self.voice_service = VoiceService()
         _get_kw_model()
 
+    # Prefix-prefiks yang harus di-skip dari TTS (jangan diucapkan)
+    _TTS_SKIP_PREFIXES = (
+        "ROM:", "ROM：",
+        "ID:", "ID：",
+        "KOREKSI:", "KOREKSI：",
+        "USER_JP:", "USER_ROM:", "USER_ID:",
+    )
+    # Regex untuk strip prefix JP: di awal teks
+    _JP_PREFIX_RE = re.compile(r'^(?:JP:|JP：)\s*', re.IGNORECASE)
+
+    def _prepare_tts_text(self, text: str) -> str | None:
+        """
+        Bersihkan teks dan tentukan apakah layak untuk TTS.
+        Return teks JP bersih (sudah strip prefix JP:) jika layak, None jika harus di-skip.
+
+        Aturan:
+        - Kosong   → skip
+        - ROM:/ID:/KOREKSI:/USER_* prefix → skip
+        - JP: prefix → strip prefix, gunakan isi JP-nya
+        - Teks lain → teruskan (akan dicek jp_ratio saat synthesis)
+        """
+        # Bersihkan markup
+        clean = re.sub(r'[*_`#|]', '', text).strip()
+        if not clean:
+            return None
+
+        # Normalisasi: hapus whitespace ganda, strip
+        clean_upper = clean.upper().lstrip()
+
+        # Skip baris non-speech — cek semua variasi prefix
+        for prefix in self._TTS_SKIP_PREFIXES:
+            if clean_upper.startswith(prefix):
+                return None
+
+        # Strip prefix JP: jika ada
+        if clean_upper.startswith(("JP:", "JP：")):
+            clean = self._JP_PREFIX_RE.sub('', clean).strip()
+
+        return clean if clean else None
+
     async def _tts(self, text: str) -> str | None:
         try:
-            clean = re.sub(r'[*_`#|]', '', text).strip()
+            clean = self._prepare_tts_text(text)
             if not clean:
                 return None
-            clean_upper = clean.upper()
-            # Skip non-speech lines — only speak JP: (Alisa's reply)
-            if clean_upper.startswith((
-                "ROM:", "ROM：", "ID:", "ID：",
-                "KOREKSI:", "KOREKSI：",
-                "USER_JP:", "USER_ROM:", "USER_ID:"
-            )):
-                return None
-            if clean_upper.startswith(("JP:", "JP：")):
-                clean = re.sub(r'^(?i)(JP:|JP：)\s*', '', clean)
             jp_ratio = len("".join(_JP_RE.findall(clean)))
             jp_text  = clean if jp_ratio > len(clean) // 3 else await self.voice_service.translate_to_jp(clean)
             audio    = await self.voice_service.synthesize_speech(jp_text)
@@ -582,19 +612,9 @@ class LLMAgent:
 
     async def _tts_bytes(self, text: str) -> bytes | None:
         try:
-            clean = re.sub(r'[*_`#|]', '', text).strip()
+            clean = self._prepare_tts_text(text)
             if not clean:
                 return None
-            clean_upper = clean.upper()
-            # Skip non-speech lines — only speak JP: (Alisa's reply)
-            if clean_upper.startswith((
-                "ROM:", "ROM：", "ID:", "ID：",
-                "KOREKSI:", "KOREKSI：",
-                "USER_JP:", "USER_ROM:", "USER_ID:"
-            )):
-                return None
-            if clean_upper.startswith(("JP:", "JP：")):
-                clean = re.sub(r'^(?i)(JP:|JP：)\s*', '', clean)
             jp_ratio = len("".join(_JP_RE.findall(clean)))
             jp_text  = clean if jp_ratio > len(clean) // 3 else await self.voice_service.translate_to_jp(clean)
             audio_path = await self.voice_service.synthesize_speech(jp_text)
@@ -1000,7 +1020,11 @@ class LLMAgent:
         query_for_llm = user_trans["jp"] if (mode == "speaking" and user_trans) else query
         messages = self._build_messages(kg_context, history, query_for_llm, mode)
 
-        audio_tasks_queue: asyncio.Queue[asyncio.Task | None] = asyncio.Queue(maxsize=20)
+        # audio_tasks_queue menerima:
+        #   - asyncio.Task  → baris yang butuh TTS (await task untuk dapat hasilnya)
+        #   - dict          → baris tanpa TTS (ROM:/ID:/dll), langsung forward ke output
+        #   - None          → sinyal selesai
+        audio_tasks_queue: asyncio.Queue = asyncio.Queue(maxsize=30)
         output_queue: asyncio.Queue[dict | None] = asyncio.Queue()
 
         full_content = ""
@@ -1015,13 +1039,48 @@ class LLMAgent:
             }
 
         async def _order_consumer():
+            """Consume audio_tasks_queue secara berurutan untuk menjaga ordering output."""
             while True:
-                task = await audio_tasks_queue.get()
-                if task is None:
+                item = await audio_tasks_queue.get()
+                if item is None:
+                    # Sinyal selesai
                     await output_queue.put(None)
                     break
-                result = await task
-                await output_queue.put(result)
+                if isinstance(item, dict):
+                    # Baris tanpa TTS (ROM:/ID:/dll) — langsung forward
+                    await output_queue.put(item)
+                else:
+                    # asyncio.Task — await untuk mendapatkan hasil TTS
+                    result = await item
+                    await output_queue.put(result)
+
+        # ──────────────────────────────────────────────────────────────────
+        # Helper: apakah baris ini harus dikirim ke TTS?
+        # Untuk mode speaking/voice, hanya baris JP: yang di-synthesize.
+        # Baris ROM:, ID:, KOREKSI:, USER_* di-skip sepenuhnya.
+        # ──────────────────────────────────────────────────────────────────
+        _SPEAKING_MODES = ("speaking", "voice")
+        _LINE_SKIP_RE = re.compile(
+            r'^\s*(?:ROM|ROM：|ID|ID：|KOREKSI|KOREKSI：|USER_JP|USER_ROM|USER_ID)\s*[:\uff1a]',
+            re.IGNORECASE
+        )
+        _LINE_JP_RE = re.compile(r'^\s*(?:JP|JP：)\s*[:\uff1a]\s*', re.IGNORECASE)
+
+        def _should_synthesize_line(line: str, current_mode: str) -> bool:
+            """Return True jika baris ini boleh di-synthesize."""
+            stripped = line.strip()
+            if not stripped:
+                return False
+            if _LINE_SKIP_RE.match(stripped):
+                # ROM:, ID:, KOREKSI:, USER_* → jangan di-synthesize
+                return False
+            # Untuk speaking/voice mode: hanya izinkan baris yang dimulai JP:
+            # ATAU baris bebas yang tidak termasuk format terstruktur di atas
+            return True
+
+        def _extract_jp_from_line(line: str) -> str:
+            """Strip prefix JP: dari baris jika ada."""
+            return _LINE_JP_RE.sub('', line).strip()
 
         async def _llm_producer():
             nonlocal full_content
@@ -1045,36 +1104,89 @@ class LLMAgent:
                     sentence_buf += new_text
                     emitted_text += new_text
 
+                    # Proses baris-per-baris saat ada newline
                     while '\n' in sentence_buf:
                         line, sentence_buf = sentence_buf.split('\n', 1)
-                        line_with_nl = line + '\n'
-                        task = asyncio.create_task(_tts_worker(line_with_nl))
-                        await audio_tasks_queue.put(task)
+                        line_stripped = line.strip()
 
-                    stripped = sentence_buf.strip()
-                    should_flush = (
-                        _PHRASE_END.search(sentence_buf)
-                        or (len(stripped) >= 60 and ' ' in stripped)
-                    )
-                    if should_flush:
-                        # Potong di batas kata terakhir agar tidak terpotong di tengah kata
-                        if len(stripped) >= 60 and ' ' in stripped and not _PHRASE_END.search(sentence_buf):
-                            last_space = sentence_buf.rfind(' ')
-                            if last_space > 0:
-                                to_flush = sentence_buf[:last_space + 1]
-                                sentence_buf = sentence_buf[last_space + 1:]
+                        if mode in _SPEAKING_MODES:
+                            # Mode speaking/voice: skip ROM:/ID: dll, hanya synthesize JP:
+                            if _LINE_SKIP_RE.match(line_stripped):
+                                # Baris ROM:/ID:/dll — kirim sebagai dict (no audio) ke queue
+                                # agar ordering terjaga bersama baris JP yang butuh TTS
+                                await audio_tasks_queue.put({
+                                    "type": "sentence",
+                                    "content": line + '\n',
+                                    "audio_b64": None,
+                                })
+                                continue
+
+                            # Baris JP: atau baris bebas — strip prefix JP: lalu synthesize
+                            tts_text = _extract_jp_from_line(line) if _LINE_JP_RE.match(line_stripped) else line
+                            if tts_text.strip():
+                                task = asyncio.create_task(_tts_worker(tts_text + '\n'))
+                                await audio_tasks_queue.put(task)
+                            else:
+                                # Kosong setelah strip → kirim sebagai dict (no audio)
+                                await audio_tasks_queue.put({
+                                    "type": "sentence",
+                                    "content": line + '\n',
+                                    "audio_b64": None,
+                                })
+                        else:
+                            # Mode lain (discovery, quest): kirim semua ke TTS worker biasa
+                            task = asyncio.create_task(_tts_worker(line + '\n'))
+                            await audio_tasks_queue.put(task)
+
+                    # Flush buffer tanpa newline (hanya untuk mode non-speaking)
+                    if mode not in _SPEAKING_MODES:
+                        stripped = sentence_buf.strip()
+                        should_flush = (
+                            _PHRASE_END.search(sentence_buf)
+                            or (len(stripped) >= 60 and ' ' in stripped)
+                        )
+                        if should_flush:
+                            # Potong di batas kata terakhir agar tidak terpotong di tengah kata
+                            if len(stripped) >= 60 and ' ' in stripped and not _PHRASE_END.search(sentence_buf):
+                                last_space = sentence_buf.rfind(' ')
+                                if last_space > 0:
+                                    to_flush = sentence_buf[:last_space + 1]
+                                    sentence_buf = sentence_buf[last_space + 1:]
+                                else:
+                                    to_flush = sentence_buf
+                                    sentence_buf = ""
                             else:
                                 to_flush = sentence_buf
                                 sentence_buf = ""
-                        else:
-                            to_flush = sentence_buf
-                            sentence_buf = ""
-                        task = asyncio.create_task(_tts_worker(to_flush))
-                        await audio_tasks_queue.put(task)
+                            task = asyncio.create_task(_tts_worker(to_flush))
+                            await audio_tasks_queue.put(task)
 
-                if sentence_buf:
-                    task = asyncio.create_task(_tts_worker(sentence_buf))
-                    await audio_tasks_queue.put(task)
+                # Flush sisa buffer
+                if sentence_buf and sentence_buf.strip():
+                    if mode in _SPEAKING_MODES:
+                        # Untuk speaking/voice: cek apakah sisa buffer adalah ROM:/ID:/dll
+                        remaining = sentence_buf.strip()
+                        if _LINE_SKIP_RE.match(remaining):
+                            # Kirim sebagai dict (no audio) untuk menjaga ordering
+                            await audio_tasks_queue.put({
+                                "type": "sentence",
+                                "content": sentence_buf,
+                                "audio_b64": None,
+                            })
+                        else:
+                            tts_text = _extract_jp_from_line(sentence_buf) if _LINE_JP_RE.match(remaining) else sentence_buf
+                            if tts_text.strip():
+                                task = asyncio.create_task(_tts_worker(tts_text))
+                                await audio_tasks_queue.put(task)
+                            else:
+                                await audio_tasks_queue.put({
+                                    "type": "sentence",
+                                    "content": sentence_buf,
+                                    "audio_b64": None,
+                                })
+                    else:
+                        task = asyncio.create_task(_tts_worker(sentence_buf))
+                        await audio_tasks_queue.put(task)
 
             except Exception as e:
                 logger.error(f"[WS] LLM producer error: {e}")
