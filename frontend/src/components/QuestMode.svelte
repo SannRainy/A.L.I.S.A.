@@ -4,13 +4,15 @@
     import QuestEngine from './QuestEngine.svelte';
     import QuestResult from './QuestResult.svelte';
     import KanjiStudyMode from './KanjiStudyMode.svelte';
+    import ExamEngine from './ExamEngine.svelte';
     import { user } from "../stores/auth_store";
     import { profile, fetchFullProfile } from "../stores/profile_store";
     import { onMount } from "svelte";
 
     export let vrmController = null;
 
-    let currentState = "map"; // 'map', 'quiz', 'result', 'kanji_dojo'
+    let currentState = "map"; // 'map', 'quiz', 'result', 'kanji_dojo', 'exam_dojo'
+    let activeExamBatchId = "exam_1"; // Batch ujian yang aktif
     let activeLevelData = null;
     let quizResultsData = null;
 
@@ -146,6 +148,20 @@
         currentState = "kanji_dojo";
         saveQuestState();
     }
+
+    function handleOpenExamDojo(batchId = "exam_1") {
+        activeExamBatchId = batchId;
+        currentState = "exam_dojo";
+        saveQuestState();
+    }
+
+    async function handleExamFinish(results) {
+        // Exam mode: kembali ke map setelah review (review ada di dalam ExamEngine)
+        // Score sudah disubmit dari dalam ExamEngine.svelte
+        if ($user) {
+            fetchFullProfile($user.id);
+        }
+    }
 </script>
 
 <div class="quest-container w-full h-full relative">
@@ -156,6 +172,7 @@
             {prerequisiteAlert}
             on:dismissAlert={() => prerequisiteAlert = { show: false }}
             on:openKanjiDojo={handleOpenKanjiDojo}
+            on:openExamDojo={(e) => handleOpenExamDojo(e.detail?.batchId || 'exam_1')}
         />
 
     {:else if currentState === "quiz"}
@@ -176,6 +193,13 @@
     {:else if currentState === "kanji_dojo"}
         <KanjiStudyMode
             onBack={handleBackToMap}
+        />
+
+    {:else if currentState === "exam_dojo"}
+        <ExamEngine
+            batchId={activeExamBatchId}
+            onFinish={handleExamFinish}
+            onQuit={handleBackToMap}
         />
     {/if}
 </div>

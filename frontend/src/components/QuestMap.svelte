@@ -49,6 +49,17 @@
     function getTierInfo(tier) {
         return tierColors[tier] || tierColors[1];
     }
+
+    // ── Exam Dojo ─────────────────────────────────────────────────────
+    // Terbuka setelah semua level quest selesai
+    $: examUnlocked = levels.length > 0 && levels.every(l => completedIds.includes(l.id));
+
+    // Meta batch untuk ditampilkan di UI
+    const examBatchesMeta = [
+        { id: 'exam_1', icon: '📝', title: 'Ujian Pertama',       desc: '25 soal · 15 menit · Grammar Dasar & Menengah',      color: 'from-blue-400 to-indigo-500',    shadow: 'shadow-blue-500/30',   glowBg: 'bg-blue-500/10',   border: 'border-blue-400/30',   badgeColor: 'text-blue-300' },
+        { id: 'exam_2', icon: '📋', title: 'Ujian Kedua',         desc: '25 soal · 15 menit · Grammar Menengah & Lanjutan',    color: 'from-violet-400 to-purple-600',  shadow: 'shadow-violet-500/30', glowBg: 'bg-violet-500/10', border: 'border-violet-400/30', badgeColor: 'text-violet-300' },
+        { id: 'exam_3', icon: '🏆', title: 'Ujian Final JLPT N5', desc: '25 soal · 20 menit · Komprehensif + Kanji Intensif',  color: 'from-rose-400 to-orange-500',    shadow: 'shadow-rose-500/30',   glowBg: 'bg-rose-500/10',   border: 'border-rose-400/30',   badgeColor: 'text-rose-300' },
+    ];
 </script>
 
 <div class="quest-map h-full overflow-y-auto custom-scroll p-8 flex flex-col items-center relative glass-panel rounded-[2rem]">
@@ -268,6 +279,94 @@
                 </button>
             </div>
         {/each}
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════════ -->
+    <!-- ── EXAM DOJO Section ── -->
+    <!-- ══════════════════════════════════════════════════════════════ -->
+    <div class="w-full max-w-md mt-10 mb-4">
+        <!-- Divider with label -->
+        <div class="flex items-center gap-3 mb-6">
+            <div class="flex-grow h-px bg-white/10"></div>
+            <span class="text-[11px] font-black text-white/30 uppercase tracking-[0.25em] shrink-0">
+                {examUnlocked ? '🏯 Exam Dojo — Terbuka!' : '🔒 Exam Dojo — Selesaikan Semua Level'}
+            </span>
+            <div class="flex-grow h-px bg-white/10"></div>
+        </div>
+
+        <!-- Locked overlay card -->
+        {#if !examUnlocked}
+            <div class="relative rounded-[1.5rem] p-[1.5px] overflow-hidden mb-3"
+                 style="background: linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.04));">
+                <div class="bg-slate-900/70 backdrop-blur-xl rounded-[1.4rem] p-6 flex flex-col items-center text-center gap-3 opacity-60">
+                    <div class="text-4xl">🔒</div>
+                    <h3 class="font-black text-white text-base">Exam Dojo Terkunci</h3>
+                    <p class="text-white/40 text-xs leading-relaxed">
+                        Selesaikan semua <strong class="text-white/60">{levels.length} Level Quest</strong> terlebih dahulu untuk membuka akses ke Simulasi Ujian Akhir JLPT N5.
+                    </p>
+                    <!-- Progress meter -->
+                    <div class="w-full">
+                        <div class="flex justify-between text-[10px] text-white/30 mb-1">
+                            <span>Progress</span>
+                            <span>{completedIds.filter(id => levels.find(l => l.id === id)).length}/{levels.length} level</span>
+                        </div>
+                        <div class="w-full bg-white/10 h-1.5 rounded-full overflow-hidden">
+                            <div
+                                class="bg-gradient-to-r from-white/30 to-white/20 h-full rounded-full transition-all duration-700"
+                                style="width: {Math.round((completedIds.filter(id => levels.find(l => l.id === id)).length / levels.length) * 100)}%"
+                            ></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        <!-- Unlocked: Show 3 batch cards -->
+        {:else}
+            <!-- Intro label -->
+            <div class="mb-4 p-4 rounded-2xl bg-gradient-to-r from-red-500/10 to-orange-500/10 border border-red-400/20 text-center">
+                <p class="text-xs text-red-300 font-bold">
+                    🎓 Semua level selesai! Kamu siap menghadapi ujian akhir.<br>
+                    <span class="text-white/50 font-medium">Pilih batch ujian di bawah ini.</span>
+                </p>
+            </div>
+
+            {#each examBatchesMeta as batch}
+                <button
+                    on:click={() => dispatch('openExamDojo', { batchId: batch.id })}
+                    class="w-full mb-3 group block"
+                >
+                    <div class="relative rounded-[1.5rem] p-[1.5px] overflow-hidden shadow-xl transition-all duration-300 group-hover:scale-[1.02] group-hover:shadow-2xl"
+                         style="background: linear-gradient(135deg, rgba(239,68,68,0.5), rgba(249,115,22,0.4), rgba(239,68,68,0.2));">
+                        <div class="bg-slate-900/80 backdrop-blur-xl rounded-[1.4rem] p-5 flex items-center gap-5 relative overflow-hidden">
+                            <!-- Ambient glow -->
+                            <div class="absolute inset-0 {batch.glowBg} opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+
+                            <!-- Icon -->
+                            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br {batch.color} flex items-center justify-center text-2xl shrink-0 shadow-lg {batch.shadow} border border-white/20 z-10">
+                                {batch.icon}
+                            </div>
+
+                            <!-- Info -->
+                            <div class="flex-grow text-left z-10 min-w-0">
+                                <div class="flex items-center gap-2 mb-1">
+                                    <h3 class="font-black text-white text-sm tracking-tight">{batch.title}</h3>
+                                    <span class="px-2 py-0.5 rounded-full bg-red-500/20 border border-red-400/30 text-[9px] font-black text-red-300 uppercase tracking-widest shrink-0">JLPT N5</span>
+                                </div>
+                                <p class="text-white/50 text-xs font-medium leading-snug">{batch.desc}</p>
+                                <p class="{batch.badgeColor} text-[10px] font-black mt-1.5 uppercase tracking-widest">▶ Mulai Ujian</p>
+                            </div>
+
+                            <!-- Arrow -->
+                            <div class="w-8 h-8 rounded-xl bg-white/10 flex items-center justify-center text-red-400 shrink-0 z-10 group-hover:bg-red-500/20 transition">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                </button>
+            {/each}
+        {/if}
     </div>
 </div>
 
