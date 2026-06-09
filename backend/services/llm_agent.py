@@ -632,7 +632,7 @@ class LLMAgent:
             return None
 
     async def _stream_tokens(self, messages: list[dict], max_tokens: int = 2048, mode: str = "discovery") -> AsyncGenerator[str, None]:
-        if _active_provider == "hf_cloud" or mode in ("voice", "speaking"):
+        if _active_provider == "hf_cloud":
             async for token in _stream_hf_cloud(messages, max_tokens=max_tokens, mode=mode):
                 yield token
         else:

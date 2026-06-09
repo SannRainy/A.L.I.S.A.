@@ -43,8 +43,8 @@ export const register = async (email, password, metadata = {}) => {
 
 export const logout = async () => {
     await supabase.auth.signOut();
-    clearChat();
     if (typeof window !== "undefined") {
+        localStorage.removeItem("tvjp_is_demo_mode");
         window.location.reload();
     }
 };

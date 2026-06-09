@@ -158,6 +158,12 @@
     let authError = "";
     let authLoading = false;
     let isDemoMode = false;
+    if (browser) {
+        isDemoMode = localStorage.getItem("tvjp_is_demo_mode") === "true";
+    }
+    $: if (browser) {
+        localStorage.setItem("tvjp_is_demo_mode", isDemoMode.toString());
+    }
     let isRegistering = false;
     let messageIdCounter = 0;
     let openAccuracyPopups = {};
@@ -322,6 +328,7 @@
         authError = "";
         try {
             const loggedInUser = await login(email, password);
+            isDemoMode = false;
             if (loggedInUser) {
                 // Fetch profile to verify role immediately
                 const res = await fetch(
