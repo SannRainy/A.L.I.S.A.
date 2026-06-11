@@ -22,6 +22,24 @@ A.L.I.S.A. adalah sistem **Tutor Virtual Bahasa Jepang Interaktif (TVJP)** tingk
     *   Soal kuis digenerasikan secara cerdas berdasarkan materi yang *sudah dipelajari* namun *belum dikuasai* oleh siswa di database graf.
     *   Sistem penghargaan berupa poin pengalaman (XP), kenaikan level, dan lencana pencapaian (*badges*) untuk menstimulasi motivasi belajar.
 
+4.  **Reading Comprehension Mode (Furigana & Interactive Learning)**
+    *   Menyajikan bacaan berbahasa Jepang dengan *furigana* (hiragana/katakana kecil di atas huruf kanji) untuk mempermudah pemahaman cara baca.
+    *   Interaksi interaktif di mana kosakata dan tata bahasa di dalam bacaan terhubung langsung dengan *Knowledge Graph*.
+    *   Dilengkapi dengan kuis pemahaman bacaan untuk menguji tingkat penguasaan kontekstual siswa.
+
+5.  **Placement Test (Initial Skill Assessment)**
+    *   Pengujian kemampuan awal siswa untuk memetakan tingkat penguasaan dasar kosakata dan tata bahasa N5 sebelum memulai pembelajaran.
+    *   Hasil tes digunakan untuk merekomendasikan topik belajar yang paling sesuai di jalur pembelajaran adaptif (*learning path*).
+
+6.  **Spaced Repetition System (SRS) & BKT (Bayesian Knowledge Tracing)**
+    *   Penjadwalan tinjauan materi secara personal menggunakan algoritma **SM-2** (Spaced Repetition) untuk memaksimalkan retensi memori jangka panjang siswa.
+    *   Pemodelan kognitif siswa secara *real-time* berbasis **Bayesian Knowledge Tracing (BKT)** untuk memetakan probabilitas penguasaan siswa terhadap tiap konsep secara akurat.
+
+7.  **Vocal & Chat Accuracy Validation (System Upgrades)**
+    *   Validasi multi-intent yang mampu mendeteksi dan mengambil beberapa materi sekaligus (misalnya meminta kanji sekaligus tata bahasa dalam satu kalimat) secara akurat dari basis data graf.
+    *   Pencocokan terjemahan kalimat contoh secara toleran (*lenient matching*) guna mengakomodasi variasi penulisan bahasa Indonesia alami LLM tanpa memicu kesalahan deteksi pedagogis.
+    *   Penyaringan vokal (TTS) cerdas yang menyaring dan melewatkan baris romaji, terjemahan Indonesia, maupun informasi tabel kanji, sehingga hanya membacakan kalimat bahasa Jepang utama demi kenyamanan dan kebersihan audio.
+
 ---
 
 ## 🛠️ Arsitektur Sistem (Neuro-Symbolic GraphRAG)
