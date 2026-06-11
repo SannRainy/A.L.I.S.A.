@@ -20,16 +20,20 @@ async def lifespan(app: FastAPI):
     # ── STARTUP ──────────────────────────────────────────────────────────
     logger.info("🚀 Memulai TVJP API Server...")
 
-    # Cek & Preload LLM (Llama.cpp)
-    logger.info("Mengecek dan Preload Llama.cpp (Local LLM)...")
+    # Cek & Preload LLM (Llama.cpp) jika default provider bukan cloud
     try:
-        from services.llm_agent import get_llama_model_async
-        model_path = settings.UNSLOTH_MODEL_PATH
-        if os.path.exists(model_path):
-            logger.info(f"✅ Model file ditemukan di '{model_path}'. Melakukan preloading ke VRAM...")
-            await get_llama_model_async()  # Memaksa model diload saat startup
+        from services.llm_agent import get_active_model_path, get_llama_model_async
+        active_path = await get_active_model_path()
+        if not active_path.startswith("hf_cloud:"):
+            logger.info("Mengecek dan Preload Llama.cpp (Local LLM)...")
+            model_path = settings.UNSLOTH_MODEL_PATH
+            if os.path.exists(model_path):
+                logger.info(f"✅ Model file ditemukan di '{model_path}'. Melakukan preloading ke VRAM...")
+                await get_llama_model_async()  # Memaksa model diload saat startup
+            else:
+                logger.warning(f"⚠️ WARNING: Model file TIDAK ditemukan di '{model_path}'. Cek UNSLOTH_MODEL_PATH di .env atau config.py!")
         else:
-            logger.warning(f"⚠️ WARNING: Model file TIDAK ditemukan di '{model_path}'. Cek UNSLOTH_MODEL_PATH di .env atau config.py!")
+            logger.info("Default provider adalah Cloud (HF). Melewati preloading Local LLM ke VRAM untuk menghemat memori.")
     except Exception as e:
         logger.error(f"❌ ERROR: Gagal mengecek konfigurasi LLM! Detail: {e}")
 

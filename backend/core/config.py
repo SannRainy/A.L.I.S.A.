@@ -25,7 +25,7 @@ class Settings(BaseSettings):
 
     # --- HuggingFace Cloud ---
     HF_TOKEN: str = ""
-    HF_MODEL_REPO: str = "tokyotech-llm/Qwen3-Swallow-8B-RL-v0.2"
+    HF_MODEL_REPO: str = "Qwen/Qwen3.5-9B"
 
     # --- Supabase ---
     SUPABASE_URL: str = ""

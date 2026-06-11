@@ -281,8 +281,11 @@ class GraphEngine:
             # ── Coba Grammar ───────────────────────────────────────────────────
             result = session.run("""
                 MATCH (g:Grammar)
-                WHERE toLower(g.id) = toLower($word)
-                   OR toLower(g.name) = toLower($word)
+                WITH g,
+                     toLower(replace(replace(g.id, '〜', ''), '~', '')) AS norm_id,
+                     toLower(replace(replace(g.name, '〜', ''), '~', '')) AS norm_name
+                WHERE norm_id CONTAINS toLower($word)
+                   OR norm_name CONTAINS toLower($word)
                 OPTIONAL MATCH (g)-[:HAS_RULE]->(r:Rule)
                 OPTIONAL MATCH (g)-[:HAS_COMMON_ERROR]->(e:ErrorPattern)
                 OPTIONAL MATCH (g)<-[:APPLIES_GRAMMAR]-(s:Sentence)
@@ -297,7 +300,16 @@ class GraphEngine:
                        collect(DISTINCT {
                            text: s.japanese_text,
                            meaning: s.indonesian_translation
-                       })[..2] AS examples
+                       })[..2] AS examples,
+                       norm_id,
+                       norm_name
+                ORDER BY
+                  CASE
+                    WHEN norm_id = toLower($word) OR norm_name = toLower($word) THEN 0
+                    WHEN norm_id STARTS WITH toLower($word) OR norm_name STARTS WITH toLower($word) THEN 1
+                    ELSE 2
+                  END ASC,
+                  size(norm_id) ASC
                 LIMIT 1
             """, word=word)
             rec = result.single()

@@ -1,0 +1,3 @@
+--- STREAM START ---
+[CONTENT: こんにちは][CONTENT: ！][CONTENT: 私は][CONTENT: アル][CONTENT: isa][CONTENT:  です][CONTENT: 。][CONTENT: 日本語][CONTENT: の][CONTENT: 勉強][CONTENT: を始め][CONTENT: ましょう][CONTENT: か][CONTENT: ？]
+--- STREAM END ---

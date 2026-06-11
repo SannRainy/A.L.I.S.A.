@@ -4,11 +4,23 @@
     export let isStreaming;
     export let modeConfig;
     export let sendChat;
+    export let clearChat;
 
     const cfg = modeConfig.discovery;
 </script>
 
 <div class="input-row">
+    <button
+        id="btn-clear-discovery"
+        type="button"
+        on:click={clearChat}
+        disabled={loading || isStreaming}
+        class="clear-btn"
+        title="Hapus Riwayat Chat"
+    >
+        🗑️
+    </button>
+
     <div class="input-wrap">
         <input
             id="chat-input-discovery"
@@ -46,6 +58,37 @@
         gap: 10px;
         align-items: center;
         width: 100%;
+    }
+
+    .clear-btn {
+        flex-shrink: 0;
+        width: 48px;
+        height: 48px;
+        border-radius: 14px;
+        border: 1px solid rgba(239, 68, 68, 0.2);
+        background: rgba(239, 68, 68, 0.08);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fca5a5;
+        font-size: 18px;
+        cursor: pointer;
+        outline: none;
+        transition: all 0.2s;
+    }
+
+    .clear-btn:hover:not(:disabled) {
+        transform: translateY(-2px) scale(1.04);
+        background: #ef4444;
+        color: #fff;
+        border-color: transparent;
+        box-shadow: 0 4px 14px rgba(239, 68, 68, 0.35);
+    }
+
+    .clear-btn:disabled {
+        opacity: 0.35;
+        cursor: not-allowed;
+        transform: none;
     }
 
     .input-wrap {

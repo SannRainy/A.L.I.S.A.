@@ -453,9 +453,12 @@ async def get_models(admin_id: str):
         
     # Tambahkan HF Cloud model ke daftar model tersedia
     available_models.append(HF_CLOUD_MODEL_ID)
+    qwen35_id = "hf_cloud:Qwen/Qwen3.5-9B"
+    if qwen35_id not in available_models:
+        available_models.append(qwen35_id)
     
     return {
-        "available_models": sorted(available_models),
+        "available_models": sorted(list(set(available_models))),
         "active_model": active_model
     }
 

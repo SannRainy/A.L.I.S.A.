@@ -2,7 +2,7 @@
     import { browser } from "$app/environment";
     import { onMount, onDestroy, afterUpdate, tick } from "svelte";
     import { fly, fade } from "svelte/transition";
-    import { chatStore } from "../stores/chat_store";
+    import { chatStore, clearChat } from "../stores/chat_store";
     import {
         user,
         initAuth,
@@ -24,7 +24,6 @@
     import QuestMode from "../components/QuestMode.svelte";
     import VoiceMode from "../components/VoiceMode.svelte";
     import ReadingMode from "../components/ReadingMode.svelte";
-
 
     let mainTab = "study"; // 'study' | 'profile' | 'achievement'
     if (browser) {
@@ -48,6 +47,27 @@
 
     let isStreaming = false;
     let activeStreamText = "";
+
+    // ── Discovery Thinking Phase States ──────────────────────────────────
+    let currentThinkingText = "A.L.I.S.A. sedang berpikir...";
+    let thinkingPhase = 0; // 0: inactive, 1: berpikir, 2: merangkai materi, 3: menulis jawaban
+    let animationComplete = false;
+    let wsComplete = false;
+    let bufferedEvents = [];
+    let bufferedDoneEvent = null;
+    let thinkingTimeouts = [];
+    let phase1StartTime = 0;
+    let phase2StartTime = 0;
+    let currentDelay1 = 5000;
+    let currentDelay2 = 6000;
+    let hasHalved = false;
+
+    function clearThinkingTimers() {
+        for (const t of thinkingTimeouts) {
+            clearTimeout(t);
+        }
+        thinkingTimeouts = [];
+    }
 
     let isRecording = false;
     let mediaRecorder = null;
@@ -186,7 +206,7 @@
 
     function renderMarkdown(content) {
         if (!content) return "";
-        return DOMPurify.sanitize(marked.parse(content));
+        return DOMPurify.sanitize(marked.parse(content, { breaks: true }));
     }
 
     afterUpdate(() => {
@@ -286,7 +306,7 @@
                         id: nextMsgId(),
                         role: "tutor",
                         content:
-                            "こんにちは！ 👋 Aku **A.L.I.S.A**, tutor bahasa Jepang virtualmu untuk level **N5**.\n\nPilih mode interaksi di atas:\n- 💬 **Discovery** — Tanya bebas tentang Kanji, Kosakata, Grammar\n- ⚔️ **Quest** — Kuis berhadiah XP\n- 🎤 **Voice** — Latihan percakapan suara\n\nAyo mulai belajar! **がんばって！** ✨",
+                            "こんにちは！ 👋 Aku **Alisa**, tutor bahasa Jepang virtualmu.\n\nPilih mode interaksi di atas:\n- 💬 **Discovery** — Tanya bebas tentang Kanji, Kosakata, Grammar\n- ⚔️ **Quest** — Kuis berhadiah XP\n- 🎤 **Voice** — Latihan percakapan suara\n\nAyo mulai belajar! **がんばって！** ✨",
                         vocab: [],
                         grammar: [],
                         suggestions: [
@@ -306,6 +326,7 @@
     });
 
     onDestroy(() => {
+        clearThinkingTimers();
         if (browser && typeof window !== "undefined") {
             window.removeEventListener("mousemove", handleMouseMove);
         }
@@ -714,6 +735,95 @@
         isPlayingAudio = false;
         let currentMetadata = { vocab: [], grammar: [], suggestions: [] };
 
+        function schedulePhase1Timeout(timeoutDuration) {
+            clearThinkingTimers();
+
+            const t1 = setTimeout(() => {
+                thinkingPhase = 2;
+                currentThinkingText = "A.L.I.S.A. sedang merangkai materi...";
+                phase2StartTime = Date.now();
+
+                schedulePhase2Timeout(currentDelay2);
+            }, timeoutDuration);
+
+            thinkingTimeouts.push(t1);
+        }
+
+        function schedulePhase2Timeout(timeoutDuration) {
+            clearThinkingTimers();
+
+            const t2 = setTimeout(() => {
+                transitionToPhase3();
+            }, timeoutDuration);
+
+            thinkingTimeouts.push(t2);
+        }
+
+        function startThinkingAnimation() {
+            clearThinkingTimers();
+
+            thinkingPhase = 1;
+            currentThinkingText = "A.L.I.S.A. sedang berpikir...";
+            animationComplete = false;
+            wsComplete = false;
+            bufferedEvents = [];
+            bufferedDoneEvent = null;
+            hasHalved = false;
+
+            currentDelay1 = 5000;
+            currentDelay2 = 6000;
+            phase1StartTime = Date.now();
+
+            schedulePhase1Timeout(currentDelay1);
+        }
+
+        function halveRemainingTime() {
+            if (hasHalved) return;
+            hasHalved = true;
+
+            if (thinkingPhase === 1) {
+                const elapsed = Date.now() - phase1StartTime;
+                const remaining = Math.max(0, currentDelay1 - elapsed);
+                const adjustedRemaining = remaining / 2;
+
+                currentDelay2 = currentDelay2 / 2;
+
+                schedulePhase1Timeout(adjustedRemaining);
+            } else if (thinkingPhase === 2) {
+                const elapsed = Date.now() - phase2StartTime;
+                const remaining = Math.max(0, currentDelay2 - elapsed);
+                const adjustedRemaining = remaining / 2;
+
+                schedulePhase2Timeout(adjustedRemaining);
+            }
+        }
+
+        function transitionToPhase3() {
+            thinkingPhase = 3;
+            currentThinkingText = "A.L.I.S.A. sedang menulis jawaban...";
+            animationComplete = true;
+
+            if (bufferedEvents.length > 0 || wsComplete) {
+                releaseDiscoveryBuffer();
+            }
+        }
+
+        function releaseDiscoveryBuffer() {
+            animationComplete = true;
+            for (const cachedEvt of bufferedEvents) {
+                processMessage(cachedEvt);
+            }
+            bufferedEvents = [];
+
+            if (wsComplete && bufferedDoneEvent) {
+                processMessage(bufferedDoneEvent);
+                bufferedDoneEvent = null;
+                clearThinkingTimers();
+            }
+        }
+
+        startThinkingAnimation();
+
         let historyData = [];
         const unsub = chatStore.subscribe((s) => {
             historyData = s.messages
@@ -730,6 +840,29 @@
 
         /** Handler scoped to this conversation turn. */
         function handleMessage(evt) {
+            if (animationComplete) {
+                processMessage(evt);
+            } else {
+                let ev;
+                try {
+                    ev = JSON.parse(evt.data);
+                } catch {
+                    return;
+                }
+
+                if (ev.type === "done" || ev.type === "error") {
+                    wsComplete = true;
+                    bufferedDoneEvent = evt;
+                } else {
+                    bufferedEvents.push(evt);
+                    if (ev.type === "sentence") {
+                        halveRemainingTime();
+                    }
+                }
+            }
+        }
+
+        function processMessage(evt) {
             let ev;
             try {
                 ev = JSON.parse(evt.data);
@@ -1553,6 +1686,7 @@
                             🏰 Admin Portal
                         </a>
                     {/if}
+
                     <button
                         on:click={() => handleTabClick("study")}
                         class="px-3 py-1.5 rounded-lg text-sm font-bold transition {mainTab ===
@@ -1758,7 +1892,7 @@
                                                                 .label ||
                                                                 "Data Tidak Tersedia"}</span
                                                         >
-                                                     {:else if msg.accuracy.category === "casual"}
+                                                    {:else if msg.accuracy.category === "casual"}
                                                         <span
                                                             class="accuracy-icon"
                                                             >💬</span
@@ -1938,8 +2072,7 @@
                                                     ></span><span></span>
                                                 </div>
                                                 <p class="thinking-label">
-                                                    A.L.I.S.A. sedang
-                                                    berpikir...
+                                                    {currentThinkingText}
                                                 </p>
                                             </div>
                                             <div class="thinking-shimmer"></div>
@@ -1957,6 +2090,7 @@
                                 {isStreaming}
                                 {modeConfig}
                                 {sendChat}
+                                {clearChat}
                             />
                         </div>
                     {/if}

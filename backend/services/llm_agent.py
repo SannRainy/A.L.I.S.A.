@@ -39,7 +39,7 @@ HF_CLOUD_MODEL_ID = "hf_cloud:" + settings.HF_MODEL_REPO  # sentinel ID utk UI
 async def get_active_model_path() -> str:
     global _active_model_path, _active_provider, _hf_model_repo
     if _active_provider == "hf_cloud":
-        return HF_CLOUD_MODEL_ID
+        return "hf_cloud:" + _hf_model_repo
     return _active_model_path
 
 async def get_llama_model_async() -> Llama:
@@ -60,8 +60,8 @@ async def get_llama_model_async() -> Llama:
     return _llama_model
 
 async def switch_model_async(model_filename: str) -> None:
-    """Ganti model aktif. Jika model_filename == HF_CLOUD_MODEL_ID, switch ke HF Cloud."""
-    global _llama_model, _active_model_path, _active_provider
+    """Ganti model aktif. Jika model_filename == HF_CLOUD_MODEL_ID atau starts dengan hf_cloud:, switch ke HF Cloud."""
+    global _llama_model, _active_model_path, _active_provider, _hf_model_repo
 
     # ── Switch ke HuggingFace Cloud ──────────────────────────────────
     if model_filename == HF_CLOUD_MODEL_ID or model_filename.startswith("hf_cloud:"):
@@ -77,6 +77,13 @@ async def switch_model_async(model_filename: str) -> None:
                     del _llama_model
                     _llama_model = None
                     import gc; gc.collect()
+                
+                # Update _hf_model_repo jika ada repository spesifik yang dikirim
+                if model_filename.startswith("hf_cloud:"):
+                    target_repo = model_filename.split("hf_cloud:", 1)[1]
+                    if target_repo:
+                        _hf_model_repo = target_repo
+                        
                 _active_provider = "hf_cloud"
                 logger.info(f"Provider beralih ke HF Cloud: {_hf_model_repo}")
         return
@@ -183,14 +190,20 @@ async def _stream_hf_cloud(messages: list[dict], max_tokens: int = 512, mode: st
     try:
         client = InferenceClient(model=_hf_model_repo, token=_hf_token)
 
+        extra_body = None
+        if "qwen3.5-9b" in _hf_model_repo.lower():
+            extra_body = {"chat_template_kwargs": {"enable_thinking": False}}
+
         def get_stream():
-            return client.chat_completion(
-                messages=messages,
-                max_tokens=max_tokens,
-                stream=True,
-                temperature=temperature,
-                top_p=top_p,
-            )
+            kwargs = {
+                "messages": messages,
+                "max_tokens": max_tokens,
+                "stream": True,
+                "temperature": temperature,
+            }
+            if extra_body:
+                kwargs["extra_body"] = extra_body
+            return client.chat_completion(**kwargs)
 
         stream = await asyncio.to_thread(get_stream)
         loop = asyncio.get_running_loop()
@@ -218,6 +231,7 @@ async def _stream_hf_cloud(messages: list[dict], max_tokens: int = 512, mode: st
 
 
 _JP_RE      = re.compile(r"[\u3000-\u9FFF\uFF00-\uFFEF]+")
+_JP_PUNCT_RE = re.compile(r'[\u3002\u3001\uff01\uff1f\u300c\u300d\u300e\u300f\u3010\u3011\u3014\u3015\u30fb\u2026\u30fb,.!?\s]')
 _NUMBER_RE  = re.compile(r"\b(\d+)\b")
 _WORD_RE    = re.compile(r"[^\s\-「」。、？！,.!?\"'()「」【】（）]+")
 _PHRASE_END = re.compile(r'([,.!?。！？、]|\n)\s*$')
@@ -310,7 +324,11 @@ def _get_kw_model():
         return None
 
 def _tokenize(text: str) -> list[str]:
-    jp_tokens = [m.group().strip() for m in _JP_RE.finditer(text) if m.group().strip()]
+    jp_tokens = []
+    for m in _JP_RE.finditer(text):
+        tok = _JP_PUNCT_RE.sub("", m.group()).strip()
+        if tok:
+            jp_tokens.append(tok)
     latin_text = _JP_RE.sub(" ", text).strip()
     latin_tokens: list[str] = []
     kw = _get_kw_model()
@@ -340,27 +358,27 @@ _MAX_KG_CHARS   = 1800
 _MAX_HIST_CHARS = 200
 
 _SYSTEM_BASE = """\
-Kamu adalah A.L.I.S.A., tutor Bahasa Jepang virtual yang hangat dan suportif bergaya Onee-san.
+Kamu adalah Alisa, tutor Bahasa Jepang virtual yang hangat dan suportif bergaya Onee-san.
 Gunakan bahasa Indonesia santai (aku/kamu), natural, dan to-the-point.
 
 ATURAN:
 1. Jawab dalam bahasa Indonesia. Sisipkan istilah Jepang hanya saat menjelaskan materi.
 2. Gunakan HANYA data dari [KONTEKS WIKI NEO4J]. Jika materi tidak ada di konteks, jawab: "Maaf ya, materi itu belum ada di database-ku 🙏"
-3. Jawab singkat, maksimal 2 paragraf pendek.
+3. Jawab singkat, tanpa basa-basi, jangan lupa emote interaktif.
 4. Untuk Kanji, jelaskan On'yomi dan Kun'yomi jika tersedia di konteks.
 5. Respons harus alami seperti tutor sungguhan, bukan mesin.
-6. Untuk contoh kalimat, gunakan format ini (maks 2 contoh):
+6. Untuk contoh kalimat, gunakan format wajib ini dengan BARIS BARU terpisah (maks 2 contoh):
 
 **Contoh Kalimat:**
-「日本語の文」
-Romaji: nihongo no bun
-Arti: Kalimat bahasa Jepang
+「[Teks Jepang]」
+Romaji: [romaji]
+Arti: [arti]
 
 7. Jika menyertakan contoh kalimat dari database, kamu WAJIB menyalin arti/terjemahan bahasa Indonesianya persis kata-per-kata sesuai yang tertulis setelah tanda '＝' di [KONTEKS WIKI NEO4J] tanpa mengubah atau menerjemahkan ulang sendiri.
 """
 
 _QUEST_FEEDBACK_PROMPT = """\
-Kamu adalah A.L.I.S.A., tutor Jepang yang ramah. Jelaskan mengapa jawaban kuis N5 siswa salah.
+Kamu adalah Alisa, tutor Jepang yang ramah. Jelaskan mengapa jawaban kuis N5 siswa salah.
 Aturan:
 1. Maksimal 2-3 kalimat pendek secara santai (kamu/aku).
 2. Kalimat 1: Sebutkan letak kesalahan jawaban siswa secara langsung & ramah.
@@ -374,8 +392,12 @@ _MODE_VOICE     = "\n[MODE: VOICE] Respon lisan. Super singkat, maksimal 1 kalim
 _MODE_DISCOVERY = """
 [MODE: DISCOVERY]
 Beri penjelasan terstruktur sesuai konteks. Langsung ke inti, tanpa basa-basi.
-Setiap contoh kalimat harus ada: teks Jepang, romaji, dan artinya (masing-masing baris baru).
 Berikan maksimal 2 contoh kalimat.
+Format Contoh Kalimat wajib menggunakan baris baru terpisah:
+**Contoh Kalimat:**
+「[Teks Jepang]」
+Romaji: [romaji]
+Arti: [arti]
 Pastikan romaji akurat sesuai cara baca huruf Jepang yang benar.
 Jika ada baris "Contoh:" di dalam [KONTEKS WIKI NEO4J], WAJIB gunakan kalimat itu — jangan buat contoh sendiri. Salin kalimat Jepang dan artinya persis kata-per-kata dari database.
 Jika tidak ada contoh sama sekali di konteks, tulis: "(Contoh kalimat belum tersedia di database)"
@@ -383,10 +405,11 @@ Jika tidak ada contoh sama sekali di konteks, tulis: "(Contoh kalimat belum ters
 
 _MODE_SPEAKING = """
 [MODE: SPEAKING PRACTICE — Latihan Percakapan Kasual]
-Kamu adalah A.L.I.S.A., teman ngobrol ramah yang membantu user berlatih berbicara bahasa Jepang secara kasual.
+Kamu adalah Alisa, teman ngobrol ramah bergaya Onee-san yang membantu user berlatih berbicara bahasa Jepang secara kasual.
+Gunakan bahasa Indonesia santai (aku/kamu).
 
 BALAS SELALU dalam format PERSIS berikut ini (jangan ubah urutan, jangan tambah teks lain di luar format):
-JP: [balasan A.L.I.S.A. dalam bahasa Jepang kasual, 1-2 kalimat pendek]
+JP: [balasan Alisa dalam bahasa Jepang kasual, 1-2 kalimat pendek]
 ROM: [romaji dari JP]
 ID: [terjemahan JP dalam bahasa Indonesia]
 
@@ -395,6 +418,7 @@ Aturan tambahan:
 - Balasan singkat (1-2 kalimat)
 - Tanpa markdown, tanpa penjelasan materi, tanpa basa-basi
 - Jika user bicara bahasa Indonesia, tetap isi USER_JP dengan terjemahan JP-nya
+- Jika ada [KONTEKS WIKI NEO4J], gunakan kosakata dari situ untuk latihan percakapan
 """
 
 
@@ -409,14 +433,13 @@ def _truncate(text: str, max_chars: int) -> str:
 # ──────────────────────────────────────────────────────────────────────────
 _JP_CHAR_RE = re.compile(r'[\u3040-\u9FFF]+')
 _GREETING_RE = re.compile(
-    r'^\s*(halo|hai|hello|hi|hey|konnichiwa|ohayou|konbanwa|'
+    r'^\s*(halo|hallo|helo|hai|hello|hi|hey|konnichiwa|ohayou|konbanwa|'
     r'selamat\s*(pagi|siang|sore|malam)|apa\s*kabar|genki)',
     re.IGNORECASE
 )
 # Regex untuk mengekstrak pola Jepang (termasuk tilde) dari nama grammar yang verbose
 _GRAMMAR_PATTERN_RE = re.compile(r'[\u3040-\u9FFF\uff00-\uffef\u3000-\u303f\u31f0-\u31ff\u4e00-\u9fff][\u3040-\u9FFF\uff00-\uffef\u3000-\u303f\u31f0-\u31ff\u4e00-\u9fff\u309b\u309c\u30fb\u30fc]*[\u3040-\u9FFF\uff00-\uffef\u3000-\u303f\u31f0-\u31ff\u4e00-\u9fff]?')
 # Regex untuk normalisasi teks Jepang (hapus tanda baca) sebelum matching kalimat
-_JP_PUNCT_RE = re.compile(r'[\u3002\u3001\uff01\uff1f\u300c\u300d\u300e\u300f\u3010\u3011\u3014\u3015\u30fb\u2026\u30fb,.!?\s]')
 
 
 def _extract_grammar_keywords(name: str) -> list:
@@ -734,20 +757,13 @@ class LLMAgent:
 
     # Prefix-prefiks yang harus di-skip dari TTS (jangan diucapkan)
     _TTS_SKIP_PREFIXES = (
-        "ROM:", "ROM：",
-        "ID:", "ID：",
         "KOREKSI:", "KOREKSI：",
         "USER_JP:", "USER_ROM:", "USER_ID:",
-        "ROMAJI:", "ROMAJI：",
-        "ARTI:", "ARTI：",
-        "KANJI:", "KANJI：",
-        "ONYOMI:", "ONYOMI：",
-        "ON'YOMI:", "ON'YOMI：",
-        "KUNYOMI:", "KUNYOMI：",
-        "KUN'YOMI:", "KUN'YOMI：",
     )
-    # Regex untuk strip prefix JP: di awal teks
+    # Regex untuk strip prefix di awal teks
     _JP_PREFIX_RE = re.compile(r'^(?:JP:|JP：)\s*', re.IGNORECASE)
+    _ROM_PREFIX_RE = re.compile(r'^(?:ROM:|ROM：|ROMAJI:|ROMAJI：)\s*', re.IGNORECASE)
+    _ID_PREFIX_RE = re.compile(r'^(?:ID:|ID：|ARTI:|ARTI：)\s*', re.IGNORECASE)
 
     def _prepare_tts_text(self, text: str) -> str | None:
         """
@@ -756,8 +772,8 @@ class LLMAgent:
 
         Aturan:
         - Kosong   → skip
-        - ROM:/ID:/KOREKSI:/USER_* prefix → skip
-        - JP: prefix → strip prefix, gunakan isi JP-nya
+        - KOREKSI:/USER_*/KANJI/dll. prefix → skip
+        - JP:, ROM:, ID: prefix → strip prefix dan proses
         - Teks lain → teruskan (akan dicek jp_ratio saat synthesis)
         """
         # Bersihkan markup
@@ -773,9 +789,13 @@ class LLMAgent:
             if clean_upper.startswith(prefix):
                 return None
 
-        # Strip prefix JP: jika ada
+        # Strip prefix JP:, ROM:, ID: jika ada
         if clean_upper.startswith(("JP:", "JP：")):
             clean = self._JP_PREFIX_RE.sub('', clean).strip()
+        elif clean_upper.startswith(("ROM:", "ROM：", "ROMAJI:", "ROMAJI：")):
+            clean = self._ROM_PREFIX_RE.sub('', clean).strip()
+        elif clean_upper.startswith(("ID:", "ID：", "ARTI:", "ARTI：")):
+            clean = self._ID_PREFIX_RE.sub('', clean).strip()
 
         return clean if clean else None
 
@@ -1019,16 +1039,17 @@ class LLMAgent:
         if mode == "quest":
             system_content = _SYSTEM_BASE + _MODE_QUEST
         elif mode == "voice":
-            system_content = _MODE_VOICE
+            system_content = _SYSTEM_BASE + _MODE_VOICE
         elif mode == "speaking":
             system_content = _MODE_SPEAKING
         else:
             system_content = _SYSTEM_BASE + _MODE_DISCOVERY
 
-        messages: list[dict] = [{"role": "system", "content": system_content}]
-
+        # Gabungkan kg_context (GraphRAG) ke dalam satu system message utama untuk menghindari API validation error
         if kg_context:
-            messages.append({"role": "system", "content": kg_context})
+            system_content = system_content + "\n\n" + kg_context
+
+        messages: list[dict] = [{"role": "system", "content": system_content}]
 
         # Speaking mode needs more history for conversational context (6 turns)
         hist_limit = 6 if mode == "speaking" else 3
@@ -1536,11 +1557,18 @@ class LLMAgent:
                     {"role": "system", "content": _QUEST_FEEDBACK_PROMPT},
                     {"role": "user", "content": prompt}
                 ]
+                extra_body = None
+                if "qwen3.5-9b" in _hf_model_repo.lower():
+                    extra_body = {"chat_template_kwargs": {"enable_thinking": False}}
+
                 def run_chat():
-                    return client.chat_completion(
-                        messages=messages,
-                        max_tokens=256,
-                    )
+                    kwargs = {
+                        "messages": messages,
+                        "max_tokens": 256,
+                    }
+                    if extra_body:
+                        kwargs["extra_body"] = extra_body
+                    return client.chat_completion(**kwargs)
                 resp = await asyncio.to_thread(run_chat)
                 feedback = resp.choices[0].message.content if resp.choices else ""
                 return {"feedback": feedback, "audio_url": None}
@@ -1573,7 +1601,7 @@ class LLMAgent:
         Mendukung provider: local (Llama.cpp) dan hf_cloud (HuggingFace Inference API).
         """
         messages = [
-            {"role": "system", "content": "Kamu adalah A.L.I.S.A., tutor Bahasa Jepang virtual yang ramah. Jawab pertanyaan user dengan ringkas dan jelas."}
+            {"role": "system", "content": "Kamu adalah Alisa, tutor Bahasa Jepang virtual yang ramah. Jawab pertanyaan user dengan ringkas dan jelas."}
         ]
         if history:
             for h in history:
