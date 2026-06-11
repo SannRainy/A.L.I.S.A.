@@ -283,9 +283,9 @@
          VIEW: STUDY (Flashcard)
     ══════════════════════════════════════════════════════════ -->
     {:else if view === "study" && activeSetData}
-        <div class="flex-grow overflow-hidden relative z-10" in:fly={{ x: 40, duration: 400 }}>
+        <div class="flex-grow overflow-hidden relative z-10 flex flex-col h-full" in:fly={{ x: 40, duration: 400 }}>
             <!-- Set Header -->
-            <div class="p-5 border-b border-white/20 flex items-center gap-3">
+            <div class="p-5 border-b border-white/20 flex items-center gap-3 flex-shrink-0">
                 <div class="w-9 h-9 rounded-xl bg-gradient-to-br {setColors[kanjiSets.findIndex(s => s.id === activeSetData.id)]} flex items-center justify-center text-lg shadow-md">
                     {activeSetData.icon}
                 </div>

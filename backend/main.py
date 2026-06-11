@@ -6,6 +6,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from api import chat_router
 from api import admin_router
+from api import feature_router
 from core.config import settings
 
 # Setup logging
@@ -81,6 +82,7 @@ app.add_middleware(
 
 app.include_router(chat_router.router, prefix="/api/v1")
 app.include_router(admin_router.router, prefix="/api/v1")
+app.include_router(feature_router.router, prefix="/api/v1")
 
 @app.get("/")
 async def root():

@@ -293,12 +293,12 @@ FRONTEND_TO_NEO4J_MAP = {
     "grammar_itsu": "時 【とき】",
     # Level 4
     "grammar_i_adj": "い-adjectives",
-    "grammar_na_adj": "na-adjectives",
+    "grammar_na_adj": "な-adjectives",  # Fixed: was ASCII 'na', now Hiragana 'な'
     "grammar_i_adj_neg": "い-adjectives",
     "grammar_totemo": "とても",
     "grammar_amari_neg": "い-adjectives",
     "grammar_donna": "どんな",
-    "grammar_na_adj_noun": "na-adjectives",
+    "grammar_na_adj_noun": "な-adjectives",  # Fixed: was ASCII 'na', now Hiragana 'な'
     "grammar_ii_yoku": "い-adjectives",
     "grammar_ga_but": "が",
     # Level 5
@@ -331,7 +331,7 @@ FRONTEND_TO_NEO4J_MAP = {
     # Level 8
     "grammar_ta_koto_ga_aru": "たことがある",
     "grammar_mae_ni": "前に 【まえに】",
-    "grammar_naru": "icon/menjadi" if False else "icon/menjadi" if False else "icon/menjadi" if False else "icon/menjadi" if False else "icon/menjadi" if False else "icon/menjadi" if False else "icon/menjadi" if False else "になる・くなる",
+    "grammar_naru": "になる・くなる",
     "grammar_ndesu": "んです",
     "grammar_toki": "時 【とき】",
     "grammar_sugiru": "すぎる",
@@ -342,7 +342,8 @@ FRONTEND_TO_NEO4J_MAP = {
     "grammar_tsumori": "つもり",
     "grammar_naku_temo_ii": "なくてもいい",
     "grammar_node": "ので",
-    "grammar_shikashi": "namun",
+    "grammar_shikashi": "Namun",
+    "grammar_ne_yo": "ね",  # Added: was missing, used in Level 9 q_9_9 (Neo4j has ね and よ as separate nodes)
 }
 
 @router.post("/quest/submit")
@@ -428,7 +429,7 @@ async def get_mastered_nodes(student_id: str):
         except Exception as e:
             logger.error(f"Failed to fetch mastery from Neo4j: {e}")
     
-    return {"student_id": student_id, "mastered_nodes": mastered_nodes}
+    return {"student_id": student_id, "mastered_nodes": mastered_nodes, "kg_available": graph is not None}
 
 @router.post("/quest/session-stats")
 async def log_quest_session_stats(request: QuestSessionStatsRequest):
@@ -443,13 +444,22 @@ async def log_quest_session_stats(request: QuestSessionStatsRequest):
         return {"status": "error", "message": "Graph engine tidak tersedia."}
     
     try:
-        updated_count = 0
+        # Agregasi statistik kuis berdasarkan neo4j_node_id agar tidak saling menimpa
+        aggregated_stats = {}
         for frontend_node_id, stat in request.stats.items():
             neo4j_node_id = FRONTEND_TO_NEO4J_MAP.get(frontend_node_id, frontend_node_id)
+            if neo4j_node_id not in aggregated_stats:
+                aggregated_stats[neo4j_node_id] = {"correct": 0, "wrong": 0, "hint": 0}
             
-            correct = stat.get("correct", 0)
-            wrong = stat.get("wrong", 0)
-            hint = stat.get("hint", 0)
+            aggregated_stats[neo4j_node_id]["correct"] += stat.get("correct", 0)
+            aggregated_stats[neo4j_node_id]["wrong"] += stat.get("wrong", 0)
+            aggregated_stats[neo4j_node_id]["hint"] += stat.get("hint", 0)
+            
+        updated_count = 0
+        for neo4j_node_id, stat in aggregated_stats.items():
+            correct = stat["correct"]
+            wrong = stat["wrong"]
+            hint = stat["hint"]
             
             status = "LEARNED"
             if correct > 0 and wrong == 0 and hint == 0:

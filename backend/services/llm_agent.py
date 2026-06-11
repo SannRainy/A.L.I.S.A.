@@ -235,21 +235,70 @@ _LISTING_PATTERNS = [
     (re.compile(r"^(tata\s*bahasa|grammar|bunpou)$", re.I), "list_grammar"),
 ]
 
-def _detect_listing_intent(query: str, history: list) -> dict | None:
-    for pat, intent in _LISTING_PATTERNS:
-        if pat.search(query):
-            nums = _NUMBER_RE.findall(query)
-            return {"intent": intent, "limit": min(int(nums[0]) if nums else 3, 10)}
+def _detect_listing_intent(query: str, history: list) -> list:
+    has_listing_verb = re.search(
+        r"\b(sebutkan|berikan|kasih|tampilkan|list|tunjukkan|minta|ajari|ajarkan|jelaskan|mau|ingin|contoh|daftar|belajar)\b",
+        query,
+        re.I
+    ) is not None
 
-    if re.search(r"\b(lagi|lainnya|tambah|lanjut|berikutnya)\b", query, re.I) and history:
+    intents = []
+
+    kanji_re = re.compile(r"\b(kanji|huruf|karakter|漢字)\b", re.I)
+    vocab_re = re.compile(r"\b(kosakata|vocab|kata|kotoba|言葉)\b", re.I)
+    grammar_re = re.compile(r"\b(tata\s*bahasa|grammar|bunpou|文法|pola\s*kalimat)\b", re.I)
+
+    def get_limit_near_keyword(keyword_re, text):
+        match = keyword_re.search(text)
+        if not match:
+            return 3
+        idx = match.start()
+        # Look 15 chars before keyword
+        sub = text[max(0, idx-15):idx]
+        nums = _NUMBER_RE.findall(sub)
+        if nums:
+            return min(int(nums[-1]), 10)
+        # Look 15 chars after keyword
+        sub_after = text[idx:min(len(text), idx+15)]
+        nums_after = _NUMBER_RE.findall(sub_after)
+        if nums_after:
+            return min(int(nums_after[0]), 10)
+        return 3
+
+    if has_listing_verb:
+        if kanji_re.search(query):
+            intents.append({"intent": "list_kanji", "limit": get_limit_near_keyword(kanji_re, query)})
+        if vocab_re.search(query):
+            intents.append({"intent": "list_vocab", "limit": get_limit_near_keyword(vocab_re, query)})
+        if grammar_re.search(query):
+            intents.append({"intent": "list_grammar", "limit": get_limit_near_keyword(grammar_re, query)})
+
+    # Fallback to single-word inputs
+    if not intents:
+        q_strip = query.strip()
+        if re.search(r"^(kanji|huruf|karakter)$", q_strip, re.I):
+            intents.append({"intent": "list_kanji", "limit": 3})
+        elif re.search(r"^(kosakata|vocab|kata)$", q_strip, re.I):
+            intents.append({"intent": "list_vocab", "limit": 3})
+        elif re.search(r"^(tata\s*bahasa|grammar|bunpou)$", q_strip, re.I):
+            intents.append({"intent": "list_grammar", "limit": 3})
+
+    # Check history for "lagi", "lainnya", etc.
+    if not intents and re.search(r"\b(lagi|lainnya|tambah|lanjut|berikutnya)\b", query, re.I) and history:
         for h in reversed(history):
             if h.get("role") == "user":
-                for pat, intent in _LISTING_PATTERNS:
-                    if pat.search(h.get("content", "")):
-                        nums = _NUMBER_RE.findall(query) or _NUMBER_RE.findall(h.get("content", ""))
-                        return {"intent": intent, "limit": min(int(nums[0]) if nums else 3, 10)}
+                hist_content = h.get("content", "")
+                hist_listing = _detect_listing_intent(hist_content, [])
+                if hist_listing:
+                    nums = _NUMBER_RE.findall(query)
+                    new_limit = min(int(nums[0]), 10) if nums else None
+                    for item in hist_listing:
+                        copied = dict(item)
+                        if new_limit is not None:
+                            copied["limit"] = new_limit
+                        intents.append(copied)
                 break
-    return None
+    return intents
 
 @lru_cache(maxsize=1)
 def _get_kw_model():
@@ -307,7 +356,7 @@ ATURAN:
 Romaji: nihongo no bun
 Arti: Kalimat bahasa Jepang
 
-
+7. Jika menyertakan contoh kalimat dari database, kamu WAJIB menyalin arti/terjemahan bahasa Indonesianya persis kata-per-kata sesuai yang tertulis setelah tanda '＝' di [KONTEKS WIKI NEO4J] tanpa mengubah atau menerjemahkan ulang sendiri.
 """
 
 _QUEST_FEEDBACK_PROMPT = """\
@@ -328,7 +377,7 @@ Beri penjelasan terstruktur sesuai konteks. Langsung ke inti, tanpa basa-basi.
 Setiap contoh kalimat harus ada: teks Jepang, romaji, dan artinya (masing-masing baris baru).
 Berikan maksimal 2 contoh kalimat.
 Pastikan romaji akurat sesuai cara baca huruf Jepang yang benar.
-Jika ada baris "Contoh:" di dalam [KONTEKS WIKI NEO4J], WAJIB gunakan kalimat itu — jangan buat contoh sendiri.
+Jika ada baris "Contoh:" di dalam [KONTEKS WIKI NEO4J], WAJIB gunakan kalimat itu — jangan buat contoh sendiri. Salin kalimat Jepang dan artinya persis kata-per-kata dari database.
 Jika tidak ada contoh sama sekali di konteks, tulis: "(Contoh kalimat belum tersedia di database)"
 """
 
@@ -356,7 +405,7 @@ def _truncate(text: str, max_chars: int) -> str:
 
 
 # ──────────────────────────────────────────────────────────────────────────
-# KG Accuracy Validation (Hybrid Structured — Method 3)
+# KG Accuracy Validation (Hybrid Structured — Method 3 v2)
 # ──────────────────────────────────────────────────────────────────────────
 _JP_CHAR_RE = re.compile(r'[\u3040-\u9FFF]+')
 _GREETING_RE = re.compile(
@@ -364,17 +413,82 @@ _GREETING_RE = re.compile(
     r'selamat\s*(pagi|siang|sore|malam)|apa\s*kabar|genki)',
     re.IGNORECASE
 )
+# Regex untuk mengekstrak pola Jepang (termasuk tilde) dari nama grammar yang verbose
+_GRAMMAR_PATTERN_RE = re.compile(r'[\u3040-\u9FFF\uff00-\uffef\u3000-\u303f\u31f0-\u31ff\u4e00-\u9fff][\u3040-\u9FFF\uff00-\uffef\u3000-\u303f\u31f0-\u31ff\u4e00-\u9fff\u309b\u309c\u30fb\u30fc]*[\u3040-\u9FFF\uff00-\uffef\u3000-\u303f\u31f0-\u31ff\u4e00-\u9fff]?')
+# Regex untuk normalisasi teks Jepang (hapus tanda baca) sebelum matching kalimat
+_JP_PUNCT_RE = re.compile(r'[\u3002\u3001\uff01\uff1f\u300c\u300d\u300e\u300f\u3010\u3011\u3014\u3015\u30fb\u2026\u30fb,.!?\s]')
+
+
+def _extract_grammar_keywords(name: str) -> list:
+    """
+    Ekstrak kata kunci yang dapat dicocokkan dari nama grammar yang verbose.
+
+    Contoh:
+      "Tata bahasa ~がある dan ~がい る"  → ["~がある", "がある", "〜がある", "~がいる", "がいる", "〜がいる"]
+      "Akhiran です、 だ"               → ["です", "だ"]
+      "〜がある / 〜がいる"              → ["がある", "がいる", "〜がある", "〜がいる"]
+
+    Strategi:
+    1. Pisahkan nama berdasarkan delimiter umum (空白, /, |, dan, ・, 、)
+    2. Untuk setiap token, ambil pola Jepang
+    3. Tambahkan variasi tilde (〜, ~, tanpa tilde) untuk toleransi matching
+    """
+    keywords: list = []
+    # Split berdasarkan delimiter pemisah pola
+    tokens = re.split(r'[/|・、,\s]+', name)
+    for tok in tokens:
+        tok = tok.strip().lstrip('~〜').rstrip('~〜').strip()
+        if not tok:
+            continue
+        # Jika token mengandung karakter Jepang
+        if _JP_CHAR_RE.search(tok):
+            # Cari semua sub-pola JP dalam token
+            sub_pats = _GRAMMAR_PATTERN_RE.findall(tok)
+            for p in sub_pats:
+                p = p.strip()
+                if p and len(p) >= 1:
+                    # Tambah variasi: dengan tilde dan tanpa tilde
+                    for variant in [p, '〜' + p, '~' + p, tok]:
+                        if variant and variant not in keywords:
+                            keywords.append(variant)
+    # Selalu tambahkan nama asli sebagai fallback terakhir
+    if name not in keywords:
+        keywords.append(name)
+    return keywords
+
+
+def _normalize_jp_text(text: str) -> str:
+    """Hapus tanda baca Jepang/Inggris dan spasi untuk pencocokan kalimat."""
+    return _JP_PUNCT_RE.sub('', text).strip()
+
+
+def _is_translation_lenient_match(db_translation: str, ai_text: str) -> bool:
+    """
+    Pencocokan terjemahan kalimat yang toleran terhadap perbedaan urutan kata atau tanda baca.
+    Minimal 65% dari kata-kata penting (panjang >= 2) di database harus ada di respons AI.
+    """
+    db_lower = db_translation.lower()
+    ai_lower = ai_text.lower()
+    if db_lower in ai_lower:
+        return True
+
+    words = [w for w in re.findall(r'\b\w{2,}\b', db_lower) if w]
+    if not words:
+        return True
+
+    matched_count = sum(1 for w in words if w in ai_lower)
+    return (matched_count / len(words)) >= 0.65
 
 def validate_response(ai_text: str, vocab_data: list, grammar_data: list, query: str = "", kanji_data: list = None) -> dict:
     """
-    Validate AI response against structured KG data.
+    Validate AI response against structured KG data. (v2 — grammar keyword extraction + example sentence validation)
 
     Returns dict with:
       pct          — accuracy percentage (0-100)
       label        — human-readable label
       verified     — # of facts confirmed correct in the response
       total        — total # of facts checked
-      category     — 'grounded' | 'casual' | 'no_data'
+      category     — 'grounded' | 'casual' | 'no_data' | 'teaching'
       facts_detail — list of per-fact verification results for UI popup & debug
     """
     kanji_data = kanji_data or []
@@ -388,57 +502,95 @@ def validate_response(ai_text: str, vocab_data: list, grammar_data: list, query:
         return {"pct": -1, "label": "📭 Data Tidak Tersedia", "verified": 0, "total": 0, "category": "no_data", "facts_detail": []}
 
     ai_lower = ai_text.lower()
-    ai_text_norm = ai_text  # preserve original casing for JP checks
+    ai_text_norm = ai_text                          # original casing (untuk JP)
+    ai_text_stripped = _normalize_jp_text(ai_text) # tanpa tanda baca (untuk kalimat)
 
-    facts: list[tuple] = []  # (type, subject, *props)
+    # Setiap fakta: (type, display_subject, [search_keywords], [props])
+    facts: list = []
 
-    # ── Extract facts from vocab ──
+    # ── Extract facts dari vocab ──
     for v in vocab_data:
         vid = v.get("id", "")
-        romaji = v.get("romaji", "")
+        romaji  = v.get("romaji", "")
         meaning = v.get("indonesian_meaning", "")
         if vid:
-            facts.append(("vocab", vid, romaji, meaning))
+            facts.append(("vocab", vid, [vid], [romaji, meaning]))
         # Kanji sub-facts dari vocab
         for k in v.get("kanji", []):
             kid = k.get("id", "")
             if kid:
-                facts.append(("kanji", kid, k.get("onyomi", ""), k.get("kunyomi", ""), k.get("arti", "")))
+                facts.append(("kanji", kid, [kid], [k.get("onyomi", ""), k.get("kunyomi", ""), k.get("arti", "")]))
+        # Contoh kalimat dari vocab
+        for ex in v.get("examples", []):
+            jp = (ex.get("text") or "").strip()
+            if jp and len(jp) > 3:
+                facts.append(("example", jp, [jp, _normalize_jp_text(jp)], [ex.get("meaning", "")]))
 
-    # ── Extract facts from grammar ──
+    # ── Extract facts dari grammar ──
     for g in grammar_data:
         gname = g.get("name", g.get("id", ""))
         if gname:
             rules = [r for r in g.get("rules", []) if r]
-            facts.append(("grammar", gname, g.get("level", ""), "|".join(rules[:2])))
+            # Ekstrak keyword JP untuk matching fleksibel
+            g_keywords = _extract_grammar_keywords(gname)
+            facts.append(("grammar", gname, g_keywords, rules[:2]))
+        # Contoh kalimat dari grammar
+        for ex in g.get("examples", []):
+            jp = (ex.get("text") or "").strip()
+            if jp and len(jp) > 3:
+                facts.append(("example", jp, [jp, _normalize_jp_text(jp)], [ex.get("meaning", "")]))
 
-    # ── Extract facts from kanji_data (listing mode) ──
+    # ── Extract facts dari kanji_data (listing mode) ──
     for k in kanji_data:
         kid = k.get("id", "")
         if kid:
-            facts.append(("kanji", kid, k.get("onyomi", ""), k.get("kunyomi", ""), k.get("arti", "")))
+            facts.append(("kanji", kid, [kid], [k.get("onyomi", ""), k.get("kunyomi", ""), k.get("arti", "")]))
+        # Contoh kalimat dari kanji listing
+        for ex in k.get("examples", []):
+            jp = (ex.get("text") or "").strip()
+            if jp and len(jp) > 3:
+                facts.append(("example", jp, [jp, _normalize_jp_text(jp)], [ex.get("meaning", "")]))
 
     if not facts:
         return {"pct": -1, "label": "💬 Casual Chat", "verified": 0, "total": 0, "category": "casual", "facts_detail": []}
 
     verified = 0
     mentioned = 0
-    facts_detail: list[dict] = []
+    facts_detail: list = []
 
     for fact in facts:
-        ftype   = fact[0]
-        subject = fact[1]
+        ftype        = fact[0]
+        display_subj = fact[1]
+        keywords     = fact[2]  # list of search terms
+        props_list   = fact[3]  # list of property strings
 
-        # Cek apakah subjek disebut dalam respons
-        subject_found = subject in ai_text_norm or subject.lower() in ai_lower
+        # ── Cek apakah subjek/keyword ada dalam respons ──
+        subject_found = False
+        matched_keyword = None
+        for kw in keywords:
+            if not kw:
+                continue
+            if ftype == "example":
+                # Untuk kalimat: coba matching dengan/tanpa normalisasi tanda baca
+                norm_kw = _normalize_jp_text(kw)
+                if (norm_kw and norm_kw in ai_text_stripped) or kw in ai_text_norm:
+                    subject_found = True
+                    matched_keyword = kw
+                    break
+            else:
+                if kw in ai_text_norm or kw.lower() in ai_lower:
+                    subject_found = True
+                    matched_keyword = kw
+                    break
+
         if not subject_found:
             continue
 
         mentioned += 1
-        raw_props = [p for p in fact[2:] if p and p.strip()]
+        raw_props = [p for p in props_list if p and str(p).strip()]
 
-        # Flatten prop (ada yg compound "rule1|rule2")
-        readable_props: list[str] = []
+        # Flatten props
+        readable_props: list = []
         for prop in raw_props:
             for sp in (prop.split("|") if "|" in prop else [prop]):
                 sp = sp.strip()
@@ -448,18 +600,30 @@ def validate_response(ai_text: str, vocab_data: list, grammar_data: list, query:
         if not readable_props:
             # Subjek disebut, tidak ada properti → anggap benar
             verified += 1
-            facts_detail.append({"type": ftype, "subject": subject, "props": [], "matched_prop": None, "match": True})
+            facts_detail.append({
+                "type": ftype, "subject": display_subj,
+                "matched_keyword": matched_keyword,
+                "props": [], "matched_prop": None, "match": True
+            })
             continue
 
         # Cek konsistensi properti — cari properti pertama yang cocok
-        matched_prop: str | None = None
+        matched_prop = None
         for prop in raw_props:
             sub_props = prop.split("|") if "|" in prop else [prop]
             for sp in sub_props:
                 sp = sp.strip()
-                if sp and (sp in ai_text_norm or sp.lower() in ai_lower):
-                    matched_prop = sp
-                    break
+                if not sp:
+                    continue
+                if ftype == "example":
+                    # Gunakan pencocokan lenient untuk kalimat terjemahan
+                    if _is_translation_lenient_match(sp, ai_text_norm):
+                        matched_prop = sp
+                        break
+                else:
+                    if sp in ai_text_norm or sp.lower() in ai_lower:
+                        matched_prop = sp
+                        break
             if matched_prop:
                 break
 
@@ -468,15 +632,26 @@ def validate_response(ai_text: str, vocab_data: list, grammar_data: list, query:
             verified += 1
 
         facts_detail.append({
-            "type":         ftype,
-            "subject":      subject,
-            "props":        readable_props[:4],   # max 4 prop untuk UI
-            "matched_prop": matched_prop,
-            "match":        is_match,
+            "type":            ftype,
+            "subject":         display_subj,
+            "matched_keyword": matched_keyword,
+            "props":           readable_props[:4],  # max 4 prop untuk UI
+            "matched_prop":    matched_prop,
+            "match":           is_match,
         })
 
     # ── Hitung akurasi ──
     if mentioned == 0:
+        # Jika ada grammar/kanji data tapi tidak ada yang match:
+        # kemungkinan AI mengajarkan tapi dengan framing berbeda (bukan casual chat)
+        if grammar_data or kanji_data:
+            return {
+                "pct": -1,
+                "label": "📚 Mengajar (Tidak Terverifikasi)",
+                "verified": 0, "total": 0,
+                "category": "teaching",
+                "facts_detail": []
+            }
         return {"pct": -1, "label": "💬 Casual Chat", "verified": 0, "total": 0, "category": "casual", "facts_detail": []}
 
     pct = round((verified / mentioned) * 100)
@@ -563,6 +738,13 @@ class LLMAgent:
         "ID:", "ID：",
         "KOREKSI:", "KOREKSI：",
         "USER_JP:", "USER_ROM:", "USER_ID:",
+        "ROMAJI:", "ROMAJI：",
+        "ARTI:", "ARTI：",
+        "KANJI:", "KANJI：",
+        "ONYOMI:", "ONYOMI：",
+        "ON'YOMI:", "ON'YOMI：",
+        "KUNYOMI:", "KUNYOMI：",
+        "KUN'YOMI:", "KUN'YOMI：",
     )
     # Regex untuk strip prefix JP: di awal teks
     _JP_PREFIX_RE = re.compile(r'^(?:JP:|JP：)\s*', re.IGNORECASE)
@@ -665,56 +847,58 @@ class LLMAgent:
                     if text_chunk:
                         yield text_chunk
 
-    async def _handle_listing(self, intent: str, limit: int) -> tuple[str, list, list, list]:
+    async def _handle_listings(self, listings: list) -> tuple:
         vocab_data: list = []
         grammar_data: list = []
         kanji_data: list = []
-        try:
-            if intent == "list_kanji":
-                results = await asyncio.to_thread(self.graph.get_random_kanji, "N5", limit)
-                if results:
-                    lines = []
-                    for r in results:
-                        line = f"• **{r.get('id','-')}** | On: {r.get('onyomi','-')} | Kun: {r.get('kunyomi','-')} | Arti: {r.get('arti','-')}"
-                        exs = [e for e in r.get("examples", []) if e.get("text")]
-                        if exs:
-                            line += " | Contoh: " + " / ".join(f"{e['text']} ({e.get('meaning','')})" for e in exs[:2])
-                        lines.append(line)
-                        kanji_data.append(r)  # ← kumpulkan untuk validasi akurasi
-                    return f"[KONTEKS NEO4J — {limit} Kanji N5]\n" + "\n".join(lines), vocab_data, grammar_data, kanji_data
-                return "[KONTEKS NEO4J] Data kanji tidak ditemukan.", vocab_data, grammar_data, kanji_data
+        context_parts: list = []
 
-            if intent == "list_vocab":
-                results = await asyncio.to_thread(self.graph.get_random_vocab, "N5", limit)
-                if results:
-                    lines = []
-                    for r in results:
-                        line = f"• **{r.get('id','-')}** ({r.get('romaji','-')}) → {r.get('indonesian_meaning','-')}"
-                        exs = [e for e in r.get("examples", []) if e.get("text")]
-                        if exs:
-                            line += " | Contoh: " + " / ".join(e['text'] for e in exs[:2])
-                        lines.append(line)
-                        vocab_data.append(r)
-                    return f"[KONTEKS NEO4J — {limit} Kosakata N5]\n" + "\n".join(lines), vocab_data, grammar_data, kanji_data
-                return "[KONTEKS NEO4J] Data kosakata tidak ditemukan.", vocab_data, grammar_data, kanji_data
+        for item in listings:
+            intent = item["intent"]
+            limit = item["limit"]
+            try:
+                if intent == "list_kanji":
+                    results = await asyncio.to_thread(self.graph.get_random_kanji, "N5", limit)
+                    if results:
+                        lines = []
+                        for r in results:
+                            line = f"• **{r.get('id','-')}** | On: {r.get('onyomi','-')} | Kun: {r.get('kunyomi','-')} | Arti: {r.get('arti','-')}"
+                            exs = [e for e in r.get("examples", []) if e.get("text")]
+                            if exs:
+                                line += " | Contoh: " + " / ".join(f"{e['text']} ＝ {e.get('meaning','')}" for e in exs[:2])
+                            lines.append(line)
+                            kanji_data.append(r)
+                        context_parts.append(f"[KONTEKS NEO4J — {limit} Kanji N5]\n" + "\n".join(lines))
+                elif intent == "list_vocab":
+                    results = await asyncio.to_thread(self.graph.get_random_vocab, "N5", limit)
+                    if results:
+                        lines = []
+                        for r in results:
+                            line = f"• **{r.get('id','-')}** ({r.get('romaji','-')}) → {r.get('indonesian_meaning','-')}"
+                            exs = [e for e in r.get("examples", []) if e.get("text")]
+                            if exs:
+                                line += " | Contoh: " + " / ".join(f"{e['text']} ＝ {e.get('meaning','')}" for e in exs[:2])
+                            lines.append(line)
+                            vocab_data.append(r)
+                        context_parts.append(f"[KONTEKS NEO4J — {limit} Kosakata N5]\n" + "\n".join(lines))
+                elif intent == "list_grammar":
+                    results = await asyncio.to_thread(self.graph.get_random_grammar, "N5", limit)
+                    if results:
+                        lines = []
+                        for r in results:
+                            rules = " | ".join(r.get("rules", [])) or "Lihat contoh"
+                            line = f"• **{r.get('name', r.get('id','-'))}** → {rules}"
+                            exs = [e for e in r.get("examples", []) if e.get("text")]
+                            if exs:
+                                line += " | Contoh: " + " / ".join(f"{e['text']} ＝ {e.get('meaning','')}" for e in exs[:2])
+                            lines.append(line)
+                            grammar_data.append(r)
+                        context_parts.append(f"[KONTEKS NEO4J — {limit} Grammar N5]\n" + "\n".join(lines))
+            except Exception as e:
+                logger.warning(f"[LISTING] gagal untuk {intent}: {e}")
 
-            if intent == "list_grammar":
-                results = await asyncio.to_thread(self.graph.get_random_grammar, "N5", limit)
-                if results:
-                    lines = []
-                    for r in results:
-                        rules = " | ".join(r.get("rules", [])) or "Lihat contoh"
-                        line = f"• **{r.get('name', r.get('id','-'))}** → {rules}"
-                        exs = [e for e in r.get("examples", []) if e.get("text")]
-                        if exs:
-                            line += " | Contoh: " + " / ".join(e['text'] for e in exs[:2])
-                        lines.append(line)
-                        grammar_data.append(r)
-                    return f"[KONTEKS NEO4J — {limit} Grammar N5]\n" + "\n".join(lines), vocab_data, grammar_data, kanji_data
-                return "[KONTEKS NEO4J] Data grammar tidak ditemukan.", vocab_data, grammar_data, kanji_data
-
-        except Exception as e:
-            logger.warning(f"[LISTING] gagal: {e}")
+        if context_parts:
+            return "\n\n".join(context_parts), vocab_data, grammar_data, kanji_data
         return "[KONTEKS NEO4J] Gagal mengambil data.", vocab_data, grammar_data, kanji_data
 
     @staticmethod
@@ -740,7 +924,7 @@ class LLMAgent:
             lines.append(kline)
         exs = [e for e in v.get('examples', []) if e.get('text')]
         for e in exs[:1]:
-            lines.append(f"  → {e['text']} ＝ {e.get('meaning', '')}")
+            lines.append(f"  → Contoh: {e['text']} ＝ {e.get('meaning', '')}")
         return "\n".join(lines)
 
     @staticmethod
@@ -752,7 +936,7 @@ class LLMAgent:
             lines.append("  Aturan: " + " | ".join(rules[:2]))
         exs = [e for e in g.get('examples', []) if e.get('text')]
         for e in exs[:1]:
-            lines.append(f"  → {e['text']} ＝ {e.get('meaning', '')}")
+            lines.append(f"  → Contoh: {e['text']} ＝ {e.get('meaning', '')}")
         return "\n".join(lines)
 
     @staticmethod
@@ -767,7 +951,7 @@ class LLMAgent:
         lines = [head]
         exs = [e for e in k.get('examples', []) if e.get('text')]
         for e in exs[:1]:
-            lines.append(f"  → {e['text']} ＝ {e.get('meaning', '')}")
+            lines.append(f"  → Contoh: {e['text']} ＝ {e.get('meaning', '')}")
         return "\n".join(lines)
 
     async def _handle_rag(self, query: str, student_id: str, mode: str = "discovery") -> tuple[str, list, list, list]:
@@ -826,9 +1010,9 @@ class LLMAgent:
                 return "[KONTEKS NEO4J] KOSONG. Gunakan kosakata N5 dasar.", [], [], []
             return "[KONTEKS NEO4J] Tidak ada data materi spesifik. Jika user hanya menyapa atau ngobrol santai, balas secara natural dan ramah. Jika user bertanya tentang materi Jepang spesifik (kanji/kosakata/grammar), baru sampaikan bahwa materinya belum ada di database.", [], [], []
 
-        listing = _detect_listing_intent(query, history)
-        if listing:
-            return await self._handle_listing(listing["intent"], listing["limit"])
+        listings = _detect_listing_intent(query, history)
+        if listings:
+            return await self._handle_listings(listings)
         return await self._handle_rag(query, student_id, mode)
 
     def _build_messages(self, kg_context: str, history: list, query: str, mode: str) -> list[dict]:

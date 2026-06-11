@@ -503,3 +503,87 @@ async def pure_chat(request: PureChatRequest):
         ),
         media_type="text/event-stream"
     )
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# 6. KG EDITOR & A/B TEST MANAGER
+# ═══════════════════════════════════════════════════════════════════════
+
+class AddNodeRequest(BaseModel):
+    node_type: str  # 'Vocab', 'Grammar', 'Kanji', 'Topic'
+    node_id: str
+    properties: dict
+
+
+class ABTestGroupRequest(BaseModel):
+    user_id: str
+    test_name: str
+    group_label: str  # 'control', 'treatment_a', 'treatment_b'
+
+
+@router.post("/kg-node")
+async def add_kg_node(admin_id: str, req: AddNodeRequest):
+    """Tambah/edit node materi di Neo4j langsung."""
+    await verify_admin(admin_id)
+    if not graph:
+        raise HTTPException(status_code=503, detail="Graph engine tidak tersedia.")
+
+    props_str = ", ".join([f"n.{k} = ${k}" for k in req.properties.keys()])
+    cypher = f"MERGE (n:{req.node_type} {{id: $node_id}}) SET {props_str} RETURN n"
+
+    try:
+        with graph.driver.session() as session:
+            session.run(cypher, node_id=req.node_id, **req.properties)
+        return {
+            "status": "success",
+            "message": f"Node {req.node_type} '{req.node_id}' berhasil ditambahkan/diperbarui."
+        }
+    except Exception as e:
+        logger.error(f"Error adding Neo4j node: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.delete("/kg-node/{node_type}/{node_id}")
+async def delete_kg_node(admin_id: str, node_type: str, node_id: str):
+    """Hapus node materi di Neo4j beserta relasinya."""
+    await verify_admin(admin_id)
+    if not graph:
+        raise HTTPException(status_code=503, detail="Graph engine tidak tersedia.")
+
+    # Prevent SQL/Cypher Injection by whitelist
+    allowed_types = {"Vocab", "Grammar", "Kanji", "Topic"}
+    if node_type not in allowed_types:
+        raise HTTPException(status_code=400, detail="Tipe node tidak valid.")
+
+    cypher = f"MATCH (n:{node_type} {{id: $node_id}}) DETACH DELETE n"
+
+    try:
+        with graph.driver.session() as session:
+            session.run(cypher, node_id=node_id)
+        return {
+            "status": "success",
+            "message": f"Node '{node_id}' berhasil dihapus dari Knowledge Graph."
+        }
+    except Exception as e:
+        logger.error(f"Error deleting Neo4j node: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/ab-test")
+async def assign_ab_test_group(admin_id: str, req: ABTestGroupRequest):
+    """Tugaskan user ke grup A/B testing tertentu."""
+    await verify_admin(admin_id)
+    try:
+        from core.supabase_client import supabase
+        supabase.table("ab_test_groups").upsert({
+            "user_id": req.user_id,
+            "test_name": req.test_name,
+            "group_label": req.group_label
+        }).execute()
+        return {
+            "status": "success",
+            "message": f"User '{req.user_id}' ditugaskan ke grup '{req.group_label}' pada test '{req.test_name}'."
+        }
+    except Exception as e:
+        logger.error(f"Error assigning A/B test group: {e}")
+        raise HTTPException(status_code=500, detail=str(e))

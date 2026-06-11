@@ -814,3 +814,190 @@ class GraphEngine:
             "topic":          topic_hit,
             "recommendation": recommendation,
         }
+
+    # ──────────────────────────────────────────────────────────────────────────
+    # Learning Path — Topological Sort + PREREQUISITE_OF edges
+    # ──────────────────────────────────────────────────────────────────────────
+
+    def ensure_prerequisite_edges(self):
+        """
+        Seed PREREQUISITE_OF edges based on natural N5 learning order.
+        Called once or by admin to initialize prerequisite graph.
+        """
+        prerequisites = [
+            # Partikel dasar → partikel lanjut
+            ("は", "も"),
+            ("は", "が"),
+            ("の", "Partikel  の"),
+            # Desu/janai → adjective
+            ("Akhiran です、 だ", "い-adjectives"),
+            ("Akhiran です、 だ", "な-adjectives"),
+            # Arimasu/imasu → location particles
+            ("があります", "に"),
+            ("がいます", "に"),
+            # Basic verbs → te-form chain
+            ("Kata Kerja Bentuk Sopan (masu-kei)", "てください"),
+            ("てください", "てもいい"),
+            ("てください", "てはいけない"),
+            ("てください", "ている"),
+            ("ている", "てから"),
+            # Adjective → comparison
+            ("い-adjectives", "とても"),
+            ("い-adjectives", "より〜ほうが"),
+            ("な-adjectives", "どんな"),
+            # Tai/hoshii → purpose
+            ("たい", "のが好き 【のがすきです】"),
+            ("たい", "がほしい"),
+            # Te-form → past experience
+            ("ている", "たことがある"),
+            ("ている", "たり〜たり"),
+            # Past → advanced
+            ("たことがある", "前に 【まえに】"),
+            ("たことがある", "時 【とき】"),
+            # Intermediate
+            ("になる・くなる", "すぎる"),
+            ("んです", "でしょう"),
+            # Advanced N5
+            ("てはいけない", "なくてはいけない"),
+            ("ないで", "なくてもいい"),
+            ("から", "ので"),
+        ]
+        with self.driver.session() as session:
+            for src, tgt in prerequisites:
+                session.run("""
+                    MATCH (a:Grammar) WHERE a.id = $src OR a.name = $src
+                    MATCH (b:Grammar) WHERE b.id = $tgt OR b.name = $tgt
+                    MERGE (a)-[:PREREQUISITE_OF]->(b)
+                """, src=src, tgt=tgt)
+        log.info(f"✅ Seeded {len(prerequisites)} PREREQUISITE_OF edges.")
+
+    def get_prerequisite_graph(self) -> list[dict]:
+        """Get all PREREQUISITE_OF edges for visualization."""
+        with self.driver.session() as session:
+            result = session.run("""
+                MATCH (a)-[:PREREQUISITE_OF]->(b)
+                WHERE (a:Vocab OR a:Grammar OR a:Kanji)
+                  AND (b:Vocab OR b:Grammar OR b:Kanji)
+                RETURN a.id AS source_id,
+                       COALESCE(a.name, a.romaji, a.id) AS source_label,
+                       labels(a)[0] AS source_type,
+                       b.id AS target_id,
+                       COALESCE(b.name, b.romaji, b.id) AS target_label,
+                       labels(b)[0] AS target_type
+            """)
+            return [dict(r) for r in result]
+
+    def topological_sort(self, level: str = "N5") -> list[dict]:
+        """
+        Topological sort of learning materials based on PREREQUISITE_OF edges.
+        Returns ordered list of nodes where prerequisites come before dependents.
+        """
+        with self.driver.session() as session:
+            # Get all nodes with their prerequisite count
+            result = session.run("""
+                MATCH (n)
+                WHERE (n:Vocab OR n:Grammar OR n:Kanji) AND n.level = $level
+                OPTIONAL MATCH (prereq)-[:PREREQUISITE_OF]->(n)
+                WITH n,
+                     collect(DISTINCT prereq.id) AS prereq_ids,
+                     labels(n)[0] AS type
+                RETURN n.id AS id,
+                       COALESCE(n.name, n.romaji, n.id) AS label,
+                       type,
+                       n.level AS level,
+                       prereq_ids
+                ORDER BY size(prereq_ids) ASC, n.id ASC
+            """, level=level)
+            return [dict(r) for r in result]
+
+    def generate_learning_path(self, student_id: str, level: str = "N5") -> list[dict]:
+        """
+        Generate personalized learning path:
+        1. Topological sort of all nodes
+        2. Remove already MASTERED nodes
+        3. Mark STRUGGLING nodes as priority
+        """
+        sorted_nodes = self.topological_sort(level)
+
+        # Get student's current mastery
+        mastery_map = {}
+        with self.driver.session() as session:
+            result = session.run("""
+                MATCH (s:Student {id: $student_id})-[r:LEARNED|MASTERED|STRUGGLING]->(n)
+                RETURN n.id AS id, type(r) AS status
+            """, student_id=student_id)
+            for rec in result:
+                mastery_map[rec["id"]] = rec["status"]
+
+        path = []
+        for node in sorted_nodes:
+            nid = node["id"]
+            status = mastery_map.get(nid, "NOT_STARTED")
+            node["status"] = status
+            node["is_priority"] = status == "STRUGGLING"
+
+            # Include: not yet mastered, or struggling (needs review)
+            if status != "MASTERED":
+                path.append(node)
+
+        return path
+
+    def get_kg_student_view(self, student_id: str) -> dict:
+        """
+        Get full KG data for interactive visualization.
+        Returns nodes with student mastery status + all edges.
+        """
+        with self.driver.session() as session:
+            # Get all material nodes with student status
+            nodes_result = session.run("""
+                MATCH (n)
+                WHERE (n:Vocab OR n:Grammar OR n:Kanji OR n:Topic)
+                OPTIONAL MATCH (s:Student {id: $student_id})-[r:LEARNED|MASTERED|STRUGGLING]->(n)
+                RETURN n.id AS id,
+                       COALESCE(n.name, n.romaji, n.id) AS label,
+                       labels(n)[0] AS type,
+                       n.level AS level,
+                       type(r) AS student_status
+                ORDER BY n.id
+            """, student_id=student_id)
+            nodes = [dict(r) for r in nodes_result]
+
+            # Get all edges
+            edges_result = session.run("""
+                MATCH (a)-[r]->(b)
+                WHERE (a:Vocab OR a:Grammar OR a:Kanji OR a:Topic)
+                  AND (b:Vocab OR b:Grammar OR b:Kanji OR b:Topic OR b:Rule OR b:Sentence)
+                  AND type(r) IN [
+                    'BELONGS_TO_TOPIC', 'WRITTEN_IN', 'PREREQUISITE_OF',
+                    'USES_VOCAB', 'HAS_RULE', 'HAS_COMMON_ERROR'
+                  ]
+                RETURN a.id AS source,
+                       b.id AS target,
+                       type(r) AS relation
+                LIMIT 2000
+            """)
+            edges = [dict(r) for r in edges_result]
+
+            return {"nodes": nodes, "edges": edges}
+
+    def get_shortest_path(self, student_id: str, target_node_id: str) -> list[dict]:
+        """
+        Find shortest path from student's current position to target node
+        following PREREQUISITE_OF edges.
+        """
+        with self.driver.session() as session:
+            # Find the most advanced mastered node
+            result = session.run("""
+                MATCH (s:Student {id: $student_id})-[:MASTERED]->(current)
+                WHERE current:Grammar OR current:Vocab OR current:Kanji
+                MATCH (target) WHERE target.id = $target_id
+                MATCH path = shortestPath((current)-[:PREREQUISITE_OF*..10]->(target))
+                RETURN [n IN nodes(path) | {
+                    id: n.id,
+                    label: COALESCE(n.name, n.romaji, n.id),
+                    type: labels(n)[0]
+                }] AS path_nodes
+                LIMIT 1
+            """, student_id=student_id, target_id=target_node_id)
+            rec = result.single()
+            return rec["path_nodes"] if rec else []

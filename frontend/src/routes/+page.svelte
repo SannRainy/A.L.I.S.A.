@@ -23,6 +23,8 @@
     import DiscoveryMode from "../components/DiscoveryMode.svelte";
     import QuestMode from "../components/QuestMode.svelte";
     import VoiceMode from "../components/VoiceMode.svelte";
+    import ReadingMode from "../components/ReadingMode.svelte";
+
 
     let mainTab = "study"; // 'study' | 'profile' | 'achievement'
     if (browser) {
@@ -39,7 +41,9 @@
     let ro = null;
     let mode = "discovery"; // 'discovery' | 'quest' | 'voice'
     if (browser) {
-        mode = localStorage.getItem("tvjp_mode") || "discovery";
+        const savedMode = localStorage.getItem("tvjp_mode");
+        const validModes = ["discovery", "quest", "voice", "reading"];
+        mode = validModes.includes(savedMode) ? savedMode : "discovery";
     }
 
     let isStreaming = false;
@@ -1125,8 +1129,16 @@
             badge: "bg-violet-500/20 text-violet-300 border-violet-400/30",
             placeholder: "",
         },
+        reading: {
+            label: "Reading",
+            icon: "📖",
+            color: "from-teal-500 to-emerald-600",
+            ring: "ring-teal-400/40",
+            badge: "bg-teal-500/20 text-teal-300 border-teal-400/30",
+            placeholder: "",
+        },
     };
-    $: cfg = modeConfig[mode];
+    $: cfg = modeConfig[mode] || modeConfig["discovery"];
 
     // SIMPLE CONFETTI SCRIPT
     function shootConfetti() {
@@ -1651,6 +1663,8 @@
                             {liveTranscript}
                             {vrmController}
                         />
+                    {:else if mode === "reading"}
+                        <ReadingMode />
                     {:else}
                         <!-- ── MESSAGES ── -->
                         <div
@@ -1744,7 +1758,7 @@
                                                                 .label ||
                                                                 "Data Tidak Tersedia"}</span
                                                         >
-                                                    {:else if msg.accuracy.category === "casual"}
+                                                     {:else if msg.accuracy.category === "casual"}
                                                         <span
                                                             class="accuracy-icon"
                                                             >💬</span
@@ -1754,6 +1768,17 @@
                                                             >{msg.accuracy
                                                                 .label ||
                                                                 "Casual Chat"}</span
+                                                        >
+                                                    {:else if msg.accuracy.category === "teaching"}
+                                                        <span
+                                                            class="accuracy-icon"
+                                                            >📚</span
+                                                        >
+                                                        <span
+                                                            class="accuracy-text"
+                                                            >{msg.accuracy
+                                                                .label ||
+                                                                "Mengajar"}</span
                                                         >
                                                     {:else}
                                                         <span
@@ -2827,6 +2852,11 @@
         border: 1px solid rgba(251, 191, 36, 0.15);
         color: rgba(251, 191, 36, 0.7);
     }
+    .accuracy-teaching {
+        background: rgba(167, 139, 250, 0.1);
+        border: 1px solid rgba(167, 139, 250, 0.2);
+        color: rgba(196, 181, 253, 0.85);
+    }
     .accuracy-icon {
         font-size: 11px;
         line-height: 1;
@@ -2999,6 +3029,10 @@
     .fact-type-badge.type-kanji {
         background: rgba(20, 184, 166, 0.2);
         color: #99f6e4;
+    }
+    .fact-type-badge.type-example {
+        background: rgba(249, 115, 22, 0.2);
+        color: #fdba74;
     }
     .fact-subject {
         color: #f8fafc;

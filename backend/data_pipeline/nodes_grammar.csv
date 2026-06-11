@@ -1,29 +1,29 @@
 grammar_id,name,level
-Akhiran です、 だ,Akhiran です、 だ,N5
-Partikel subject は、も、 が,Partikel subject は、も、 が,N5
-Partikel object を、に、へ、 で,Partikel object を、に、へ、 で,N5
-Partikel と、や、と か,Partikel と、や、と か,N5
-Partikel  の,Partikel  の,N5
-"Memahami Kelompok Kata Kerja Bahasa Jepang (Godan, Ichidan, dan Fukisoku Doushi)","Memahami Kelompok Kata Kerja Bahasa Jepang (Godan, Ichidan, dan Fukisoku Doushi)",N5
-"Memahami Konjugasi Kata Kerja, Kata Benda dan Kata Sifat (Positif, Negatif, Lampau, Negatif Lampau)","Memahami Konjugasi Kata Kerja, Kata Benda dan Kata Sifat (Positif, Negatif, Lampau, Negatif Lampau)",N5
-Kata Kerja Bentuk Sopan (masu-kei),Kata Kerja Bentuk Sopan (masu-kei),N5
-Tata bahasa ~がある dan ~がい る,Tata bahasa ~がある dan ~がい る,N5
-Tata bahasa ~てください dan ~ないでくださ い,Tata bahasa ~てください dan ~ないでくださ い,N5
-Tata bahasa ~ましょう、~ましょうか、~ません か,Tata bahasa ~ましょう、~ましょうか、~ません か,N5
-Tata bahasa ~てもいい、~なくてもい い,Tata bahasa ~てもいい、~なくてもい い,N5
-Tata bahasa ~てはいけない、~なくてはいけな い,Tata bahasa ~てはいけない、~なくてはいけな い,N5
-Tata bahasa ~から、~の で,Tata bahasa ~ तला bahasa ~から、~の で,N5
-Tata bahasa ~ている、~ていく、~てく る,Tata bahasa ~ている、~ていく、~てく る,N5
-Tata bahasa ~のほうが　~よ り,Tata bahasa ~のほうが　~よ り,N5
-Tata bahasa ~ほうがい い,Tata bahasa ~ほうがい い,N5
-Tata bahasa ~の中で、~がいちば ん,Tata bahasa ~の中で、~がいちば ん,N5
-Tata bahasa ~つもりで す,Tata bahasa ~つもりで す,N5
-Mengubah kata adjective jadi adverb ~く／にな る,Mengubah kata adjective jadi adverb ~く／にな る,N5
-Tata bahasa ~たいです、~たくないで す,Tata bahasa ~たいです、~たくないで す,N5
-Tata bahasa ~たりす る,Tata bahasa ~たりす る,N5
-Tata bahasa ~たことがある、~たことがな い,Tata bahasa ~たことがある、~たことがな い,N5
-Akhiran だろう、でしょう、かもしれな い,Akhiran だろう、でしょう、かもしれな い,N5
-Tata bahasa ~まえに、~てか ら,Tata bahasa ~まえに、~てか ら,N5
+"です・だ (Kopula)","です・だ (Kopula)",N5
+"は・も・が (Partikel Subjek)","は・も・が (Partikel Subjek)",N5
+"を・に・へ・で (Partikel Objek)","を・に・へ・で (Partikel Objek)",N5
+"と・や・とか (Partikel Penghubung)","と・や・とか (Partikel Penghubung)",N5
+"の (Partikel Kepemilikan)","の (Partikel Kepemilikan)",N5
+"Kelompok Kata Kerja (Godan/Ichidan)","Kelompok Kata Kerja (Godan/Ichidan)",N5
+"Konjugasi Dasar (Positif/Negatif/Lampau)","Konjugasi Dasar (Positif/Negatif/Lampau)",N5
+"〜ます形 (Bentuk Sopan)","〜ます形 (Bentuk Sopan)",N5
+"〜がある / 〜がいる","〜がある / 〜がいる",N5
+"〜てください / 〜ないでください","〜てください / 〜ないでください",N5
+"〜ましょう / 〜ましょうか / 〜ませんか","〜ましょう / 〜ましょうか / 〜ませんか",N5
+"〜てもいい / 〜なくてもいい","〜てもいい / 〜なくてもいい",N5
+"〜てはいけない / 〜なくてはいけない","〜てはいけない / 〜なくてはいけない",N5
+"〜から / 〜ので (Alasan)","〜から / 〜ので (Alasan)",N5
+"〜ている / 〜ていく / 〜てくる","〜ている / 〜ていく / 〜てくる",N5
+"〜より〜のほうが (Perbandingan)","〜より〜のほうが (Perbandingan)",N5
+"〜ほうがいい (Saran)","〜ほうがいい (Saran)",N5
+"〜の中で〜がいちばん (Superlatif)","〜の中で〜がいちばん (Superlatif)",N5
+"〜つもりです (Niat)","〜つもりです (Niat)",N5
+"〜く/になる (Perubahan Keadaan)","〜く/になる (Perubahan Keadaan)",N5
+"〜たいです / 〜たくないです (Keinginan)","〜たいです / 〜たくないです (Keinginan)",N5
+"〜たり〜たりする (Aktivitas Paralel)","〜たり〜たりする (Aktivitas Paralel)",N5
+"〜たことがある / 〜たことがない (Pengalaman)","〜たことがある / 〜たことがない (Pengalaman)",N5
+"だろう / でしょう / かもしれない (Dugaan)","だろう / でしょう / かもしれない (Dugaan)",N5
+"〜まえに / 〜てから (Urutan Waktu)","〜まえに / 〜てから (Urutan Waktu)",N5
 ちゃいけない,ちゃいけない,N5
 だ,だ,N5
 だけ,だけ,N5
@@ -38,7 +38,7 @@ Tata bahasa ~まえに、~てか ら,Tata bahasa ~まえに、~てか ら,N5
 があります,があります,N5
 がほしい,がほしい / が欲しい,N5
 がいます,がいます,N5
-⽅がいい,⽅がいい /,N5
+⽅がいい,⽅がいい,N5
 い-adjectives,い-adjectives,N5
 ⼀番 「いちばん」,⼀番 「いちばん」,N5
 ⼀緒に「いっしょに」,⼀緒に「いっしょに」,N5
@@ -62,7 +62,7 @@ Tata bahasa ~まえに、~てか ら,Tata bahasa ~まえに、~てか ら,N5
 な-adjectives,な-adjectives,N5
 なあ,なあ,N5
 ないで,ないで,N5
-ないでくだあい,ないでくだあい,N5
+ないでください,ないでください,N5
 なくてもいい,なくてもいい,N5
 なくちゃ,なくちゃ,N5
 なくてはいけない,なくてはいけない,N5

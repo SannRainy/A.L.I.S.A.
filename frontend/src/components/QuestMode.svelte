@@ -56,8 +56,23 @@
             });
             if (res.ok) {
                 const data = await res.json();
-                // data.mastered_nodes = ["grammar_wa", "grammar_desu", ...]
-                return { source: 'backend', nodes: data.mastered_nodes || [] };
+                const backendNodes = data.mastered_nodes || [];
+                const kgAvailable = data.kg_available !== false; // default true untuk backward compat
+
+                // Jika backend KG tersedia DAN mengembalikan data, gunakan langsung
+                if (kgAvailable && backendNodes.length > 0) {
+                    return { source: 'backend', nodes: backendNodes };
+                }
+
+                // Jika KG tidak tersedia, atau backend mengembalikan kosong
+                // tapi user sudah punya completed quests → fallback ke local
+                const completedIds = $profile?.completed_quests?.map(q => q.level_id) || [];
+                if (backendNodes.length === 0 && completedIds.length > 0) {
+                    console.warn("Backend KG unavailable atau mastered_nodes kosong, fallback ke local profile");
+                    // Fall through ke fallback lokal di bawah
+                } else {
+                    return { source: 'backend', nodes: backendNodes };
+                }
             }
         } catch (e) {
             console.warn("KG backend tidak tersedia, fallback ke local profile:", e.message);

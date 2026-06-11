@@ -7,7 +7,6 @@
     import UsersTab from "./UsersTab.svelte";
     import DataPipelineTab from "./DataPipelineTab.svelte";
     import IngestTab from "./IngestTab.svelte";
-    import AnalyticsTab from "./AnalyticsTab.svelte";
     import AiModelsTab from "./AiModelsTab.svelte";
 
     let isAdmin = false;
@@ -90,7 +89,7 @@
 
         <!-- Tab Nav -->
         <nav class="admin-nav">
-            {#each [{ id: "users", icon: "👥", label: "Users" }, { id: "data", icon: "📚", label: "Data Pipeline" }, { id: "ingest", icon: "🔄", label: "Ingest Neo4j" }, { id: "analytics", icon: "📊", label: "Analytics" }, { id: "models", icon: "🤖", label: "AI Models" }] as tab}
+            {#each [{ id: "users", icon: "👥", label: "Users" }, { id: "data", icon: "📚", label: "Data Pipeline" }, { id: "ingest", icon: "🔄", label: "Ingest Neo4j" }, { id: "models", icon: "🤖", label: "AI Models" }] as tab}
                 <button
                     class="nav-tab"
                     class:active={activeTab === tab.id}
@@ -110,9 +109,7 @@
                 <DataPipelineTab user={$user} {API} />
             {:else if activeTab === "ingest"}
                 <IngestTab user={$user} {API} />
-            {:else if activeTab === "analytics"}
-                <AnalyticsTab user={$user} {API} />
-            {:else if activeTab === "models"}
+             {:else if activeTab === "models"}
                 <AiModelsTab user={$user} {API} />
             {/if}
         </main>

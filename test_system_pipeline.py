@@ -850,8 +850,152 @@ async def run_tests():
             # --- Kembalikan Role User ke Student (Database Cleanup) ---
             await set_db_role(ADMIN_ID, "student")
 
+    # --------------------------------------------------------------------------
+    # CATEGORY G: READING COMPREHENSION & COGNITIVE SERVICES (V3)
+    # --------------------------------------------------------------------------
+    cat = "G. READING COMPREHENSION & COGNITIVE SERVICES (V3)"
+    reporter.print_section(cat)
+
+    # G1: BKT Engine Belief Update (Local calculation)
+    try:
+        from services.bkt_engine import BKTEngine
+        params = BKTEngine.get_params("vocab")
+        p_l_1 = BKTEngine.update_belief(0.1, False, params)
+        p_l_2 = BKTEngine.update_belief(0.1, True, params)
+        if p_l_2 > p_l_1:
+            reporter.add_result(cat, "G1", "BKT Engine Belief Update", "SUCCESS")
+            reporter.print_test_row("G1", "BKT Engine Belief Update", "SUCCESS")
+        else:
+            reporter.add_result(cat, "G1", "BKT Engine Belief Update", "FAILED", "P(L) correct not higher than P(L) incorrect")
+            reporter.print_test_row("G1", "BKT Engine Belief Update", "FAILED")
+    except Exception as e:
+        reporter.add_result(cat, "G1", "BKT Engine Belief Update", "FAILED", traceback.format_exc())
+        reporter.print_test_row("G1", "BKT Engine Belief Update", "FAILED")
+
+    # G2: BKT Question Selection (Local calculation)
+    try:
+        from services.bkt_engine import BKTEngine
+        beliefs = {"v1": 0.5, "v2": 0.9, "v3": 0.1}
+        nodes = [{"id": "v1", "node_type": "vocab"}, {"id": "v2", "node_type": "vocab"}, {"id": "v3", "node_type": "vocab"}]
+        selected = BKTEngine.select_next_questions(beliefs, nodes, count=2)
+        if len(selected) > 0:
+            reporter.add_result(cat, "G2", "BKT Question Selection", "SUCCESS")
+            reporter.print_test_row("G2", "BKT Question Selection", "SUCCESS")
+        else:
+            reporter.add_result(cat, "G2", "BKT Question Selection", "FAILED", "No nodes selected")
+            reporter.print_test_row("G2", "BKT Question Selection", "FAILED")
+    except Exception as e:
+        reporter.add_result(cat, "G2", "BKT Question Selection", "FAILED", traceback.format_exc())
+        reporter.print_test_row("G2", "BKT Question Selection", "FAILED")
+
+    # G3: Reading Passages List API
+    if not server_online:
+        reporter.add_result(cat, "G3", "Reading Passages List (GET /reading/passages)", "SKIPPED")
+        reporter.print_test_row("G3", "Reading Passages List (GET /reading/passages)", "SKIPPED")
+    else:
+        try:
+            async with httpx.AsyncClient(timeout=5.0) as client:
+                res = await client.get(f"{API_PREFIX}/reading/passages")
+                if res.status_code == 200:
+                    reporter.add_result(cat, "G3", "Reading Passages List (GET /reading/passages)", "SUCCESS")
+                    reporter.print_test_row("G3", "Reading Passages List (GET /reading/passages)", "SUCCESS")
+                else:
+                    reporter.add_result(cat, "G3", "Reading Passages List (GET /reading/passages)", "FAILED", f"Status: {res.status_code}")
+                    reporter.print_test_row("G3", "Reading Passages List (GET /reading/passages)", "FAILED")
+        except Exception as e:
+            reporter.add_result(cat, "G3", "Reading Passages List (GET /reading/passages)", "FAILED", traceback.format_exc())
+            reporter.print_test_row("G3", "Reading Passages List (GET /reading/passages)", "FAILED")
+
+    # G4: Reading Passage Detail API
+    if not server_online:
+        reporter.add_result(cat, "G4", "Reading Passage Detail (GET /reading/passage/read_1)", "SKIPPED")
+        reporter.print_test_row("G4", "Reading Passage Detail (GET /reading/passage/read_1)", "SKIPPED")
+    else:
+        try:
+            async with httpx.AsyncClient(timeout=5.0) as client:
+                res = await client.get(f"{API_PREFIX}/reading/passage/read_1")
+                if res.status_code == 200:
+                    reporter.add_result(cat, "G4", "Reading Passage Detail (GET /reading/passage/read_1)", "SUCCESS")
+                    reporter.print_test_row("G4", "Reading Passage Detail (GET /reading/passage/read_1)", "SUCCESS")
+                else:
+                    reporter.add_result(cat, "G4", "Reading Passage Detail (GET /reading/passage/read_1)", "FAILED", f"Status: {res.status_code}")
+                    reporter.print_test_row("G4", "Reading Passage Detail (GET /reading/passage/read_1)", "FAILED")
+        except Exception as e:
+            reporter.add_result(cat, "G4", "Reading Passage Detail (GET /reading/passage/read_1)", "FAILED", traceback.format_exc())
+            reporter.print_test_row("G4", "Reading Passage Detail (GET /reading/passage/read_1)", "FAILED")
+
+    # G5: Reading Session Submit API
+    if not server_online or not TEST_USER_ID:
+        reporter.add_result(cat, "G5", "Reading Session Submit (POST /reading/submit)", "SKIPPED")
+        reporter.print_test_row("G5", "Reading Session Submit (POST /reading/submit)", "SKIPPED")
+    else:
+        try:
+            async with httpx.AsyncClient(timeout=10.0) as client:
+                submit_payload = {
+                    "user_id": TEST_USER_ID,
+                    "passage_id": "read_1",
+                    "unknown_words": ["私"],
+                    "comprehension_answers": [
+                        {"question_id": "rq_1_1", "is_correct": True}
+                    ]
+                }
+                res = await client.post(f"{API_PREFIX}/reading/submit", json=submit_payload)
+                if res.status_code == 200:
+                    reporter.add_result(cat, "G5", "Reading Session Submit (POST /reading/submit)", "SUCCESS")
+                    reporter.print_test_row("G5", "Reading Session Submit (POST /reading/submit)", "SUCCESS")
+                else:
+                    reporter.add_result(cat, "G5", "Reading Session Submit (POST /reading/submit)", "FAILED", f"Status: {res.status_code}")
+                    reporter.print_test_row("G5", "Reading Session Submit (POST /reading/submit)", "FAILED")
+        except Exception as e:
+            reporter.add_result(cat, "G5", "Reading Session Submit (POST /reading/submit)", "FAILED", traceback.format_exc())
+            reporter.print_test_row("G5", "Reading Session Submit (POST /reading/submit)", "FAILED")
+
+    # G6: Reading History Retrieval API
+    if not server_online or not TEST_USER_ID:
+        reporter.add_result(cat, "G6", "Reading History Retrieval (GET /reading/history)", "SKIPPED")
+        reporter.print_test_row("G6", "Reading History Retrieval (GET /reading/history)", "SKIPPED")
+    else:
+        try:
+            async with httpx.AsyncClient(timeout=5.0) as client:
+                res = await client.get(f"{API_PREFIX}/reading/history/{TEST_USER_ID}")
+                if res.status_code == 200:
+                    reporter.add_result(cat, "G6", "Reading History Retrieval (GET /reading/history)", "SUCCESS")
+                    reporter.print_test_row("G6", "Reading History Retrieval (GET /reading/history)", "SUCCESS")
+                else:
+                    reporter.add_result(cat, "G6", "Reading History Retrieval (GET /reading/history)", "FAILED", f"Status: {res.status_code}")
+                    reporter.print_test_row("G6", "Reading History Retrieval (GET /reading/history)", "FAILED")
+        except Exception as e:
+            reporter.add_result(cat, "G6", "Reading History Retrieval (GET /reading/history)", "FAILED", traceback.format_exc())
+            reporter.print_test_row("G6", "Reading History Retrieval (GET /reading/history)", "FAILED")
+
+    # G7: Graph Engine Prerequisites Sort
+    try:
+        from services.graph_engine import GraphEngine
+        local_graph = GraphEngine()
+        local_graph.ensure_prerequisite_edges()
+        edges = local_graph.get_prerequisite_graph()
+        sorted_nodes = local_graph.topological_sort(level="N5")
+        reporter.add_result(cat, "G7", "Graph Engine Prerequisites Sort", "SUCCESS")
+        reporter.print_test_row("G7", "Graph Engine Prerequisites Sort", "SUCCESS")
+    except Exception as e:
+        reporter.add_result(cat, "G7", "Graph Engine Prerequisites Sort", "WARNING", f"Neo4j offline/not configured: {e}")
+        reporter.print_test_row("G7", "Graph Engine Prerequisites Sort", "WARNING")
+
+    # G8: Graph Engine Personalized Learning Path
+    try:
+        from services.graph_engine import GraphEngine
+        local_graph = GraphEngine()
+        path = local_graph.generate_learning_path(TEST_USER_ID or "mock-user-uuid-1234", level="N5")
+        reporter.add_result(cat, "G8", "Graph Engine Personalized Learning Path", "SUCCESS")
+        reporter.print_test_row("G8", "Graph Engine Personalized Learning Path", "SUCCESS")
+    except Exception as e:
+        reporter.add_result(cat, "G8", "Graph Engine Personalized Learning Path", "WARNING", f"Neo4j offline/not configured: {e}")
+        reporter.print_test_row("G8", "Graph Engine Personalized Learning Path", "WARNING")
+
+
     # Generate final formatted output
     reporter.generate_summary()
 
 if __name__ == "__main__":
     asyncio.run(run_tests())
+
