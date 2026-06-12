@@ -411,7 +411,7 @@ Gunakan bahasa Indonesia santai (aku/kamu).
 BALAS SELALU dalam format PERSIS berikut ini (jangan ubah urutan, jangan tambah teks lain di luar format):
 JP: [balasan Alisa dalam bahasa Jepang kasual, 1-2 kalimat pendek]
 ROM: [romaji dari JP]
-ID: [terjemahan JP dalam bahasa Indonesia]
+ID: [terjemahan JP dalam bahasa Indonesia santai/kasual sehari-hari yang alami, luwes, dan tidak kaku. Contoh: gunakan kata 'minum kopi' bukan 'makan kopi', gunakan ungkapan santai seperti 'nih', 'lho', 'ya', dll.]
 
 Aturan tambahan:
 - Selalu kasual dan hangat, seperti teman ngobrol
@@ -754,6 +754,97 @@ class LLMAgent:
         self.graph = graph
         self.voice_service = VoiceService()
         _get_kw_model()
+
+    async def translate_and_romaji_user_llm(self, query: str) -> dict:
+        import re
+        is_jp = bool(re.search(r'[\u3040-\u30ff\u4e00-\u9fff\u3400-\u4dbf]', query))
+        if not is_jp:
+            return await self.voice_service.translate_and_romaji_user(query)
+
+        # Gunakan LLM untuk menerjemahkannya ke bahasa Indonesia kasual yang alami dan romaji
+        prompt = (
+            f"Terjemahkan teks Jepang berikut ke Bahasa Indonesia kasual/santai (sehari-hari) yang alami, "
+            f"dan berikan juga versi romaji-nya.\n"
+            f"Teks: {query}\n\n"
+            f"Format output harus berupa JSON seperti ini:\n"
+            f'{{"jp": "{query}", "rom": "<romaji>", "id": "<terjemahan bahasa indonesia kasual>"}}\n'
+            f"Hanya kembalikan JSON, tanpa penjelasan lain."
+        )
+
+        try:
+            if _active_provider == "hf_cloud":
+                from huggingface_hub import InferenceClient
+                client = InferenceClient(model=_hf_model_repo, token=_hf_token)
+                messages = [{"role": "user", "content": prompt}]
+                
+                extra_body = None
+                if "qwen3.5-9b" in _hf_model_repo.lower():
+                    extra_body = {"chat_template_kwargs": {"enable_thinking": False}}
+
+                def run_chat():
+                    kwargs = {
+                        "messages": messages,
+                        "max_tokens": 150,
+                        "temperature": 0.1,
+                    }
+                    if extra_body:
+                        kwargs["extra_body"] = extra_body
+                    return client.chat_completion(**kwargs)
+                
+                resp = await asyncio.to_thread(run_chat)
+                content = resp.choices[0].message.content if resp.choices else ""
+            else:
+                model = await get_llama_model_async()
+                async with _model_lock:
+                    resp = await asyncio.to_thread(
+                        model.create_chat_completion,
+                        messages    = [{"role": "user", "content": prompt}],
+                        max_tokens  = 150,
+                        temperature = 0.1,
+                        stop        = ["<|im_end|>", "<|eot_id|>"],
+                    )
+                content = resp["choices"][0]["message"]["content"]
+
+            content = content.replace("```json", "").replace("```", "").strip()
+            res = json.loads(content)
+            llm_jp = res.get("jp", query).strip()
+            llm_rom = res.get("rom", "").strip()
+            llm_id = res.get("id", "").strip()
+
+            # Clean up potential LLM-generated prefixes in values
+            llm_rom = re.sub(r'^(?:ROM|ROMAJI)\s*[:\uff1a]\s*', '', llm_rom, flags=re.IGNORECASE).strip()
+            llm_id = re.sub(r'^(?:ID|ARTI)\s*[:\uff1a]\s*', '', llm_id, flags=re.IGNORECASE).strip()
+
+            # Fallback to pykakasi only if romaji is empty or looks like an Indonesian translation
+            if not llm_rom or any(word in llm_rom.lower() for word in ["terjemahan", "arti", "bahasa", "indonesia"]):
+                llm_rom = self.generate_romaji_pykakasi(llm_jp)
+
+            return {
+                "jp": llm_jp,
+                "rom": llm_rom,
+                "id": llm_id
+            }
+        except Exception as e:
+            logger.warning(f"translate_and_romaji_user_llm failed: {e}. Fallback to Google Translate.")
+            return await self.voice_service.translate_and_romaji_user(query)
+
+    def generate_romaji_pykakasi(self, jp_text: str) -> str:
+        if not jp_text or not jp_text.strip():
+            return ""
+        try:
+            import pykakasi
+            import re
+            kks = pykakasi.kakasi()
+            result = kks.convert(jp_text)
+            romaji_text = " ".join([item['hepburn'] for item in result]).strip()
+            romaji_text = romaji_text.replace("！", "!").replace("？", "?")
+            romaji_text = re.sub(r'\s+([.,!?;:])', r'\1', romaji_text)
+            if romaji_text:
+                romaji_text = romaji_text[0].upper() + romaji_text[1:]
+            return romaji_text
+        except Exception as e:
+            logger.error(f"pykakasi conversion error: {e}")
+            return jp_text
 
     # Prefix-prefiks yang harus di-skip dari TTS (jangan diucapkan)
     _TTS_SKIP_PREFIXES = (
@@ -1201,7 +1292,7 @@ class LLMAgent:
             kg_context = ""  # Still don't inject KG context into prompt — keep conversation natural
 
             try:
-                user_trans = await self.voice_service.translate_and_romaji_user(query)
+                user_trans = await self.translate_and_romaji_user_llm(query)
             except Exception as e:
                 logger.error(f"[Speaking Manual Translate] failed: {e}")
                 user_trans = {"jp": query, "rom": "", "id": query}
@@ -1291,6 +1382,7 @@ class LLMAgent:
             nonlocal full_content
             sentence_buf = ""
             emitted_text = ""
+            current_jp_text = ""
             try:
                 async for text_chunk in self._stream_tokens(messages, max_tokens=2048, mode=mode):
                     if not text_chunk:
@@ -1308,15 +1400,25 @@ class LLMAgent:
 
                     sentence_buf += new_text
                     emitted_text += new_text
-
                     # Proses baris-per-baris saat ada newline
                     while '\n' in sentence_buf:
                         line, sentence_buf = sentence_buf.split('\n', 1)
                         line_stripped = line.strip()
 
                         if mode in _SPEAKING_MODES:
+                            if _LINE_JP_RE.match(line_stripped):
+                                current_jp_text = _extract_jp_from_line(line_stripped)
+                            
                             # Mode speaking/voice: skip ROM:/ID: dll, hanya synthesize JP:
                             if _LINE_SKIP_RE.match(line_stripped):
+                                # Intercept and overwrite Romaji
+                                if line_stripped.upper().startswith(("ROM:", "ROM：", "ROMAJI:", "ROMAJI：")):
+                                    try:
+                                        romaji = self.generate_romaji_pykakasi(current_jp_text)
+                                        line = f"ROM: {romaji}"
+                                    except Exception as e:
+                                        logger.warning(f"Failed to generate pykakasi Romaji for Alisa's reply: {e}")
+
                                 # Baris ROM:/ID:/dll — kirim sebagai dict (no audio) ke queue
                                 # agar ordering terjaga bersama baris JP yang butuh TTS
                                 await audio_tasks_queue.put({
@@ -1371,10 +1473,18 @@ class LLMAgent:
                         # Untuk speaking/voice: cek apakah sisa buffer adalah ROM:/ID:/dll
                         remaining = sentence_buf.strip()
                         if _LINE_SKIP_RE.match(remaining):
+                            content_to_send = sentence_buf
+                            if remaining.upper().startswith(("ROM:", "ROM：", "ROMAJI:", "ROMAJI：")):
+                                try:
+                                    romaji = self.generate_romaji_pykakasi(current_jp_text)
+                                    content_to_send = f"ROM: {romaji}"
+                                except Exception as e:
+                                    logger.warning(f"Failed to generate pykakasi Romaji for Alisa's reply: {e}")
+                            
                             # Kirim sebagai dict (no audio) untuk menjaga ordering
                             await audio_tasks_queue.put({
                                 "type": "sentence",
-                                "content": sentence_buf,
+                                "content": content_to_send,
                                 "audio_b64": None,
                             })
                         else:
@@ -1399,31 +1509,41 @@ class LLMAgent:
         producer_task = asyncio.create_task(_llm_producer())
         consumer_task = asyncio.create_task(_order_consumer())
 
-        while True:
-            event = await output_queue.get()
-            if event is None:
-                break
-            yield event
+        try:
+            while True:
+                event = await output_queue.get()
+                if event is None:
+                    break
+                yield event
 
-        await asyncio.gather(producer_task, consumer_task)
+            await asyncio.gather(producer_task, consumer_task)
 
-        m = _DATA_BLOCK.search(full_content)
-        if m:
-            asyncio.create_task(
-                self._process_db_updates(student_id, m.group(1).strip())
-            )
+            m = _DATA_BLOCK.search(full_content)
+            if m:
+                asyncio.create_task(
+                    self._process_db_updates(student_id, m.group(1).strip())
+                )
 
-        if student_id != "default_user" and full_content:
-            visible_final = re.sub(r'<think>.*?</think>', '', full_content, flags=re.DOTALL).strip()
-            visible_final = re.sub(r'\|\|\|DATA.*?DATA\|\|\|', '', visible_final, flags=re.DOTALL).strip()
-            await SupabaseService.save_chat_log(student_id, "assistant", visible_final, mode)
+            if student_id != "default_user" and full_content:
+                visible_final = re.sub(r'<think>.*?</think>', '', full_content, flags=re.DOTALL).strip()
+                visible_final = re.sub(r'\|\|\|DATA.*?DATA\|\|\|', '', visible_final, flags=re.DOTALL).strip()
+                await SupabaseService.save_chat_log(student_id, "assistant", visible_final, mode)
 
-        if mode == "speaking":
-            grammar_check = validate_grammar_correction(full_content, grammar_data, query)
-            yield {"type": "done", "grammar_check": grammar_check}
-        else:
-            accuracy = validate_response(full_content, vocab_data, grammar_data, query, kanji_data)
-            yield {"type": "done", "accuracy": accuracy}
+            if mode == "speaking":
+                grammar_check = validate_grammar_correction(full_content, grammar_data, query)
+                yield {"type": "done", "grammar_check": grammar_check}
+            else:
+                accuracy = validate_response(full_content, vocab_data, grammar_data, query, kanji_data)
+                yield {"type": "done", "accuracy": accuracy}
+        finally:
+            if not producer_task.done():
+                producer_task.cancel()
+            if not consumer_task.done():
+                consumer_task.cancel()
+            try:
+                await asyncio.gather(producer_task, consumer_task, return_exceptions=True)
+            except Exception:
+                pass
 
     async def _process_db_updates(self, student_id: str, data_str: str):
         try:

@@ -25,7 +25,7 @@ class Settings(BaseSettings):
 
     # --- HuggingFace Cloud ---
     HF_TOKEN: str = ""
-    HF_MODEL_REPO: str = "Qwen/Qwen3.5-9B"
+    HF_MODEL_REPO: str = "Qwen/Qwen2.5-7B-Instruct"
 
     # --- Supabase ---
     SUPABASE_URL: str = ""

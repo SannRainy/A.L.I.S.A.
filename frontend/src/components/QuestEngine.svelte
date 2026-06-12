@@ -31,6 +31,10 @@
     let correctAnswerDisplay = ""; // Menyimpan jawaban benar untuk ditampilkan
     let isAiThinking = false;      // Untuk status loading AI
 
+    $: if (vrmController) {
+        vrmController.setLoading(isAiThinking);
+    }
+
     // Session stats (dikirim ke backend di akhir level)
     // Format: { [node_id]: { correct: 0, wrong: 0, hint: 0 } }
     let sessionStats = {};

@@ -188,6 +188,9 @@
     $: if (browser) {
         localStorage.setItem("tvjp_is_demo_mode", isDemoMode.toString());
     }
+    $: if (vrmController && mode !== 'voice') {
+        vrmController.setLoading(loading);
+    }
     let isRegistering = false;
     let messageIdCounter = 0;
     let openAccuracyPopups = {};
@@ -1106,10 +1109,9 @@
             finalTranscriptBuffer = ""; // Reset buffer di awal sesi baru
             voiceRecordingCancelled = false; // Reset status batal
 
-            // Init Real-time Speech Recognition for visual feedback (nonaktifkan di Voice Mode)
+            // Init Real-time Speech Recognition for visual feedback
             if (
                 browser &&
-                mode !== "voice" &&
                 (window.SpeechRecognition || window.webkitSpeechRecognition)
             ) {
                 const SpeechRecognition =
@@ -1117,8 +1119,8 @@
                 speechRecognizer = new SpeechRecognition();
                 speechRecognizer.continuous = true;
                 speechRecognizer.interimResults = true;
-                // Gunakan id-ID agar teks mengambang menggunakan alfabet (seperti Romaji)
-                speechRecognizer.lang = "id-ID";
+                // Gunakan ja-JP di voice mode (Speaking Practice), id-ID di mode lainnya
+                speechRecognizer.lang = mode === "voice" ? "ja-JP" : "id-ID";
 
                 speechRecognizer.onresult = (event) => {
                     // Iterasi hanya dari resultIndex (kalimat baru sejak event terakhir)
@@ -1187,6 +1189,11 @@
             finalTranscriptBuffer.trim() || liveTranscript.trim() || "";
         liveTranscript = "";
         finalTranscriptBuffer = "";
+
+        if (mode === "voice" && voiceModeRef) {
+            voiceModeRef.handleVoiceStart(captured);
+        }
+
         const blob = new Blob(audioChunks, { type: "audio/webm" });
         const fd = new FormData();
         fd.append("audio", blob, "input.webm");
@@ -1217,6 +1224,9 @@
             }
         } catch (e) {
             console.error(e);
+            if (mode === "voice" && voiceModeRef) {
+                voiceModeRef.handleVoiceResult(null);
+            }
             chatStore.update((s) => ({
                 ...s,
                 messages: [
@@ -1749,13 +1759,18 @@
                 </div>
             </header>
 
-            {#if mainTab === "profile"}
+            <!-- ── MAIN TABS DISPLAY ── -->
+            <div class="flex-1 min-h-0 flex flex-col" style="display: {mainTab === 'profile' ? 'flex' : 'none'}">
                 <!-- PROFILE TAB -->
                 <Profile user={$user} />
-            {:else if mainTab === "achievement"}
+            </div>
+
+            <div class="flex-1 min-h-0 flex flex-col" style="display: {mainTab === 'achievement' ? 'flex' : 'none'}">
                 <!-- ACHIEVEMENT TAB -->
                 <Achievement />
-            {:else}
+            </div>
+
+            <div class="flex-1 min-h-0 flex flex-col" style="display: {mainTab === 'study' ? 'flex' : 'none'}">
                 <!-- ── STUDY / CHAT TAB ── -->
 
                 <!-- ── MODE TABS ── -->
@@ -1783,10 +1798,12 @@
                 <audio bind:this={audioPlayer} class="hidden"></audio>
 
                 <!-- ── MAIN CONTENT ── -->
-                <div class="flex-1 min-h-0 overflow-hidden flex flex-col">
-                    {#if mode === "quest"}
+                <div class="flex-1 min-h-0 overflow-hidden flex flex-col relative">
+                    <div class="flex-1 min-h-0 flex flex-col" style="display: {mode === 'quest' ? 'flex' : 'none'}">
                         <QuestMode {vrmController} />
-                    {:else if mode === "voice"}
+                    </div>
+
+                    <div class="flex-1 min-h-0 flex flex-col" style="display: {mode === 'voice' ? 'flex' : 'none'}">
                         <!-- ── VOICE: full-panel speaking practice ── -->
                         <VoiceMode
                             bind:this={voiceModeRef}
@@ -1797,9 +1814,13 @@
                             {liveTranscript}
                             {vrmController}
                         />
-                    {:else if mode === "reading"}
+                    </div>
+
+                    <div class="flex-1 min-h-0 flex flex-col" style="display: {mode === 'reading' ? 'flex' : 'none'}">
                         <ReadingMode />
-                    {:else}
+                    </div>
+
+                    <div class="flex-1 min-h-0 flex flex-col" style="display: {mode === 'discovery' ? 'flex' : 'none'}">
                         <!-- ── MESSAGES ── -->
                         <div
                             bind:this={chatContainer}
@@ -2093,9 +2114,9 @@
                                 {clearChat}
                             />
                         </div>
-                    {/if}
+                    </div>
                 </div>
-            {/if}
+            </div>
         </div>
     </aside>
 </main>

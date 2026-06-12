@@ -36,6 +36,7 @@
     let isPlaying = false;
     let wsRef = null;
     let aiTypingText = "";
+    let activeUserTurnIdx = null;
 
     // ── Thinking Phase States ───────────────────────────────────────────
     let currentThinkingText = "A.L.I.S.A. sedang berpikir...";
@@ -61,79 +62,20 @@
     // Popup state for grammar badge (indexed by ts)
     let openGrammarPopups = {};
 
-    // Drag to cancel state
-    let startY = 0;
-    let dragDistance = 0;
-    let isCancelTargetReached = false;
-    let cancelThreshold = 75; // px
     let showCancelNotice = false;
 
-    function handleMouseDown(e) {
+    $: if (vrmController) {
+        const isVoiceThinking = isAiTurn && !aiTypingText.trim();
+        vrmController.setLoading(loading || isVoiceThinking);
+    }
+
+    function handleMicClick() {
         if (loading || isAiTurn) return;
-        startY = e.clientY;
-        dragDistance = 0;
-        isCancelTargetReached = false;
-
-        window.addEventListener("mousemove", handleMouseMove);
-        window.addEventListener("mouseup", handleMouseUp);
-
-        startRecording();
-    }
-
-    function handleMouseMove(e) {
-        if (!isRecording) return;
-        dragDistance = Math.max(0, e.clientY - startY);
-        isCancelTargetReached = dragDistance > cancelThreshold;
-    }
-
-    function handleMouseUp() {
-        window.removeEventListener("mousemove", handleMouseMove);
-        window.removeEventListener("mouseup", handleMouseUp);
-
         if (isRecording) {
-            if (isCancelTargetReached) {
-                stopRecording(true);
-                showCancelNotice = true;
-                setTimeout(() => {
-                    showCancelNotice = false;
-                }, 1500);
-            } else {
-                stopRecording(false);
-            }
+            stopRecording(false);
+        } else {
+            startRecording();
         }
-        dragDistance = 0;
-        isCancelTargetReached = false;
-    }
-
-    function handleTouchStart(e) {
-        if (loading || isAiTurn) return;
-        startY = e.touches[0].clientY;
-        dragDistance = 0;
-        isCancelTargetReached = false;
-
-        startRecording();
-    }
-
-    function handleTouchMove(e) {
-        if (!isRecording) return;
-        dragDistance = Math.max(0, e.touches[0].clientY - startY);
-        isCancelTargetReached = dragDistance > cancelThreshold;
-    }
-
-    function handleTouchEnd() {
-        if (isRecording) {
-            if (isCancelTargetReached) {
-                stopRecording(true);
-                showCancelNotice = true;
-                setTimeout(() => {
-                    showCancelNotice = false;
-                }, 1500);
-            } else {
-                stopRecording(false);
-            }
-        }
-        dragDistance = 0;
-        isCancelTargetReached = false;
     }
 
     // ── Parse AI response ────────────────────────────────────────────────
@@ -150,21 +92,21 @@
         if (!raw) return result;
 
         // Koreksi
-        const corrMatch = raw.match(/KOREKSI:\s*(.+?)(?:\n|$)/i);
+        const corrMatch = raw.match(/KOREKSI:[ \t]*(.+?)(?:\n|$)/i);
         if (corrMatch) result.correction = corrMatch[1].trim();
 
         // USER turn fields
-        const userJpMatch = raw.match(/USER_JP:\s*(.+?)(?:\n|$)/i);
-        const userRomMatch = raw.match(/USER_ROM:\s*(.+?)(?:\n|$)/i);
-        const userIdMatch = raw.match(/USER_ID:\s*(.+?)(?:\n|$)/i);
+        const userJpMatch = raw.match(/USER_JP:[ \t]*(.+?)(?:\n|$)/i);
+        const userRomMatch = raw.match(/USER_ROM:[ \t]*(.+?)(?:\n|$)/i);
+        const userIdMatch = raw.match(/USER_ID:[ \t]*(.+?)(?:\n|$)/i);
         if (userJpMatch) result.user_jp = userJpMatch[1].trim();
         if (userRomMatch) result.user_rom = userRomMatch[1].trim();
         if (userIdMatch) result.user_id = userIdMatch[1].trim();
 
         // AI reply fields
-        const jpMatch = raw.match(/^JP:\s*(.+?)(?:\n|$)/im);
-        const romMatch = raw.match(/^ROM:\s*(.+?)(?:\n|$)/im);
-        const idMatch = raw.match(/^ID:\s*(.+?)(?:\n|$)/im);
+        const jpMatch = raw.match(/^JP:[ \t]*(.+?)(?:\n|$)/im);
+        const romMatch = raw.match(/^ROM:[ \t]*(.+?)(?:\n|$)/im);
+        const idMatch = raw.match(/^ID:[ \t]*(.+?)(?:\n|$)/im);
         if (jpMatch) result.jp = jpMatch[1].trim();
         if (romMatch) result.rom = romMatch[1].trim();
         if (idMatch) result.id = idMatch[1].trim();
@@ -241,10 +183,54 @@
         // Tidak scroll di sini — update JP/ROM/ID tidak butuh reposition
     }
 
-    // ── PUBLIC METHOD: Dipanggil parent setelah STT selesai ───────────────
+    // ── PUBLIC METHODS: Dipanggil parent untuk transkripsi suara ─────────
+    export function handleVoiceStart(captured) {
+        turns = [
+            ...turns,
+            {
+                role: "user",
+                raw: captured || "",
+                loading: true,
+                jp: "",
+                rom: "",
+                id: "",
+                ts: Date.now(),
+            },
+        ];
+        activeUserTurnIdx = turns.length - 1;
+        saveToLocalStorage(turns);
+        scrollToBottom();
+    }
+
     export function handleVoiceResult(finalText) {
-        if (!finalText || !finalText.trim()) return;
-        const userTurnIdx = addUserTurn(finalText.trim());
+        if (!finalText || !finalText.trim()) {
+            // Jika gagal transkripsi, hapus turn loading sementara
+            if (activeUserTurnIdx !== null) {
+                turns = turns.filter((_, idx) => idx !== activeUserTurnIdx);
+                activeUserTurnIdx = null;
+                saveToLocalStorage(turns);
+            }
+            return;
+        }
+
+        let userTurnIdx = activeUserTurnIdx;
+        if (userTurnIdx !== null && userTurnIdx < turns.length) {
+            // Update turn loading sementara dengan teks final dari Whisper
+            turns[userTurnIdx] = {
+                ...turns[userTurnIdx],
+                raw: finalText.trim(),
+                loading: false,
+            };
+            turns = [...turns];
+        } else {
+            // Fallback jika handleVoiceStart entah bagaimana tidak dipanggil
+            userTurnIdx = addUserTurn(finalText.trim());
+        }
+
+        activeUserTurnIdx = null;
+        saveToLocalStorage(turns);
+        scrollToBottom();
+
         sendToAI(finalText.trim(), userTurnIdx);
     }
 
@@ -559,6 +545,7 @@
         turns = [];
         aiTypingText = "";
         isAiTurn = false;
+        activeUserTurnIdx = null;
         if (typeof window !== "undefined") {
             localStorage.removeItem("tvjp_voice_turns_v2");
         }
@@ -628,7 +615,8 @@
             try {
                 const savedTurns = localStorage.getItem("tvjp_voice_turns_v2");
                 if (savedTurns) {
-                    turns = JSON.parse(savedTurns);
+                    turns = JSON.parse(savedTurns).filter((t) => !t.loading);
+                    saveToLocalStorage(turns);
                     return;
                 }
             } catch (e) {
@@ -889,7 +877,26 @@
                     >
                         <!-- User bubble: selalu tampilkan apa yang diucapkan user (raw atau JP/ROM/ID jika sudah diterjemahkan) -->
                         <div class="voice-bubble-user">
-                            {#if turn.jp}
+                            {#if turn.loading}
+                                <div
+                                    class="flex items-center gap-2 text-white/70 text-xs font-medium"
+                                >
+                                    <span class="animate-pulse">🎙️</span>
+                                    {#if turn.raw}
+                                        <span class="italic font-medium"
+                                            >"{turn.raw}"</span
+                                        >
+                                    {:else}
+                                        <span
+                                            class="font-semibold uppercase tracking-wider text-[10px] text-indigo-200"
+                                            >Memproses suara...</span
+                                        >
+                                    {/if}
+                                    <div class="user-thinking-dots">
+                                        <span></span><span></span><span></span>
+                                    </div>
+                                </div>
+                            {:else if turn.jp}
                                 <p
                                     class="text-white text-lg font-bold leading-snug mb-2"
                                     style="font-family: 'Noto Serif JP', serif;"
@@ -916,6 +923,18 @@
                                 >
                                     {turn.raw}
                                 </p>
+                                {#if isAiTurn && i === turns.length - 1}
+                                    <div
+                                        class="mt-1.5 flex items-center gap-1.5 text-[9px] text-fuchsia-300/80"
+                                    >
+                                        <span class="animate-spin text-[8px]"
+                                            >⏳</span
+                                        >
+                                        <span class="font-medium italic"
+                                            >Menerjemahkan ucapan...</span
+                                        >
+                                    </div>
+                                {/if}
                             {/if}
                         </div>
                     </div>
@@ -984,9 +1003,7 @@
             <p
                 class="text-[10px] font-black uppercase tracking-[0.25em] text-center transition-all duration-300
                 {isRecording
-                    ? isCancelTargetReached
-                        ? 'text-rose-500 scale-105'
-                        : 'text-rose-400'
+                    ? 'text-rose-400'
                     : isAiTurn
                       ? 'text-fuchsia-400 animate-pulse'
                       : loading
@@ -994,139 +1011,108 @@
                         : 'text-white/30'}"
             >
                 {#if isRecording}
-                    {#if isCancelTargetReached}
-                        💥 Lepas untuk membatalkan
-                    {:else}
-                        🔴 Merekam — Geser ke bawah untuk batal
-                    {/if}
+                    🔴 Merekam — Klik tombol mic untuk mengirim
                 {:else if loading}
                     ⏳ Memproses suara...
                 {:else if isAiTurn}
                     ✨ A.L.I.S.A. sedang menjawab...
                 {:else}
-                    Tahan untuk berbicara
+                    Klik untuk berbicara
                 {/if}
             </p>
 
             <!-- Live transcript (saat recording) -->
             {#if isRecording && liveTranscript}
                 <div
-                    class="w-full max-w-sm px-4 py-2 bg-white/5 border border-white/10 rounded-2xl text-center"
+                    class="w-full max-w-sm px-4 py-2 bg-indigo-500/10 backdrop-blur-md border border-indigo-400/20 rounded-2xl text-center shadow-[0_4px_20px_rgba(99,102,241,0.15)] animate-pulse"
                     in:fade
                 >
-                    <p class="text-white/70 text-xs font-medium italic">
+                    <p class="text-indigo-200 text-xs font-semibold italic">
                         {liveTranscript}
                     </p>
                 </div>
             {/if}
 
-            <!-- Mic Button with drag animation -->
-            <div
-                class="voice-rings {isRecording ? 'active' : ''} {isAiTurn
-                    ? 'ai-turn'
-                    : ''}"
-                style="transform: translateY({isRecording
-                    ? Math.min(dragDistance * 0.4, cancelThreshold * 0.4)
-                    : 0}px); transition: transform {isRecording
-                    ? 'none'
-                    : '0.2s cubic-bezier(0.34, 1.56, 0.64, 1)'}"
-            >
-                <div class="voice-ring ring-1"></div>
-                <div class="voice-ring ring-2"></div>
-                <div class="voice-ring ring-3"></div>
-                <button
-                    id="btn-mic"
-                    on:mousedown={handleMouseDown}
-                    on:touchstart|preventDefault={handleTouchStart}
-                    on:touchmove|preventDefault={handleTouchMove}
-                    on:touchend|preventDefault={handleTouchEnd}
-                    disabled={loading || isAiTurn}
-                    class="voice-btn {isRecording
-                        ? 'voice-btn-recording'
-                        : ''} {isAiTurn
-                        ? 'voice-btn-ai'
-                        : ''} {isCancelTargetReached ? 'cancel-active' : ''}"
-                >
-                    {#if isAiTurn}
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="30"
-                            height="30"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                            stroke-width="2.2"
-                            class="pointer-events-none"
-                        >
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                d="M9 19V6l12-3v13"
-                            />
-                            <circle cx="6" cy="18" r="3" /><circle
-                                cx="18"
-                                cy="15"
-                                r="3"
-                            />
-                        </svg>
-                    {:else}
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="30"
-                            height="30"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                            stroke-width="2.2"
-                            class="pointer-events-none"
-                        >
-                            <path
-                                d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"
-                            />
-                            <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
-                            <line x1="12" y1="19" x2="12" y2="23" />
-                            <line x1="8" y1="23" x2="16" y2="23" />
-                        </svg>
-                    {/if}
-                </button>
-            </div>
-
-            <!-- Cancel Target Area -->
-            {#if isRecording}
+            <div class="flex items-center gap-6 justify-center">
+                <!-- Mic Button with rings -->
                 <div
-                    class="voice-cancel-zone {isCancelTargetReached
-                        ? 'target-reached'
+                    class="voice-rings {isRecording ? 'active' : ''} {isAiTurn
+                        ? 'ai-turn'
                         : ''}"
-                    style="opacity: {Math.min(
-                        dragDistance / cancelThreshold,
-                        1,
-                    )}; transform: scale({0.8 +
-                        Math.min(dragDistance / cancelThreshold, 1) * 0.2});"
-                    transition:fade={{ duration: 150 }}
                 >
-                    <div class="cancel-icon-wrap">
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="20"
-                            height="20"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                            stroke-width="2.5"
-                        >
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                            />
-                        </svg>
-                    </div>
-                    <span
-                        class="text-[9px] font-black uppercase tracking-[0.15em] mt-1.5"
-                        >Lepas untuk Batal</span
+                    <div class="voice-ring ring-1"></div>
+                    <div class="voice-ring ring-2"></div>
+                    <div class="voice-ring ring-3"></div>
+                    <button
+                        id="btn-mic"
+                        on:click={handleMicClick}
+                        disabled={loading || isAiTurn}
+                        class="voice-btn {isRecording
+                            ? 'voice-btn-recording'
+                            : ''} {isAiTurn ? 'voice-btn-ai' : ''}"
                     >
+                        {#if isAiTurn}
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="30"
+                                height="30"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                                stroke-width="2.2"
+                                class="pointer-events-none"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    d="M9 19V6l12-3v13"
+                                />
+                                <circle cx="6" cy="18" r="3" /><circle
+                                    cx="18"
+                                    cy="15"
+                                    r="3"
+                                />
+                            </svg>
+                        {:else}
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="30"
+                                height="30"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                                stroke-width="2.2"
+                                class="pointer-events-none"
+                            >
+                                <path
+                                    d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"
+                                />
+                                <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+                                <line x1="12" y1="19" x2="12" y2="23" />
+                                <line x1="8" y1="23" x2="16" y2="23" />
+                            </svg>
+                        {/if}
+                    </button>
                 </div>
-            {/if}
+
+                <!-- Batal Button (Only appears when recording) -->
+                {#if isRecording}
+                    <button
+                        type="button"
+                        on:click={() => {
+                            stopRecording(true);
+                            showCancelNotice = true;
+                            setTimeout(() => {
+                                showCancelNotice = false;
+                            }, 1500);
+                        }}
+                        class="px-4 py-2 rounded-2xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-rose-300 text-[10px] font-black uppercase tracking-widest transition hover:scale-105 active:scale-95 shadow-md shadow-rose-950/20"
+                        in:fade={{ duration: 150 }}
+                    >
+                        ✕ BATAL
+                    </button>
+                {/if}
+            </div>
 
             <p
                 class="text-[9px] text-white/20 text-center font-medium max-w-[260px] leading-relaxed"
@@ -1163,6 +1149,39 @@
         border-top-right-radius: 4px;
         padding: 14px 16px;
         max-width: 320px;
+    }
+
+    /* ── User thinking animation inside bubble ── */
+    .user-thinking-dots {
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+        margin-left: 6px;
+    }
+    .user-thinking-dots span {
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.85);
+        animation: user-think-bounce 1.4s infinite ease-in-out;
+    }
+    .user-thinking-dots span:nth-child(2) {
+        animation-delay: 0.16s;
+    }
+    .user-thinking-dots span:nth-child(3) {
+        animation-delay: 0.32s;
+    }
+    @keyframes user-think-bounce {
+        0%,
+        80%,
+        100% {
+            transform: translateY(0);
+            opacity: 0.4;
+        }
+        40% {
+            transform: translateY(-3px);
+            opacity: 1;
+        }
     }
 
     /* ── Voice rings & button ── */

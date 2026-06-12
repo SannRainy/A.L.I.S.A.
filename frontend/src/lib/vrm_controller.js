@@ -10,6 +10,10 @@ export class VRMController {
         this.loader = new GLTFLoader();
         this.loader.register((parser) => new VRMLoaderPlugin(parser));
         
+        this.isLoading = false;
+        this.loadingMesh = null;
+        this.loadingSegments = [];
+        
         this.mouseTarget = new THREE.Vector2(0, 0);
         this.currentMouse = new THREE.Vector2(0, 0);
         this.eyeTarget = new THREE.Vector2(0, 0);
@@ -85,6 +89,10 @@ export class VRMController {
                     if (rightArm) rightArm.rotation.z = 1.2;
                 }
 
+                if (this.isLoading) {
+                    this.setLoading(true);
+                }
+
                 resolve(vrm);
             }, undefined, reject);
         });
@@ -103,6 +111,24 @@ export class VRMController {
 
         this.updateBlinking(delta);
         this.updateSpeaking(delta);
+        
+        if (this.isLoading && this.loadingMesh) {
+            if (this.loadingSegments && this.loadingSegments.length > 0) {
+                const numSegments = this.loadingSegments.length;
+                const speed = 1.5; // Cycles per second
+                const activeIndex = Math.floor((time * speed * numSegments) % numSegments);
+                
+                for (let i = 0; i < numSegments; i++) {
+                    const diff = (activeIndex - i + numSegments) % numSegments;
+                    // Fades from 1.0 (leading segment) down to 0.12 (trailing segments)
+                    const opacity = Math.max(0.12, 1.0 - (diff / numSegments) * 0.9);
+                    this.loadingSegments[i].material.opacity = opacity;
+                }
+            }
+            
+            // Keep static scale to prevent front-to-back bouncing/clipping
+            this.loadingMesh.scale.set(1.0, 1.0, 1.0);
+        }
         
         this.currentMouse.lerp(this.mouseTarget, delta * 3.0);
         
@@ -243,6 +269,96 @@ export class VRMController {
     setExpressionValueRaw(name, val) {
         if (this.currentVrm.expressionManager) {
             this.currentVrm.expressionManager.setValue(name, val);
+        }
+    }
+
+    createRoundedRectShape(width, height, radius) {
+        const shape = new THREE.Shape();
+        const x = -width / 2;
+        const y = -height / 2;
+        
+        shape.moveTo(x, y + radius);
+        shape.lineTo(x, y + height - radius);
+        shape.quadraticCurveTo(x, y + height, x + radius, y + height);
+        shape.lineTo(x + width - radius, y + height);
+        shape.quadraticCurveTo(x + width, y + height, x + width, y + height - radius);
+        shape.lineTo(x + width, y + radius);
+        shape.quadraticCurveTo(x + width, y, x + width - radius, y);
+        shape.lineTo(x + radius, y);
+        shape.quadraticCurveTo(x, y, x, y + radius);
+        
+        return shape;
+    }
+
+    createLoadingIndicator() {
+        const group = new THREE.Group();
+        
+        const numSegments = 12;
+        const radius = 0.038;
+        const pillWidth = 0.0055; // Thicker pills
+        const pillLength = 0.013; // Thicker pills
+        const pillRadius = pillWidth / 2;
+        
+        this.loadingSegments = [];
+        
+        // Shape representing a rounded pill
+        const pillShape = this.createRoundedRectShape(pillWidth, pillLength, pillRadius);
+        const geom = new THREE.ShapeGeometry(pillShape);
+        
+        // Offset relative to head bone coordinate space:
+        // X = -0.045 (Aligned right above the VRM's right eye / viewer's left side)
+        // Y = 0.155 (Forehead level, slightly higher)
+        // Z = 0.11 (Moved forward to float clearly in front of hair/face)
+        const centerX = -0.045;
+        const centerY = 0.155;
+        const centerZ = 0.11;
+        
+        for (let i = 0; i < numSegments; i++) {
+            const angle = (i / numSegments) * Math.PI * 2;
+            
+            // White double-sided material unique for each segment to control individual opacity
+            const mat = new THREE.MeshBasicMaterial({ 
+                color: 0xffffff,
+                transparent: true,
+                opacity: 0.1,
+                side: THREE.DoubleSide
+            });
+            
+            const mesh = new THREE.Mesh(geom, mat);
+            
+            // Spoke container group for clean positioning & radial orientation in X-Y plane
+            const pivot = new THREE.Group();
+            pivot.position.set(centerX, centerY, centerZ);
+            pivot.rotation.z = angle; // rotate around Z-axis (pointing forward)
+            
+            // Place mesh at distance R from center along local Y-axis
+            mesh.position.set(0, radius, 0);
+            
+            pivot.add(mesh);
+            group.add(pivot);
+            
+            this.loadingSegments.push(mesh);
+        }
+        
+        return group;
+    }
+
+    setLoading(isLoading) {
+        this.isLoading = isLoading;
+        if (isLoading) {
+            if (!this.loadingMesh) {
+                this.loadingMesh = this.createLoadingIndicator();
+            }
+            if (this.currentVrm && this.currentVrm.humanoid) {
+                const head = this.currentVrm.humanoid.getNormalizedBoneNode('head');
+                if (head && !head.children.includes(this.loadingMesh)) {
+                    head.add(this.loadingMesh);
+                }
+            }
+        } else {
+            if (this.loadingMesh && this.loadingMesh.parent) {
+                this.loadingMesh.parent.remove(this.loadingMesh);
+            }
         }
     }
 }

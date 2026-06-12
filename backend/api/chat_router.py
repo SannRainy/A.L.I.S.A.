@@ -201,14 +201,19 @@ async def ws_chat(websocket: WebSocket):
                     mode=mode,
                 ):
                     await websocket.send_text(json.dumps(event))
+            except WebSocketDisconnect:
+                raise
             except Exception as e:
                 logger.error(f"[WS] Pipeline error: {e}")
-                await websocket.send_text(
-                    json.dumps({
-                        "type": "error",
-                        "content": "⚠️ Alisa sedang pusing, coba lagi sebentar ya! 🙏",
-                    })
-                )
+                try:
+                    await websocket.send_text(
+                        json.dumps({
+                            "type": "error",
+                            "content": "⚠️ Alisa sedang pusing, coba lagi sebentar ya! 🙏",
+                        })
+                    )
+                except Exception:
+                    pass
 
     except WebSocketDisconnect:
         logger.info("[WS] Client disconnected")

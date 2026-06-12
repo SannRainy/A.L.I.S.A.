@@ -60,12 +60,12 @@ class VoiceService:
     def _load_whisper(self):
         if self.whisper_model is None:
             from faster_whisper import WhisperModel
-            logger.info("Membuka model Kotoba-Whisper v1.0 (faster) pada GPU dengan compute_type='int8'...")
-            # Load Kotoba-Whisper model on GPU with int8 compute_type
+            logger.info("Membuka model Kotoba-Whisper v1.0 (faster) pada GPU dengan compute_type='float16'...")
+            # Load Kotoba-Whisper model on GPU with float16 compute_type for better precision
             self.whisper_model = WhisperModel(
                 "kotoba-tech/kotoba-whisper-v1.0-faster",
                 device="cuda",
-                compute_type="int8"
+                compute_type="float16"
             )
         return self.whisper_model
 
@@ -75,21 +75,25 @@ class VoiceService:
             # Gunakan asyncio.to_thread karena model load bersifat blocking
             model = await asyncio.to_thread(self._load_whisper)
 
-            # Opsi transkripsi — disesuaikan berdasarkan mode aktif
-            transcribe_opts = {}
-            if mode in ("voice", "speaking"):
-                # Paksa deteksi bahasa Jepang & beri petunjuk awal
-                # agar Whisper tidak bingung mengira ucapan JP sebagai bahasa lain
-                transcribe_opts["language"] = "ja"
-                transcribe_opts["initial_prompt"] = (
+            # FIX: Selalu paksa bahasa Jepang dan berikan initial_prompt tanpa bergantung pada nilai `mode`
+            transcribe_opts = {
+                "language": "ja",
+                "beam_size": 5, # Meningkatkan akurasi pencarian token kata Jepang
+                "initial_prompt": (
                     "日本語の会話です。ひらがな、カタカナ、漢字。"
-                    "こんにちは、お元気ですか、ありがとうございます、すみません。"
+                    "こんにちは、お元気ですか、ありがとうございます、すみません、天気がいいですね。"
                 )
-                logger.info("[Whisper STT] Mode voice/speaking → paksa language='ja'")
+            }
+            logger.info(f"[Whisper STT] Transcribing file with strict Japanese settings (mode passed: {mode})")
 
             # Jalankan transkripsi dan iterasi segmen di thread terpisah agar tidak memblock event loop
             def run_transcription():
-                segments, info = model.transcribe(file_path, **transcribe_opts)
+                segments, info = model.transcribe(
+                    file_path, 
+                    **transcribe_opts,
+                    vad_filter=True, # Aktifkan VAD bawaan faster-whisper untuk membuang keheningan/noise
+                    vad_parameters=dict(min_silence_duration_ms=500)
+                )
                 return list(segments), info
 
             segments_list, info = await asyncio.to_thread(run_transcription)
