@@ -20,6 +20,9 @@ _TEMP_MAX_AGE_SECONDS = 3600  # 1 jam
 
 class VoiceService:
     def __init__(self):
+        # FIX: OpenMP duplicate runtime initialization on Windows
+        os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
+
         # FIX: Whisper membutuhkan ffmpeg di system PATH. 
         # Kita inject executable dari imageio_ffmpeg ke system PATH secara dinamis.
         try:
@@ -56,17 +59,20 @@ class VoiceService:
 
     def _load_whisper(self):
         if self.whisper_model is None:
-            import whisper
-            logger.info("Membuka model Whisper (base) untuk akurasi Bahasa Jepang yang lebih baik...")
-            # Upgrade dari 'tiny' ke 'base' — hanya ~70MB VRAM tambahan,
-            # namun akurasi pengenalan bahasa Jepang jauh lebih tinggi.
-            self.whisper_model = whisper.load_model("base")
+            from faster_whisper import WhisperModel
+            logger.info("Membuka model Kotoba-Whisper v1.0 (faster) pada GPU dengan compute_type='int8'...")
+            # Load Kotoba-Whisper model on GPU with int8 compute_type
+            self.whisper_model = WhisperModel(
+                "kotoba-tech/kotoba-whisper-v1.0-faster",
+                device="cuda",
+                compute_type="int8"
+            )
         return self.whisper_model
 
     async def transcribe_audio(self, file_path: str, mode: str = None) -> str:
-        """Mengubah audio dari user menjadi teks (STT) menggunakan Whisper."""
+        """Mengubah audio dari user menjadi teks (STT) menggunakan Kotoba-Whisper."""
         try:
-            # Gunakan asyncio.to_thread karena whisper bersifat synchronous (blocking)
+            # Gunakan asyncio.to_thread karena model load bersifat blocking
             model = await asyncio.to_thread(self._load_whisper)
 
             # Opsi transkripsi — disesuaikan berdasarkan mode aktif
@@ -81,9 +87,14 @@ class VoiceService:
                 )
                 logger.info("[Whisper STT] Mode voice/speaking → paksa language='ja'")
 
-            result = await asyncio.to_thread(model.transcribe, file_path, **transcribe_opts)
-            text = result.get("text", "").strip()
-            detected_lang = result.get("language", "?")
+            # Jalankan transkripsi dan iterasi segmen di thread terpisah agar tidak memblock event loop
+            def run_transcription():
+                segments, info = model.transcribe(file_path, **transcribe_opts)
+                return list(segments), info
+
+            segments_list, info = await asyncio.to_thread(run_transcription)
+            text = "".join([segment.text for segment in segments_list]).strip()
+            detected_lang = info.language
             logger.info(f"[Whisper STT] Input dikenali (mode={mode}, lang={detected_lang}): {text}")
             return text
         except Exception as e:

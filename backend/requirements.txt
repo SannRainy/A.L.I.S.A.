@@ -44,7 +44,7 @@ httpx>=0.27.0
 # =============================================================
 # AI / ML / NLP
 # =============================================================
-openai-whisper
+faster-whisper
 keybert
 sentence-transformers
 deep-translator
