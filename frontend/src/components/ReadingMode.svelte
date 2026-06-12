@@ -1,5 +1,5 @@
 <script>
-    import { onMount } from "svelte";
+    import { onMount, onDestroy } from "svelte";
     import { fade } from "svelte/transition";
     import { user } from "../stores/auth_store";
     import { applyFurigana } from "../lib/furigana";
@@ -15,6 +15,50 @@
     let result = null;
     let submitting = false;
     let selectedLevel = null;
+
+    export let vrmController = null;
+
+    // Audio Playback
+    let audioPlayer = null;
+    let isPlaying = false;
+
+    function stopAudio() {
+        if (audioPlayer) {
+            audioPlayer.pause();
+            audioPlayer = null;
+        }
+        isPlaying = false;
+        if (vrmController) vrmController.setSpeaking(false);
+    }
+
+    function toggleAudio() {
+        console.log("[ReadingMode] toggleAudio: vrmController =", vrmController, "isPlaying =", isPlaying);
+        if (!selectedPassage) return;
+        if (!audioPlayer) {
+            audioPlayer = new Audio(`/audio/reading/${selectedPassage.id}.wav`);
+            audioPlayer.onended = () => {
+                isPlaying = false;
+                if (vrmController) vrmController.setSpeaking(false);
+            };
+        }
+        if (isPlaying) {
+            audioPlayer.pause();
+            isPlaying = false;
+            if (vrmController) vrmController.setSpeaking(false);
+        } else {
+            if (vrmController) vrmController.setSpeaking(true);
+            audioPlayer.play().catch(e => {
+                console.error("Audio playback failed:", e);
+                if (vrmController) vrmController.setSpeaking(false);
+                isPlaying = false;
+            });
+            isPlaying = true;
+        }
+    }
+
+    onDestroy(() => {
+        stopAudio();
+    });
 
     onMount(async () => {
         await loadPassages();
@@ -37,6 +81,7 @@
     }
 
     async function selectPassage(passageId) {
+        stopAudio();
         try {
             const res = await fetch(`http://localhost:8000/api/v1/reading/passage/${passageId}`);
             const data = await res.json();
@@ -106,6 +151,7 @@
     }
 
     function backToList() {
+        stopAudio();
         selectedPassage = null;
         result = null;
     }
@@ -186,12 +232,20 @@
                                 {selectedPassage.level}
                             </span>
                         </div>
-                        <button
-                            on:click={() => showTranslation = !showTranslation}
-                            class="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-slate-300 text-sm rounded-lg transition"
-                        >
-                            {showTranslation ? "Hide" : "Show"} Translation
-                        </button>
+                        <div class="flex gap-2">
+                            <button
+                                on:click={toggleAudio}
+                                class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-bold rounded-lg transition flex items-center gap-2"
+                            >
+                                <span>{isPlaying ? "⏸️ Pause" : "🔊 Dengarkan"}</span>
+                            </button>
+                            <button
+                                on:click={() => showTranslation = !showTranslation}
+                                class="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-slate-300 text-sm rounded-lg transition"
+                            >
+                                {showTranslation ? "Sembunyikan" : "Tampilkan"} Terjemahan
+                            </button>
+                        </div>
                     </div>
 
                     <!-- Japanese text -->

@@ -61,6 +61,18 @@
         { id: 'exam_2', icon: '📋', title: 'Ujian Kedua',         desc: '25 soal · 15 menit · Grammar Menengah & Lanjutan',    color: 'from-violet-400 to-purple-600',  shadow: 'shadow-violet-500/30', glowBg: 'bg-violet-500/10', border: 'border-violet-400/30', badgeColor: 'text-violet-300' },
         { id: 'exam_3', icon: '🏆', title: 'Ujian Final JLPT N5', desc: '25 soal · 20 menit · Komprehensif + Kanji Intensif',  color: 'from-rose-400 to-orange-500',    shadow: 'shadow-rose-500/30',   glowBg: 'bg-rose-500/10',   border: 'border-rose-400/30',   badgeColor: 'text-rose-300' },
     ];
+
+    function portal(node) {
+        const target = document.querySelector('.quest-container') || document.body;
+        target.appendChild(node);
+        return {
+            destroy() {
+                if (node.parentNode) {
+                    node.parentNode.removeChild(node);
+                }
+            }
+        };
+    }
 </script>
 
 <div class="quest-map h-full overflow-y-auto custom-scroll p-8 flex flex-col items-center relative glass-panel rounded-[2rem]">
@@ -69,7 +81,7 @@
     {#if showConfirm && activeLevel}
         {@const tier = getTierInfo(activeLevel.difficulty_tier)}
         {@const prevLevel = levels[levels.findIndex(l => l.id === activeLevel.id) - 1]}
-        <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md" in:fade>
+        <div use:portal class="absolute inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md" in:fade>
             <div class="bg-white/10 backdrop-blur-2xl rounded-[2.5rem] p-10 max-w-sm w-full shadow-2xl border border-white/20" in:fly={{ y: 20 }}>
                 <div class="text-5xl mb-4 text-center drop-shadow-lg">{activeLevel.icon}</div>
                 <h3 class="text-2xl font-black text-white text-center mb-1 tracking-tight">{activeLevel.title}</h3>
@@ -117,7 +129,7 @@
 
     <!-- ── Prerequisite Alert Modal ── -->
     {#if prerequisiteAlert.show}
-        <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md" in:fade>
+        <div use:portal class="absolute inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md" in:fade>
             <div class="bg-white/10 backdrop-blur-2xl rounded-[2.5rem] p-10 max-w-sm w-full shadow-2xl border border-white/20 text-center" in:fly={{ y: 20 }}>
                 <div class="text-5xl mb-4">🔒</div>
                 <h3 class="text-xl font-black text-white mb-2">Level Terkunci</h3>

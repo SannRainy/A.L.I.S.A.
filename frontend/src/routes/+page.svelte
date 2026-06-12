@@ -1820,7 +1820,7 @@
                     </div>
 
                     <div class="flex-1 min-h-0 flex flex-col" style="display: {mode === 'reading' ? 'flex' : 'none'}">
-                        <ReadingMode />
+                        <ReadingMode {vrmController} />
                     </div>
 
                     <div class="flex-1 min-h-0 flex flex-col" style="display: {mode === 'discovery' ? 'flex' : 'none'}">
