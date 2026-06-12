@@ -3,6 +3,8 @@
     import { onMount, onDestroy, afterUpdate, tick } from "svelte";
     import { fly, fade } from "svelte/transition";
     import { chatStore, clearChat } from "../stores/chat_store";
+    import { applyFurigana } from "../lib/furigana";
+
     import {
         user,
         initAuth,
@@ -209,7 +211,8 @@
 
     function renderMarkdown(content) {
         if (!content) return "";
-        return DOMPurify.sanitize(marked.parse(content, { breaks: true }));
+        const html = DOMPurify.sanitize(marked.parse(content, { breaks: true }));
+        return applyFurigana(html);
     }
 
     afterUpdate(() => {

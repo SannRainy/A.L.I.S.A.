@@ -3,6 +3,8 @@
     import { fly, fade } from "svelte/transition";
     import { user } from "../stores/auth_store";
     import { sfx } from "../lib/sfx_manager";
+    import { applyFurigana } from "../lib/furigana";
+
 
     export let levelData;
     export let onFinish = () => {};
@@ -33,6 +35,83 @@
 
     $: if (vrmController) {
         vrmController.setLoading(isAiThinking);
+    }
+
+    // ALISA Sticker state
+    let activeStickers = [];
+
+    function triggerSticker(type) {
+        const config = {
+            benar: [
+                { img: '/img/stickers/Yatta Benar.png', audio: '/audio/stickers/Yatta Benar.wav' },
+                { img: '/img/stickers/Ganbare.png', audio: '/audio/stickers/Ganbare.wav' }
+            ],
+            salah: { img: '/img/stickers/Masih Salah Nih.png', audio: '/audio/stickers/Masih Salah Nih.wav' },
+            partially: { img: '/img/stickers/Dikit Lagi Nih.png', audio: '/audio/stickers/Dikit Lagi Nih.wav' }
+        };
+
+        let target;
+        if (type === 'benar') {
+            const list = config.benar;
+            target = list[Math.floor(Math.random() * list.length)];
+        } else {
+            target = config[type];
+        }
+
+        if (!target) return;
+
+        // Play matching audio WAV file instantly and sync VRM speaking
+        const audio = new Audio(target.audio);
+        audio.volume = 0.85;
+        
+        if (vrmController) vrmController.setSpeaking(true);
+        audio.play().catch(e => {
+            console.warn("Audio play blocked:", e);
+            if (vrmController) vrmController.setSpeaking(false);
+        });
+        audio.onended = () => {
+            if (vrmController) vrmController.setSpeaking(false);
+        };
+
+        // Determine left or right side randomly
+        const isLeft = Math.random() < 0.5;
+        
+        // Random Y coordinate: 20vh to 70vh
+        const randomY = Math.random() * 50 + 20; 
+        
+        // Tilt rotation: lean into the screen!
+        // Left side leans clockwise (+12 to +18 deg)
+        // Right side leans counter-clockwise (-12 to -18 deg)
+        const baseRot = isLeft ? 15 : -15;
+        const randomRot = baseRot + (Math.random() - 0.5) * 6; // +/- 3deg variance
+
+        const stickerId = `sticker_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
+        const newSticker = {
+            id: stickerId,
+            img: target.img,
+            side: isLeft ? 'left' : 'right',
+            y: randomY,
+            rotation: randomRot
+        };
+
+        activeStickers = [...activeStickers, newSticker];
+
+        // Clean up sticker after 2.5s (corresponds to active screen time)
+        setTimeout(() => {
+            activeStickers = activeStickers.filter(s => s.id !== stickerId);
+        }, 2500);
+    }
+
+    // Portal action to render stickers relative to the body/viewport
+    function portal(node) {
+        document.body.appendChild(node);
+        return {
+            destroy() {
+                if (node.parentNode) {
+                    node.parentNode.removeChild(node);
+                }
+            }
+        };
     }
 
     // Session stats (dikirim ke backend di akhir level)
@@ -81,6 +160,7 @@
 
         if (isCorrect) {
             sfx.play('success');
+            triggerSticker('benar'); // Trigger Yatta Benar / Ganbare (50/50)
             lastAnswerWrong = false;
 
             const attempts = wrongAttempts[currentQuestion.id] || 0;
@@ -126,6 +206,7 @@
 
             if (attempts === 1) {
                 // Kesalahan pertama: antrekan ulang, lanjut tanpa feedback
+                triggerSticker('partially'); // Trigger Dikit Lagi Nih
                 questionQueue.push(JSON.parse(JSON.stringify(currentQuestion)));
                 setTimeout(() => {
                     isEvaluating = false;
@@ -136,6 +217,7 @@
 
             } else if (attempts === 2) {
                 // Kesalahan kedua: minta AI feedback, antrekan ulang
+                triggerSticker('salah'); // Trigger Masih Salah Nih
                 questionQueue.push(JSON.parse(JSON.stringify(currentQuestion)));
                 await requestAIFeedback(userAnswer);
                 isEvaluating = false;
@@ -355,7 +437,7 @@
                                     <p class="text-xs text-indigo-400 font-semibold mb-3 opacity-80">📚 {currentQuestion.grammar_focus}</p>
                                 {/if}
                                 <h3 class="text-2xl md:text-[1.65rem] font-black text-white leading-tight">
-                                    {currentQuestion.question}
+                                    {@html applyFurigana(currentQuestion.question)}
                                 </h3>
                             </div>
 
@@ -372,7 +454,7 @@
                                                 <div class="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center text-xs text-indigo-500 font-black shrink-0">
                                                     {String.fromCharCode(65 + i)}
                                                 </div>
-                                                {option}
+                                                {@html applyFurigana(option)}
                                             </button>
                                         {/each}
                                     </div>
@@ -448,7 +530,7 @@
                                         </button>
                                     {:else}
                                         <div class="inline-block px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-sm text-slate-200 font-medium" in:fly={{ y: 5 }}>
-                                            💡 {currentQuestion.hint}
+                                            💡 {@html applyFurigana(currentQuestion.hint)}
                                         </div>
                                     {/if}
                                 </div>
@@ -469,7 +551,7 @@
                         </div>
                         <div class="flex-1 p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl flex flex-col shadow-sm backdrop-blur-sm">
                             <span class="text-[10px] text-emerald-400 font-bold uppercase tracking-wider mb-1">Jawaban Benar</span>
-                            <span class="text-sm font-bold text-emerald-200 leading-relaxed">{correctAnswerDisplay || '-'}</span>
+                            <span class="text-sm font-bold text-emerald-200 leading-relaxed">{@html applyFurigana(correctAnswerDisplay) || '-'}</span>
                         </div>
                     </div>
 
@@ -492,7 +574,7 @@
                                 <p class="thinking-label">A.L.I.S.A. sedang merangkai penjelasan...</p>
                             </div>
                         {:else}
-                            <p class="text-slate-200 font-semibold leading-relaxed mb-6 italic">"{aiFeedbackText}"</p>
+                            <p class="text-slate-200 font-semibold leading-relaxed mb-6 italic">"{@html applyFurigana(aiFeedbackText)}"</p>
 
                             <button
                                 on:click={continueAfterFeedback}
@@ -507,6 +589,20 @@
         </div>
     </div>
     <audio bind:this={audioPlayer} hidden></audio>
+
+    <!-- ALISA Sticker Overlay -->
+    <div use:portal class="alisa-stickers-container">
+        {#each activeStickers as sticker (sticker.id)}
+            <div
+                class="alisa-sticker-overlay {sticker.side}"
+                style="top: {sticker.y}vh; --rot: {sticker.rotation}deg;"
+                in:fly={{ x: sticker.side === 'left' ? -200 : 200, duration: 550 }}
+                out:fly={{ x: sticker.side === 'left' ? -200 : 200, duration: 450 }}
+            >
+                <img src={sticker.img} alt="Alisa Sticker" class="alisa-sticker-img" />
+            </div>
+        {/each}
+    </div>
 </div>
 
 <style>
@@ -549,7 +645,7 @@
     .thinking-label {
         font-size: 14px;
         font-weight: 600;
-        color: #6366f1;
+        color: #ffffff;
         letter-spacing: 0.02em;
         animation: label-fade 2s ease-in-out infinite;
         margin: 0;
@@ -560,6 +656,45 @@
         }
         50% {
             opacity: 1;
+        }
+    }
+
+    .alisa-stickers-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        pointer-events: none;
+        z-index: 9999;
+    }
+    .alisa-sticker-overlay {
+        position: absolute;
+        width: 300px;
+        height: 300px;
+        margin-top: -150px;
+        filter: drop-shadow(0 12px 25px rgba(0, 0, 0, 0.45));
+    }
+    .alisa-sticker-overlay.left {
+        left: -150px; /* Peek exactly half of the sticker */
+    }
+    .alisa-sticker-overlay.right {
+        right: -150px; /* Peek exactly half of the sticker */
+    }
+    .alisa-sticker-img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        transform: rotate(var(--rot));
+        animation: stickerSway 3s ease-in-out infinite alternate;
+        transform-origin: bottom center;
+    }
+    @keyframes stickerSway {
+        0% {
+            transform: rotate(calc(var(--rot) - 4deg));
+        }
+        100% {
+            transform: rotate(calc(var(--rot) + 4deg));
         }
     }
 </style>

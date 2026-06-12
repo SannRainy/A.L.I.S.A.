@@ -14,6 +14,21 @@
     font-family: 'Outfit', 'Inter', system-ui, sans-serif;
     background-color: transparent;
   }
+
+  /* Ruby & Furigana Styling */
+  ruby {
+    ruby-position: over;
+    ruby-align: space-around;
+  }
+
+  rt {
+    font-size: 0.55em;
+    font-weight: 600;
+    color: #a5b4fc; /* soft light indigo matching the theme */
+    padding-bottom: 0.15em;
+    user-select: none;
+    letter-spacing: 0.05em;
+  }
 }
 
 @layer components {

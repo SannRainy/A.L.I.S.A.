@@ -2,18 +2,11 @@
 /**
  * Dataset Quest JLPT N5
  * Berdasarkan: JLPT N5 Grammar Master by JLPTsensei.com (80 Grammar Lessons)
- *
+ * 
  * Struktur:
  * - 9 Level, masing-masing 10 soal
  * - Kesulitan meningkat setiap 3 level (difficulty_tier: 1, 2, 3)
- * - Prerequisite antar level untuk mendukung "Pembelajaran Terstruktur"
- * - Tipe soal: 'mcq' (pilihan ganda), 'fill' (isian), 'translate' (terjemah → produksi aktif)
- *
- * Field per Level:
- *   id, title, icon, description, difficulty_tier, prerequisites (array node_id)
- *
- * Field per Soal:
- *   id, type, node_id, grammar_focus, question, [options/correct/acceptedAnswers], hint
+ * - Tipe soal: 'mcq' (pilihan ganda), 'fill' (isian), 'translate' (terjemah)
  */
 
 export const questLevels = [
@@ -26,107 +19,106 @@ export const questLevels = [
         icon: "🌱",
         difficulty_tier: 1,
         description: "Memperkenalkan diri dan menggunakan partikel dasar (wa, mo, no, desu).",
-        prerequisites: [], // Level pertama, tidak ada prerequisite
+        prerequisites: [],
         questions: [
             {
                 id: "q_1_1",
                 type: "mcq",
                 node_id: "grammar_wa",
-                grammar_focus: "Partikel は (wa) — Penanda topik",
-                question: "Partikel apa yang digunakan untuk menandai topik utama kalimat?",
-                options: ["を (o)", "は (wa)", "に (ni)", "へ (e)"],
+                grammar_focus: "Partikel は (wa) — Penanda Topik",
+                question: "Lengkapi kalimat: わたし ___ クリスです。 (Saya adalah Chris.)",
+                options: ["を (o)", "は (wa)", "に (ni)", "も (mo)"],
                 correctIndex: 1,
-                hint: "Contoh: Watashi ___ Tanaka desu. (Saya [adalah] Tanaka.)"
+                hint: "Topik utama kalimat ditandai dengan partikel 'wa' (ditulis hiragana 'ha')."
             },
             {
                 id: "q_1_2",
                 type: "fill",
                 node_id: "grammar_desu",
-                grammar_focus: "だ・です (da/desu) — To be",
-                question: "Lengkapi kalimat: Watashi wa gakusei ___. (Saya adalah siswa.)",
-                correct: ["desu", "です", "da", "だ"],
-                hint: "Kata bantu penutup kalimat sopan. Bentuk kasualnya adalah 'da'."
+                grammar_focus: "だ・です (da/desu) — To Be (Sopan)",
+                question: "Lengkapi kalimat penutup sopan berikut: かれはわたしの<ruby>友<rt>とも</rt></ruby>だち ___。 (He is my friend.)",
+                correct: ["desu", "です"],
+                hint: "Kopula penutup kalimat sopan untuk kata benda."
             },
             {
                 id: "q_1_3",
                 type: "mcq",
                 node_id: "grammar_no",
-                grammar_focus: "の (no) — Partikel kepemilikan",
-                question: "Apa fungsi utama dari partikel 'no' (の)?",
-                options: ["Menunjukkan kepemilikan / hubungan antar kata benda", "Menunjukkan tujuan", "Menunjukkan waktu", "Menunjukkan objek"],
-                correctIndex: 0,
-                hint: "Contoh: Watashi ___ hon = Buku saya. Ini seperti apostrophe-s dalam bahasa Inggris."
+                grammar_focus: "の (no) — Partikel Kepemilikan",
+                question: "Lengkapi kalimat: わたしの<ruby>名前<rt>なまえ</rt></ruby> ___ クリスです。 (Nama saya adalah Chris.)",
+                options: ["は (wa)", "の (no)", "が (ga)", "を (o)"],
+                correctIndex: 1,
+                hint: "Partikel 'no' digunakan untuk menghubungkan dua kata benda (kepemilikan/hubungan)."
             },
             {
                 id: "q_1_4",
                 type: "fill",
                 node_id: "grammar_mo",
                 grammar_focus: "も (mo) — Juga / Pula",
-                question: "Partikel yang berarti 'juga / pula' adalah ___.",
+                question: "Lengkapi kalimat: わたし ___ インドネシア<ruby>人<rt>じん</rt></ruby>です。 (Saya juga orang Indonesia.)",
                 correct: ["mo", "も"],
-                hint: "Watashi ___ gakusei desu. (Saya juga seorang siswa.)"
+                hint: "Partikel yang berarti 'juga' atau 'pula'."
             },
             {
                 id: "q_1_5",
                 type: "mcq",
                 node_id: "grammar_ka",
-                grammar_focus: "か (ka) — Partikel tanya",
-                question: "Partikel apa yang diletakkan di akhir kalimat untuk membuat pertanyaan?",
+                grammar_focus: "か (ka) — Partikel Tanya",
+                question: "Lengkapi kalimat tanya: あれはなんですか ___。 (Apakah itu?)",
                 options: ["ね (ne)", "よ (yo)", "か (ka)", "な (na)"],
                 correctIndex: 2,
-                hint: "Diletakkan tepat setelah 'desu'. Contoh: Gakusei desu ___?"
+                hint: "Partikel akhir yang menandai pertanyaan."
             },
             {
                 id: "q_1_6",
                 type: "mcq",
                 node_id: "grammar_dewa_nai",
-                grammar_focus: "じゃない・ではない (janai/dewa nai) — Bentuk negatif to be",
-                question: "Mana yang merupakan bentuk negatif dari 'desu' (bukan/tidak)?",
-                options: ["dewa arimasen / ではありません", "desu nai", "dewa masu", "nai desu"],
+                grammar_focus: "じゃない・ではない (dewa nai) — Negatif To Be",
+                question: "Pilihlah bentuk negatif sopan (bukan/tidak) yang tepat: わたしは<ruby>先生<rt>せんせい</rt></ruby> ___。 (Saya bukan guru.)",
+                options: ["ではありません (dewa arimasen)", "じゃないでした (janai deshita)", "ですない (desu nai)", "ではあります (dewa arimasu)"],
                 correctIndex: 0,
-                hint: "Bentuk formal: 'dewa arimasen'. Bentuk kasual: 'janai' atau 'dewa nai'."
+                hint: "Bentuk negatif formal dari desu adalah dewa arimasen."
             },
             {
                 id: "q_1_7",
                 type: "mcq",
                 node_id: "grammar_kore_sore_are",
-                grammar_focus: "こ・そ・あ・ど系 (Ko-So-A-Do) — Kata penunjuk",
-                question: "Kata untuk menunjukkan benda yang dekat dengan PEMBICARA adalah?",
-                options: ["Sore (それ)", "Are (あれ)", "Kore (これ)", "Dore (どれ)"],
+                grammar_focus: "これ・それ・あれ (Ko-So-A-Do) — Kata Penunjuk Benda",
+                question: "Pilihlah kata penunjuk yang tepat: ほしいものは ___ だけです。 (Barang yang saya inginkan hanya ini [dekat pembicara].)",
+                options: ["それ (sore)", "あれ (are)", "これ (kore)", "どれ (dore)"],
                 correctIndex: 2,
-                hint: "Ko = dekat pembicara, So = dekat pendengar, A = jauh dari keduanya, Do = tanya."
+                hint: "Ko-so-a-do: 'kore' digunakan untuk menunjuk benda yang dekat dengan pembicara."
             },
             {
                 id: "q_1_8",
                 type: "fill",
                 node_id: "grammar_dare",
-                grammar_focus: "誰 (dare) — Kata tanya 'Siapa'",
-                question: "Kata tanya untuk 'Siapa' dalam bahasa Jepang adalah ___.",
+                grammar_focus: "誰 (dare) — Kata Tanya 'Siapa'",
+                question: "Lengkapi kalimat tanya: あそこにいる<ruby>人<rt>ひと</rt></ruby>は ___ ですか。 (Siapa orang yang ada di sana?)",
                 correct: ["dare", "だれ", "donata", "どなた"],
-                hint: "Onamae wa nan desu ka? vs ___ desu ka? (Siapa?)"
+                hint: "Kata tanya untuk menanyakan orang ('siapa')."
             },
             {
                 id: "q_1_9",
                 type: "translate",
                 node_id: "grammar_desu",
-                grammar_focus: "だ・です (da/desu) — Produksi kalimat dasar",
-                question: "Terjemahkan: 'Nama saya adalah Alisa.' (Gunakan: namae / Arisa / desu / wa / watashi no)",
+                grammar_focus: "だ・です (da/desu) — Penerapan Struktur Kalimat",
+                question: "Terjemahkan ke bahasa Jepang: 'Nama saya adalah Chris.' (Tulis dalam Romaji huruf kecil)",
                 acceptedAnswers: [
-                    "watashi no namae wa arisa desu",
-                    "watashi no namae wa arisa desu.",
-                    "arisa desu",
-                    "watashino namae wa arisa desu"
+                    "watashi no namae wa kurisu desu",
+                    "watashi no namae wa kurisu desu.",
+                    "watashino namae wa kurisu desu"
                 ],
-                hint: "Polanya: [Topik] wa [Subjek/Info] desu. 'Nama saya' = Watashi no namae."
+                hint: "Gunakan partikel 'no', 'wa', dan diakhiri dengan 'desu'."
             },
             {
                 id: "q_1_10",
                 type: "fill",
                 node_id: "grammar_hai_iie",
                 grammar_focus: "はい・いいえ (hai/iie) — Ya / Tidak",
-                question: "Bahasa Jepang dari 'Ya' (setuju) adalah ___, dan 'Tidak' adalah ___.",
-                correct: ["hai iie", "はい いいえ", "hai, iie"],
-                hint: "Keduanya dipisah spasi. はい = hai, いいえ = iie."
+                question: "Lengkapi percakapan: A: Tanaka-san wa gakusei desu ka? B: ___, gakusei desu. (Ya, siswa.)",
+                correct: ["hai", "はい"],
+                hint: "Kata persetujuan 'Ya'."
             }
         ]
     },
@@ -142,100 +134,100 @@ export const questLevels = [
                 id: "q_2_1",
                 type: "mcq",
                 node_id: "grammar_ga_arimasu",
-                grammar_focus: "があります (ga arimasu) — Ada (benda mati)",
-                question: "Kalimat mana yang benar untuk 'Ada buku di sini'?",
-                options: ["Hon ga imasu", "Hon ga arimasu", "Hon o arimasu", "Hon ni imasu"],
+                grammar_focus: "があります (ga arimasu) — Ada (Benda Mati)",
+                question: "Pilihlah kalimat yang tepat untuk menyatakan 'Ada buku':",
+                options: ["<ruby>本<rt>ほん</rt></ruby>がいます (hon ga imasu)", "<ruby>本<rt>ほん</rt></ruby>があります (hon ga arimasu)", "<ruby>本<rt>ほん</rt></ruby>をあります (hon o arimasu)", "<ruby>本<rt>ほん</rt></ruby>にあります (hon ni arimasu)"],
                 correctIndex: 1,
-                hint: "Arimasu untuk benda mati/tidak bergerak. Imasu untuk makhluk hidup."
+                hint: "Buku adalah benda mati. Gunakan partikel 'ga' + 'arimasu'."
             },
             {
                 id: "q_2_2",
                 type: "fill",
                 node_id: "grammar_ga_imasu",
-                grammar_focus: "がいます (ga imasu) — Ada (makhluk hidup)",
-                question: "Lengkapi: Neko ga ___ (Ada kucing).",
+                grammar_focus: "がいます (ga imasu) — Ada (Makhluk Hidup)",
+                question: "Lengkapi kalimat: あそこに<ruby>猫<rt>ねこ</rt></ruby>が ___。 (Ada kucing di sana.)",
                 correct: ["imasu", "います"],
-                hint: "Imasu digunakan untuk makhluk hidup: manusia, hewan."
+                hint: "Kucing adalah makhluk hidup, gunakan kata kerja keberadaan 'imasu'."
             },
             {
                 id: "q_2_3",
                 type: "mcq",
                 node_id: "grammar_ni_location",
-                grammar_focus: "に (ni) — Partikel lokasi keberadaan",
-                question: "Partikel untuk menunjukkan letak/keberadaan benda ('di...') adalah?",
-                options: ["を (o)", "で (de)", "に (ni)", "へ (e)"],
+                grammar_focus: "に (ni) — Partikel Lokasi Keberadaan",
+                question: "Lengkapi kalimat: <ruby>机<rt>つくえ</rt></ruby>の<ruby>上<rt>うえ</rt></ruby> ___ <ruby>本<rt>ほん</rt></ruby>があります。 (Di atas meja ada buku.)",
+                options: ["で (de)", "を (o)", "に (ni)", "が (ga)"],
                 correctIndex: 2,
-                hint: "Tsukue ___ ue ni hon ga arimasu. (Di atas meja ada buku.)"
+                hint: "Partikel 'ni' menandai lokasi keberadaan benda/makhluk hidup."
             },
             {
                 id: "q_2_4",
                 type: "fill",
                 node_id: "grammar_doko",
-                grammar_focus: "どこ (doko) — Kata tanya 'Di mana'",
-                question: "Kata tanya untuk 'Di mana' adalah ___.",
+                grammar_focus: "どこ (doko) — Kata Tanya 'Di mana'",
+                question: "Lengkapi kalimat tanya: トイレは ___ ですか。 (Toiletnya di mana?)",
                 correct: ["doko", "どこ"],
-                hint: "Toire wa ___ desu ka? (Di mana toiletnya?)"
+                hint: "Kata tanya tempat ('di mana')."
             },
             {
                 id: "q_2_5",
                 type: "mcq",
                 node_id: "grammar_kono_sono_ano",
-                grammar_focus: "この・その・あの (kono/sono/ano) — Kata penunjuk + kata benda",
-                question: "Apa perbedaan utama antara 'Kore' (これ) dan 'Kono' (この)?",
-                options: ["Tidak ada bedanya", "'Kono' harus diikuti kata benda langsung", "'Kore' harus diikuti kata benda langsung", "'Kono' digunakan untuk orang"],
+                grammar_focus: "この・その・あの — Kata Penunjuk Benda + Kata Benda",
+                question: "Lengkapi kalimat: ___ <ruby>本<rt>ほん</rt></ruby>はわたしのです。 (Buku ini adalah milik saya.)",
+                options: ["これ (kore)", "この (kono)", "あそこ (asoko)", "それ (sore)"],
                 correctIndex: 1,
-                hint: "Kono hon (buku ini), tapi Kore wa hon desu (Ini adalah buku)."
+                hint: "Kata penunjuk yang harus diikuti langsung oleh kata benda (hon = buku)."
             },
             {
                 id: "q_2_6",
                 type: "mcq",
                 node_id: "grammar_ni_e_destination",
-                grammar_focus: "に/へ (ni/e) — Partikel tujuan",
-                question: "Partikel apa yang bisa digunakan untuk menunjukkan tujuan perjalanan? (Pilih semua yang benar)",
-                options: ["Hanya に (ni)", "Hanya へ (e)", "Keduanya に (ni) dan へ (e) bisa", "で (de)"],
+                grammar_focus: "へ (e) — Partikel Arah/Tujuan",
+                question: "Lengkapi kalimat: <ruby>日本<rt>にほん</rt></ruby> ___ <ruby>行<rt>い</rt></ruby>きます。 (Pergi ke Jepang.)",
+                options: ["で (de)", "を (o)", "へ (e)", "が (ga)"],
                 correctIndex: 2,
-                hint: "Gakkou ___ ikimasu. Keduanya boleh, tapi に lebih umum untuk tujuan spesifik."
+                hint: "Partikel 'he' (ditulis 'he' tapi dibaca 'e') menunjukkan arah/tujuan perjalanan."
             },
             {
                 id: "q_2_7",
                 type: "mcq",
                 node_id: "grammar_de_place",
-                grammar_focus: "で (de) — Partikel tempat aktivitas",
-                question: "Partikel 'De' (で) digunakan untuk menunjukkan?",
-                options: ["Tujuan perjalanan", "Tempat terjadinya suatu aktivitas/aksi", "Kepemilikan", "Waktu mulai"],
+                grammar_focus: "で (de) — Partikel Tempat Aktivitas",
+                question: "Lengkapi kalimat: レストラン ___ ごはんを<ruby>食<rt>た</rt></ruby>べます。 (Makan nasi di restoran.)",
+                options: ["に (ni)", "で (de)", "を (o)", "へ (e)"],
                 correctIndex: 1,
-                hint: "Resutoran ___ gohan o tabemasu. (Makan di restoran.) Aktivitas terjadi di sana."
+                hint: "Partikel 'de' digunakan untuk menandai tempat terjadinya suatu tindakan/aktivitas."
             },
             {
                 id: "q_2_8",
                 type: "fill",
                 node_id: "grammar_to",
-                grammar_focus: "と (to) — Dan / Bersama",
-                question: "Partikel 'to' (と) digunakan untuk menghubungkan dua kata benda, berarti ___.",
-                correct: ["dan", "and", "bersama", "dan juga", "to"],
-                hint: "Pen ___ enpitsu (Pena dan pensil). Berbeda dengan 'ya' yang berarti 'dan (tidak lengkap)'."
+                grammar_focus: "と (to) — Partikel Penghubung 'Dan'",
+                question: "Lengkapi kalimat: ペン ___ えんぴつがあります。 (Ada pena dan pensil.)",
+                correct: ["to", "と"],
+                hint: "Partikel untuk menghubungkan dua kata benda sejajar yang berarti 'dan'."
             },
             {
                 id: "q_2_9",
                 type: "fill",
                 node_id: "grammar_nani",
-                grammar_focus: "何 (nani/nan) — Kata tanya 'Apa'",
-                question: "Kata tanya untuk 'Apa' adalah ___ (atau ___ sebelum konsonan tertentu).",
-                correct: ["nani", "nan", "なに", "なん"],
-                hint: "Sore wa ___ desu ka? (Apa itu?) / ___ desu ka? (Apa?)"
+                grammar_focus: "何 (nani/nan) — Kata Tanya 'Apa'",
+                question: "Lengkapi kalimat tanya: それは ___ ですか。 (Apakah itu?)",
+                correct: ["nan", "nani", "なん", "なに"],
+                hint: "Kata tanya 'apa'. Sebelum 'desu ka', lafalnya berubah menjadi 'nan'."
             },
             {
                 id: "q_2_10",
                 type: "translate",
                 node_id: "grammar_ga_arimasu",
-                grammar_focus: "があります (ga arimasu) — Produksi kalimat keberadaan",
-                question: "Terjemahkan: 'Di atas meja ada kucing.' (Gunakan: ue ni / tsukue / neko / ga / imasu / no)",
+                grammar_focus: "があります (ga arimasu) — Struktur Keberadaan",
+                question: "Terjemahkan ke bahasa Jepang: 'Di atas meja ada kucing.' (Tulis dalam Romaji)",
                 acceptedAnswers: [
                     "tsukue no ue ni neko ga imasu",
                     "tsukue no ue ni neko ga imasu.",
-                    "neko ga tsukue no ue ni imasu"
+                    "tsukue no ue niwa neko ga imasu"
                 ],
-                hint: "Lokasi + ni + Subjek + ga + imasu/arimasu. Kucing = makhluk hidup → imasu."
+                hint: "Meja = tsukue, atas = ue, kucing = neko (makhluk hidup -> imasu)."
             }
         ]
     },
@@ -251,110 +243,103 @@ export const questLevels = [
                 id: "q_3_1",
                 type: "mcq",
                 node_id: "grammar_ji",
-                grammar_focus: "時 (ji) — Penghitung jam",
-                question: "Bahasa Jepang dari 'Jam 3' adalah?",
-                options: ["San-ji (三時)", "San-ka", "San-ni", "San-go"],
+                grammar_focus: "時 (ji) — Akhiran Penghitung Jam",
+                question: "Pilihlah bahasa Jepang yang tepat untuk 'Jam 3':",
+                options: ["さんじ (san-ji)", "みっじ (mit-ji)", "さんじかん (san-jikan)", "さんふん (san-fun)"],
                 correctIndex: 0,
-                hint: "Angka + Ji. Ichi-ji (1), Ni-ji (2), San-ji (3)..."
+                hint: "Angka 3 (san) diikuti dengan akhiran jam (ji)."
             },
             {
                 id: "q_3_2",
                 type: "fill",
                 node_id: "grammar_fun_pun",
-                grammar_focus: "分 (fun/pun) — Penghitung menit",
-                question: "Satuan untuk 'menit' dalam bahasa Jepang adalah ___ atau ___ (tergantung angka sebelumnya).",
-                correct: ["fun", "pun", "ふん", "ぷん"],
-                hint: "Ichi-fun, ni-fun, san-pun, yon-fun, go-fun, roppun, nana-fun, happun..."
+                grammar_focus: "分 (fun/pun) — Akhiran Menit",
+                question: "Lengkapi kalimat: 今は<ruby>二時十分<rt>にじじゅっぷん</rt></ruby> ___ です。 (Sekarang jam 2 lewat 10 menit.)",
+                correct: ["pun", "ぷん"],
+                hint: "Untuk angka 10 (juu), akhiran menit dilafalkan 'pun'."
             },
             {
                 id: "q_3_3",
                 type: "mcq",
                 node_id: "grammar_kara_made",
                 grammar_focus: "から〜まで (kara~made) — Dari ~ Sampai",
-                question: "Untuk menyatakan 'Dari jam 1 sampai jam 3', pola yang tepat adalah?",
-                options: ["ichi-ji to san-ji", "ichi-ji kara san-ji made", "ichi-ji de san-ji made", "ichi-ji kara san-ji ni"],
-                correctIndex: 1,
-                hint: "Kara = dari (titik mulai), Made = sampai (titik akhir)."
+                question: "Lengkapi kalimat: <ruby>一時<rt>いちじ</rt></ruby> ___ <ruby>八時<rt>はちじ</rt></ruby> ___ です。 (Dari jam 1 sampai jam 8.)",
+                options: ["kara ... made", "de ... ni", "to ... made", "kara ... ni"],
+                correctIndex: 0,
+                hint: "Pola untuk menyatakan rentang waktu 'dari ~ sampai'."
             },
             {
                 id: "q_3_4",
                 type: "fill",
                 node_id: "grammar_han",
-                grammar_focus: "半 (han) — Setengah jam",
-                question: "Jam 2 lewat 30 menit (jam setengah 3) diucapkan: Ni-ji ___.",
+                grammar_focus: "半 (han) — Setengah Jam",
+                question: "Lengkapi kalimat: 今は<ruby>七時<rt>しちじ</rt></ruby> ___ です。 (Sekarang jam 7 lewat 30 menit / setengah 8.)",
                 correct: ["han", "はん", "半"],
-                hint: "Han berarti 'setengah'. Ni-ji han = 2:30."
+                hint: "Kata untuk 'setengah' jam dalam penunjukan waktu."
             },
             {
                 id: "q_3_5",
                 type: "mcq",
                 node_id: "grammar_mai",
-                grammar_focus: "枚 (mai) — Penghitung benda tipis/flat",
-                question: "Kata bantu bilangan (counter) untuk benda tipis dan flat seperti kertas, baju, dan piring adalah?",
-                options: ["Hon (本) — benda panjang", "Mai (枚) — benda tipis/flat", "Satsu (冊) — buku/majalah", "Ko (個) — benda kecil"],
-                correctIndex: 1,
-                hint: "Ichi-mai (1 lembar), ni-mai (2 lembar). Contoh: kami ichi-mai (1 lembar kertas)."
+                grammar_focus: "枚 (mai) — Penghitung Benda Tipis/Flat",
+                question: "Lengkapi kalimat: シャツを<ruby>二<rt>に</rt></ruby> ___ <ruby>買<rt>か</rt></ruby>いました。 (Saya membeli dua helai kemeja.)",
+                options: ["本 (hon)", "冊 (satsu)", "枚 (mai)", "個 (ko)"],
+                correctIndex: 2,
+                hint: "Kemeja adalah benda tipis/datar. Gunakan satuan bilangan 'mai'."
             },
             {
                 id: "q_3_6",
                 type: "fill",
                 node_id: "grammar_hitori_futari",
-                grammar_focus: "一人・二人 (hitori/futari) — Counter orang (khusus)",
-                question: "Satu orang disebut ___, dua orang disebut ___.",
-                correct: ["hitori futari", "ひとり ふたり", "hitori, futari"],
-                hint: "Ini adalah bentuk KHUSUS, bukan ichi-nin / ni-nin. Tiga ke atas: san-nin, yo-nin, dst."
+                grammar_focus: "一人・二人 — Counter Orang Khusus",
+                question: "<ruby>教室<rt>きょうしつ</rt></ruby>に<ruby>学生<rt>がくせい</rt></ruby>が<ruby>二<rt>に</rt></ruby> ___ います。 (Ada dua orang siswa di kelas.)",
+                correct: ["futari", "ふたり", "二人"],
+                hint: "Hitungan khusus untuk 'dua orang'."
             },
             {
                 id: "q_3_7",
                 type: "mcq",
                 node_id: "grammar_goro",
-                grammar_focus: "ごろ (goro) — Kira-kira (waktu)",
-                question: "Untuk menyatakan perkiraan waktu 'Sekitar jam 3', digunakan kata?",
-                options: ["dake (だけ)", "goro (ごろ)", "made (まで)", "kara (から)"],
-                correctIndex: 1,
-                hint: "San-ji ___ ni kimasu. (Akan datang sekitar jam 3.)"
+                grammar_focus: "ごろ (goro) — Perkiraan Waktu",
+                question: "<ruby>三時<rt>さんじ</rt></ruby> ___ に<ruby>行<rt>い</rt></ruby>きます。 (Pergi sekitar jam 3.)",
+                options: ["ごろ (goro)", "ぐらい (gurai)", "だけ (dake)", "まで (made)"],
+                correctIndex: 0,
+                hint: "Gunakan 'goro' untuk titik perkiraan waktu (jam/hari/tahun). 'Gurai' untuk durasi."
             },
             {
                 id: "q_3_8",
                 type: "mcq",
                 node_id: "grammar_ikutsu_ikura",
-                grammar_focus: "いくつ・いくら (ikutsu/ikura) — Berapa banyak / Berapa harga",
-                question: "Apa perbedaan antara 'Ikutsu' (いくつ) dan 'Ikura' (いくら)?",
-                options: [
-                    "Tidak ada beda",
-                    "Ikutsu = berapa jumlah/usia benda, Ikura = berapa harga",
-                    "Ikura = berapa jumlah, Ikutsu = berapa harga",
-                    "Keduanya hanya untuk menanyakan usia"
-                ],
+                grammar_focus: "いくら (ikura) — Menanyakan Harga",
+                question: "このりんごは ___ ですか。 (Berapa harga apel ini?)",
+                options: ["いくつ (ikutsu)", "いくら (ikura)", "どんな (donna)", "だれ (dare)"],
                 correctIndex: 1,
-                hint: "Kore wa ikura desu ka? (Berapa harganya?) vs Ringo wa ikutsu arimasu ka? (Berapa jumlah apelnya?)"
+                hint: "Kata tanya untuk menanyakan harga barang adalah 'ikura'."
             },
             {
                 id: "q_3_9",
                 type: "fill",
                 node_id: "grammar_itsu",
-                grammar_focus: "いつ (itsu) — Kapan",
-                question: "Kata tanya untuk 'Kapan' adalah ___.",
+                grammar_focus: "いつ (itsu) — Kata Tanya 'Kapan'",
+                question: "<ruby>日本<rt>にほん</rt></ruby>へ ___ <ruby>行<rt>い</rt></ruby>きますか。 (Kapan kamu pergi ke Jepang?)",
                 correct: ["itsu", "いつ"],
-                hint: "___ Nihon e ikimasu ka? (Kapan pergi ke Jepang?)"
+                hint: "Kata tanya waktu ('kapan')."
             },
             {
                 id: "q_3_10",
                 type: "translate",
                 node_id: "grammar_kara_made",
-                grammar_focus: "から〜まで — Produksi kalimat waktu",
-                question: "Terjemahkan: 'Toko buka dari jam 9 sampai jam 6.' (Gunakan: ku-ji / roku-ji / kara / made / aku / mise / wa / desu)",
+                grammar_focus: "から〜まで — Terjemahan Waktu",
+                question: "Terjemahkan ke bahasa Jepang: 'Toko buka dari jam 9 sampai jam 6.' (Toko = mise)",
                 acceptedAnswers: [
                     "mise wa ku-ji kara roku-ji made desu",
                     "mise wa kuji kara rokuji made desu",
-                    "mise wa ku ji kara roku ji made desu",
                     "mise wa 9-ji kara 6-ji made desu"
                 ],
-                hint: "Mise (toko), ku-ji (jam 9), roku-ji (jam 6). Pola: [Topik] wa [Awal] kara [Akhir] made desu."
+                hint: "Toko = mise, jam 9 = ku-ji, jam 6 = roku-ji."
             }
         ]
     },
-
     // ══════════════════════════════════════════════════════════════
     // TIER 2 — ELEMENTARY (Level 4–6)
     // ══════════════════════════════════════════════════════════════
@@ -370,102 +355,101 @@ export const questLevels = [
                 id: "q_4_1",
                 type: "mcq",
                 node_id: "grammar_i_adj",
-                grammar_focus: "い-adjectives — Kata sifat berakhiran -i",
-                question: "Mana yang merupakan kata sifat-i (i-adjective) sejati?",
-                options: ["Kirei (きれい)", "Shizuka (しずか)", "Takai (たかい)", "Genki (げんき)"],
+                grammar_focus: "い-adjectives — Kata Sifat berakhiran -i",
+                question: "Pilihlah kata sifat-i (i-adjective) yang tepat di bawah ini:",
+                options: ["きれい (kirei)", "しずか (shizuka)", "たかい (takai)", "genki (genki)"],
                 correctIndex: 2,
-                hint: "Kirei dan Genki terlihat berakhiran -i tapi mereka na-adjective (pengecualian penting!)."
+                hint: "Takai (mahal/tinggi) adalah i-adjective asli. Kirei dan shizuka adalah na-adjective."
             },
             {
                 id: "q_4_2",
                 type: "mcq",
                 node_id: "grammar_na_adj",
-                grammar_focus: "な-adjectives — Kata sifat yang butuh 'na'",
-                question: "'Kirei' (きれい) dan 'Genki' (げんき) termasuk jenis kata sifat apa, meskipun terlihat berakhiran -i?",
-                options: ["i-adjective karena berakhiran i", "na-adjective (pengecualian penting!)", "Kata benda biasa", "Kata kerja"],
-                correctIndex: 1,
-                hint: "Ini pengecualian penting! Kirei-NA hana (bunga yang cantik). Bukan kirei-i hana."
+                grammar_focus: "な-adjectives — Kata Sifat-na",
+                question: "Pilihlah kalimat yang menggunakan kata sifat-na secara benar untuk mendeskripsikan kota yang tenang:",
+                options: ["しずか<ruby>町<rt>まち</rt></ruby> (shizuka machi)", "しずかい<ruby>町<rt>まち</rt></ruby> (shizukai machi)", "しずかな<ruby>町<rt>まち</rt></ruby> (shizuka na machi)", "しずかの<ruby>町<rt>まち</rt></ruby> (shizuka no machi)"],
+                correctIndex: 2,
+                hint: "Kata sifat-na memerlukan partikel 'na' ketika memodifikasi kata benda (machi)."
             },
             {
                 id: "q_4_3",
                 type: "mcq",
                 node_id: "grammar_i_adj_neg",
-                grammar_focus: "い-adjective negatif: -kunai",
-                question: "Bentuk negatif dari 'Atsui' (あつい — Panas) adalah?",
-                options: ["Atsui janai", "Atsuku nai (あつくない)", "Atsu dewa nai", "Atsunai"],
+                grammar_focus: "い-adjective Negatif: -kunai",
+                question: "Bentuk negatif dari 'あつい' (atsui - panas) yang tepat adalah:",
+                options: ["あついじゃない (atsui janai)", "あつくない (atsuku nai)", "あつない (atsunai)", "あつじゃない (atsu janai)"],
                 correctIndex: 1,
-                hint: "Rumus i-adjective negatif: Hapus -i, tambah -ku nai. Atsui → atsuku nai."
+                hint: "Ubah akhiran -i menjadi -kunai. Atsui -> atsuku nai."
             },
             {
                 id: "q_4_4",
                 type: "fill",
                 node_id: "grammar_totemo",
                 grammar_focus: "とても (totemo) — Sangat",
-                question: "Kata keterangan untuk 'Sangat' adalah ___.",
+                question: "Lengkapi kalimat: このラーメンは ___ おいしいです。 (Ramen ini sangat enak.)",
                 correct: ["totemo", "とても"],
-                hint: "___ oishii desu ne! (Sangat enak ya!)"
+                hint: "Kata keterangan penguat yang berarti 'sangat' (totemo)."
             },
             {
                 id: "q_4_5",
                 type: "mcq",
                 node_id: "grammar_amari_neg",
-                grammar_focus: "あまり〜ない (amari~nai) — Tidak terlalu",
-                question: "Kata 'Amari' (あまり — tidak terlalu) harus diikuti kalimat bentuk apa?",
-                options: ["Positif", "Tanya", "Negatif (~nai)", "Lampau"],
-                correctIndex: 2,
-                hint: "Amari atsuku NAI desu. (Tidak terlalu panas.) Selalu butuh bentuk negatif!"
+                grammar_focus: "あまり〜ない (amari~nai) — Tidak Terlalu",
+                question: "Lengkapi kalimat: この<ruby>肉<rt>にく</rt></ruby>はあまり ___。 (Daging ini tidak begitu enak.)",
+                options: ["おいしいです (oishii desu)", "おいしくないです (oishikunai desu)", "おいしいじゃない (oishii janai)", "おいしかったです (oishikatta desu)"],
+                correctIndex: 1,
+                hint: "Kata keterangan 'amari' (tidak terlalu) wajib diikuti oleh bentuk kalimat negatif."
             },
             {
                 id: "q_4_6",
                 type: "fill",
                 node_id: "grammar_donna",
-                grammar_focus: "どんな (donna) — Seperti apa / yang bagaimana",
-                question: "Untuk menanyakan 'Seperti apa?' digunakan kata ___.",
+                grammar_focus: "どんな (donna) — Kata Tanya Karakteristik",
+                question: "Lengkapi kalimat tanya: ___ <ruby>人<rt>ひと</rt></ruby>が好きですか。 (Kamu menyukai orang yang seperti apa?)",
                 correct: ["donna", "どんな"],
-                hint: "___ hito ga suki desu ka? (Kamu suka orang seperti apa?)"
+                hint: "Kata tanya untuk menanyakan karakteristik ('yang bagaimana / seperti apa')."
             },
             {
                 id: "q_4_7",
                 type: "mcq",
                 node_id: "grammar_na_adj_noun",
-                grammar_focus: "な-adjective + Kata benda",
-                question: "Cara menggabungkan kata sifat-na (na-adjective) dengan kata benda yang benar?",
-                options: ["Langsung digabung tanpa apa-apa", "Tambah partikel 'no' di antara keduanya", "Tambah 'na' di antara keduanya", "Tambah 'i' di antara keduanya"],
-                correctIndex: 2,
-                hint: "Shizuka ___ machi (Kota yang tenang). Na-adjective + NA + Kata benda."
+                grammar_focus: "な-adjective + Kata Benda",
+                question: "Pilihlah bentuk deskripsi yang tepat untuk menyatakan 'Bunga yang cantik' (hana = bunga):",
+                options: ["きれいな<ruby>花<rt>はな</rt></ruby> (kireina hana)", "きれいい<ruby>花<rt>はな</rt></ruby> (kireii hana)", "きれい<ruby>花<rt>はな</rt></ruby> (kirei hana)", "きれいの<ruby>花<rt>はな</rt></ruby> (kirei no hana)"],
+                correctIndex: 0,
+                hint: "Kirei adalah na-adjective pengecualian (meski berakhiran -i). Maka gunakan 'kireina hana'."
             },
             {
                 id: "q_4_8",
                 type: "mcq",
                 node_id: "grammar_ii_yoku",
-                grammar_focus: "いい/よい (ii/yoi) — Bagus (kata sifat tidak beraturan)",
-                question: "'Ii' (いい — Bagus) adalah kata sifat tidak beraturan. Bentuk negatifnya adalah?",
-                options: ["Ii janai", "Yoku nai (よくない)", "I nai", "Ii kunai"],
+                grammar_focus: "いい/よい (ii/yoi) — Bagus (Bentuk Irregular)",
+                question: "Bentuk negatif dari kata sifat 'いい' (ii - bagus) adalah:",
+                options: ["いいくない (iikunai)", "よくない (yoku nai)", "いくない (ikunai)", "いいじゃない (ii janai)"],
                 correctIndex: 1,
-                hint: "Perubahan tidak beraturan: ii → YOKU (bukan ii-ku). Yoku nai = tidak bagus."
+                hint: "Kata 'ii' berasal dari 'yoi', perubahannya tidak beraturan: ii -> yoku nai."
             },
             {
                 id: "q_4_9",
                 type: "fill",
                 node_id: "grammar_ga_but",
-                grammar_focus: "が (ga) — Namun / Tetapi (konjungsi)",
-                question: "Partikel 'ga' (が) di tengah kalimat dapat berfungsi sebagai kata hubung yang berarti ___.",
-                correct: ["tetapi", "namun", "tapi", "but", "however", "ga"],
-                hint: "Takai desu ___ oishii desu. (Mahal, tapi enak.)"
+                grammar_focus: "が (ga) — Tetapi / Namun (Konjungsi)",
+                question: "Lengkapi kalimat hubung: このカメラは<ruby>高<rt>たか</rt></ruby>いです ___、とてもいいです。 (Kamera ini mahal, tetapi sangat bagus.)",
+                correct: ["ga", "が"],
+                hint: "Partikel di tengah kalimat yang berarti 'tetapi/namun' (ga)."
             },
             {
                 id: "q_4_10",
                 type: "translate",
                 node_id: "grammar_i_adj",
-                grammar_focus: "い-adjective — Produksi kalimat deskripsi",
-                question: "Terjemahkan: 'Cuaca hari ini sangat panas.' (Gunakan: kyou / tenki / atsui / totemo / wa / desu)",
+                grammar_focus: "い-adjective — Terjemahan Deskripsi",
+                question: "Terjemahkan ke bahasa Jepang: 'Hari ini sangat panas.' (Hari ini = kyou, panas = atsui)",
                 acceptedAnswers: [
                     "kyou wa totemo atsui desu",
-                    "kyou no tenki wa totemo atsui desu",
-                    "kyou wa totemo atsui",
-                    "kyou no tenki wa atsui desu"
+                    "kyou wa totemo atsui desu.",
+                    "kyou wa totemo atsui"
                 ],
-                hint: "Tenki = cuaca, kyou = hari ini, totemo = sangat, atsui = panas."
+                hint: "Hari ini = kyou, sangat = totemo, panas = atsui."
             }
         ]
     },
@@ -481,106 +465,101 @@ export const questLevels = [
                 id: "q_5_1",
                 type: "mcq",
                 node_id: "grammar_o_particle",
-                grammar_focus: "を (o/wo) — Partikel objek",
-                question: "Partikel apa yang digunakan untuk menandai objek penderita (yang dikenai tindakan)?",
-                options: ["は (wa)", "に (ni)", "を (o/wo)", "で (de)"],
-                correctIndex: 2,
-                hint: "Ringo ___ tabemasu. (Makan apel.) Apel adalah yang dimakan, jadi objek penderita."
+                grammar_focus: "を (o/wo) — Partikel Objek",
+                question: "Lengkapi kalimat: <ruby>毎日<rt>まいにち</rt></ruby>、コーヒー ___ <ruby>飲<rt>の</rt></ruby>んでいます。 (Setiap hari, saya minum kopi.)",
+                options: ["が (ga)", "を (o/wo)", "に (ni)", "で (de)"],
+                correctIndex: 1,
+                hint: "Kopi adalah objek penderita dari kata kerja 'nomimasu' (minum). Gunakan partikel o."
             },
             {
                 id: "q_5_2",
                 type: "fill",
                 node_id: "grammar_shimasu",
                 grammar_focus: "します (shimasu) — Melakukan",
-                question: "Lengkapi: Sakkā o ___ (Bermain sepak bola / Melakukan sepak bola).",
-                correct: ["shimasu", "します", "suru", "する"],
-                hint: "Shimasu adalah kata kerja 'melakukan'. Bisa disambung dengan kata benda olahraga/aktivitas."
+                question: "Lengkapi kalimat: <ruby>毎週土曜日<rt>まいしゅうどようび</rt></ruby>にサッカーを ___。 (Setiap hari Sabtu, saya bermain sepak bola.)",
+                correct: ["shimasu", "します"],
+                hint: "Kata kerja untuk menyatakan 'melakukan' olahraga atau hobi."
             },
             {
                 id: "q_5_3",
                 type: "mcq",
                 node_id: "grammar_ni_iku",
-                grammar_focus: "に行く (ni iku) — Pergi untuk melakukan",
-                question: "Pola untuk menyatakan 'Pergi untuk melakukan sesuatu' adalah?",
-                options: ["V-masu (stem) + ni ikimasu", "V-te + ikimasu", "V-dictionary + ni ikimasu", "V-nai + ni ikimasu"],
+                grammar_focus: "に行く (ni iku) — Pergi Untuk Melakukan",
+                question: "Pilihlah bentuk yang tepat untuk menyatakan 'Pergi untuk makan':",
+                options: ["<ruby>食<rt>た</rt></ruby>べに<ruby>行<rt>い</rt></ruby>きます (tabe ni ikimasu)", "<ruby>食<rt>た</rt></ruby>べて<ruby>行<rt>い</rt></ruby>きます (tabete ikimasu)", "<ruby>食<rt>た</rt></ruby>べるに<ruby>行<rt>い</rt></ruby>きます (taberu ni ikimasu)", "<ruby>食<rt>た</rt></ruby>べに<ruby>行<rt>い</rt></ruby>き (tabe ni iki)"],
                 correctIndex: 0,
-                hint: "Tabe-masu → tabe + ni ikimasu = Pergi untuk makan. Gunakan V-masu stem (bentuk masu tanpa masu)."
+                hint: "Kata kerja bentuk stem-masu (tabe) + partikel 'ni' + ikimasu."
             },
             {
                 id: "q_5_4",
                 type: "fill",
                 node_id: "grammar_issho_ni",
                 grammar_focus: "一緒に (issho ni) — Bersama-sama",
-                question: "Kata untuk 'Bersama-sama' adalah ___.",
-                correct: ["issho ni", "いっしょに", "一緒に"],
-                hint: "___ tabemashou! (Ayo makan bersama!)"
+                question: "Lengkapi ajakan: ___ <ruby>映画<rt>えいが</rt></ruby>を<ruby>見<rt>み</rt></ruby>ませんか。 (Maukah menonton film bersama?)",
+                correct: ["issho ni", "いっしょに"],
+                hint: "Bahasa Jepang dari 'bersama-sama'."
             },
             {
                 id: "q_5_5",
                 type: "mcq",
                 node_id: "grammar_masen_ka",
-                grammar_focus: "〜ませんか (masen ka) — Ajakan sopan",
-                question: "Cara mengajak seseorang dengan sopan (Maukah kamu...?) adalah?",
-                options: ["~mashou (ましょう)", "~masen ka (ませんか)", "~masu ka (ますか)", "~tai desu (たいです)"],
+                grammar_focus: "〜ませんか (masen ka) — Ajakan Sopan",
+                question: "Pilihlah bentuk ajakan sopan 'Maukah kamu minum kopi bersama?':",
+                options: ["コーヒーを<ruby>飲<rt>の</rt></ruby>みましょう (koohii o nomimashou)", "コーヒーを<ruby>飲<rt>の</rt></ruby>みませんか (koohii o nomimasen ka)", "コーヒーを<ruby>飲<rt>の</rt></ruby>みますか (koohii o nomimasu ka)", "コーヒーを<ruby>飲<rt>の</rt></ruby>みたいes (koohii o nomitai desu)"],
                 correctIndex: 1,
-                hint: "Tabemashou = Ayo kita makan (inisiatif pembicara). Tabemasen ka = Mau makan tidak? (ajak orang lain)."
+                hint: "Nomimasen ka (maukah minum) adalah bentuk ajakan paling sopan karena memberikan pilihan bagi lawan bicara."
             },
             {
                 id: "q_5_6",
                 type: "fill",
                 node_id: "grammar_mashou",
-                grammar_focus: "〜ましょう (mashou) — Ayo kita lakukan",
-                question: "Akhiran kata kerja untuk mengajak 'Ayo...!' adalah ___.",
+                grammar_focus: "〜ましょう (mashou) — Ayo Melakukan",
+                question: "Lengkapi ajakan penegasan 'Ayo pergi!': <ruby>行<rt>い</rt></ruby>き___！",
                 correct: ["mashou", "ましょう"],
-                hint: "Ikimashou! (Ayo pergi!) Tabemamashou! (Ayo makan!)"
+                hint: "Akhiran bentuk -mashou digunakan untuk menyatakan 'Ayo kita lakukan!'."
             },
             {
                 id: "q_5_7",
                 type: "mcq",
                 node_id: "grammar_doushite",
-                grammar_focus: "どうして・なぜ (doushite/naze) — Kenapa",
-                question: "Kata tanya untuk 'Kenapa / Mengapa' dalam bahasa Jepang adalah?",
-                options: ["Hanya Naze (なぜ)", "Hanya Doushite (どうして)", "Hanya Nan de (なんで)", "Ketiganya benar (Naze, Doushite, Nan de)"],
-                correctIndex: 3,
-                hint: "Ada beberapa variasi: Naze (formal/tulisan), Doushite (umum), Nan de (kasual)."
+                grammar_focus: "どうして (doushite) — Kenapa / Mengapa",
+                question: "Lengkapi kalimat tanya: ___ <ruby>学校<rt>がっこう</rt></ruby>を<ruby>休<rt>やす</rt></ruby>みましたか。 (Kenapa kamu libur sekolah?)",
+                options: ["だれ (dare)", "どうして (doushite)", "いつ (itsu)", "いくら (ikura)"],
+                correctIndex: 1,
+                hint: "Kata tanya untuk menanyakan sebab/alasan ('mengapa/kenapa')."
             },
             {
                 id: "q_5_8",
                 type: "fill",
                 node_id: "grammar_kara_reason",
-                grammar_focus: "から (kara) — Karena (alasan)",
-                question: "Untuk menyatakan alasan 'Karena...', kata ___ diletakkan setelah kalimat alasan.",
+                grammar_focus: "から (kara) — Karena (Alasan)",
+                question: "Lengkapi kalimat: 今日は<ruby>雨<rt>あめ</rt></ruby>が<ruby>降<rt>ふ</rt></ruby>りました ___、<ruby>学校<rt>がっこう</rt></ruby>へ<ruby>行<rt>い</rt></ruby>きませんでした。 (Karena hari ini turun hujan, saya tidak pergi ke sekolah.)",
                 correct: ["kara", "から"],
-                hint: "Atsui ___ mizu o nomimasu. (Karena panas, minum air.) Bandingkan: kara juga bisa berarti 'dari'."
+                hint: "Partikel yang diletakkan setelah klausa alasan/sebab ('karena')."
             },
             {
                 id: "q_5_9",
                 type: "mcq",
                 node_id: "grammar_frequency",
-                grammar_focus: "Kata keterangan frekuensi: いつも・よく・ときどき・あまり",
-                question: "Urutkan kata-kata ini dari frekuensi PALING SERING ke PALING JARANG:",
-                options: [
-                    "Itsumo > yoku > tokidoki > amari (nai)",
-                    "Yoku > itsumo > amari (nai) > tokidoki",
-                    "Tokidoki > itsumo > yoku > amari (nai)",
-                    "Itsumo > tokidoki > yoku > amari (nai)"
-                ],
-                correctIndex: 0,
-                hint: "Itsumo (selalu) > yoku (sering) > tokidoki (kadang-kadang) > amari ~nai (tidak terlalu sering)."
+                grammar_focus: "Keterangan Frekuensi (Itsumo)",
+                question: "Pilihlah kata keterangan frekuensi yang bermakna 'selalu / biasanya':",
+                options: ["ときどき (tokidoki)", "よく (yoku)", "いつも (itsumo)", "あまり (amari)"],
+                correctIndex: 2,
+                hint: "Itsumo berarti 'selalu/biasanya'. Tokidoki = kadang-kadang, yoku = sering."
             },
             {
                 id: "q_5_10",
                 type: "translate",
                 node_id: "grammar_o_particle",
-                grammar_focus: "を (o) — Produksi kalimat dengan objek",
-                question: "Terjemahkan: 'Setiap hari saya minum kopi.' (Gunakan: mainichi / watashi wa / koohii / o / nomimasu)",
+                grammar_focus: "を (o) — Terjemahan Aktivitas",
+                question: "Terjemahkan ke bahasa Jepang: 'Setiap hari saya makan apel.' (Setiap hari = mainichi, apel = ringo)",
                 acceptedAnswers: [
-                    "watashi wa mainichi koohii o nomimasu",
-                    "mainichi koohii o nomimasu",
-                    "watashi wa mainichi kohii o nomimasu",
-                    "mainichi kohii o nomimasu"
+                    "mainichi ringo o tabemasu",
+                    "mainichi ringo o tabemasu.",
+                    "watashi wa mainichi ringo o tabemasu",
+                    "mainichi ringo wo tabemasu"
                 ],
-                hint: "Pola: Topik wa + Keterangan waktu + Objek o + Kata kerja. Mainichi = setiap hari."
+                hint: "Setiap hari = mainichi, apel = ringo, makan = tabemasu."
             }
         ]
     },
@@ -596,104 +575,103 @@ export const questLevels = [
                 id: "q_6_1",
                 type: "mcq",
                 node_id: "grammar_tai",
-                grammar_focus: "〜たい (tai) — Ingin melakukan (subjek sendiri)",
-                question: "Cara menyatakan 'Ingin melakukan sesuatu' (untuk diri sendiri) adalah?",
-                options: ["V-masu (stem) + tai desu", "V-te + tai desu", "V-dictionary + tai desu", "V-masu + hoshii"],
+                grammar_focus: "〜たい (tai) — Ingin Melakukan",
+                question: "Pilihlah kalimat yang benar untuk menyatakan 'Saya ingin minum teh':",
+                options: ["<ruby>お茶<rt>おちゃ</rt></ruby>を<ruby>飲<rt>の</rt></ruby>みたいです (ocha o nomitai desu)", "<ruby>お茶<rt>おちゃ</rt></ruby>を<ruby>飲<rt>の</rt></ruby>みていです (ocha o nomitei desu)", "<ruby>お茶<rt>おちゃ</rt></ruby>を<ruby>飲<rt>の</rt></ruby>mu たいです (ocha o nomutai desu)", "<ruby>お茶<rt>おちゃ</rt></ruby>が<ruby>飲<rt>の</rt></ruby>みます (ocha ga nomimasu)"],
                 correctIndex: 0,
-                hint: "Nomi-masu → nomi + tai desu = Ingin minum. Perlu V-masu stem (bukan bentuk lengkapnya)."
+                hint: "Kata kerja stem-masu (nomi) + tai desu."
             },
             {
                 id: "q_6_2",
                 type: "fill",
                 node_id: "grammar_ga_hoshii",
-                grammar_focus: "がほしい (ga hoshii) — Ingin (benda)",
-                question: "Untuk menyatakan keinginan terhadap BENDA, pola yang dipakai adalah: [Benda] ga ___.",
+                grammar_focus: "がほしい (ga hoshii) — Ingin (Benda)",
+                question: "Lengkapi kalimat keinginan: <ruby>新<rt>あたら</rt></ruby>しい<ruby>車<rt>くるま</rt></ruby>が ___ です。 (Saya ingin mobil baru.)",
                 correct: ["hoshii", "ほしい", "欲しい"],
-                hint: "Kuruma ga ___ (Saya ingin mobil). Berbeda dengan -tai yang untuk kata kerja."
+                hint: "Gunakan kata sifat 'hoshii' untuk menyatakan keinginan terhadap suatu benda."
             },
             {
                 id: "q_6_3",
                 type: "mcq",
                 node_id: "grammar_no_ga_suki",
-                grammar_focus: "のが好き (no ga suki) — Suka melakukan",
-                question: "Untuk menyatakan 'Suka MELAKUKAN sesuatu', pola yang dipakai adalah: V-dictionary + ___ ga suki desu.",
-                options: ["koto (こと)", "no (の)", "mono (もの)", "naka (なか)"],
+                grammar_focus: "のが好き (no ga suki) — Suka Melakukan",
+                question: "Lengkapi kalimat: 私は<ruby>音楽<rt>おんがく</rt></ruby>を<ruby>聞<rt>き</rt></ruby>く ___ が好きです。 (Saya suka mendengarkan musik.)",
+                options: ["こと (koto)", "の (no)", "もの (mono)", "と (to)"],
                 correctIndex: 1,
-                hint: "Taberu ___ ga suki desu. (Suka makan.) のが好き = N5 standard. こと punya nuansa lebih formal."
+                hint: "V-dictionary (kiku) + partikel 'no' + ga suki desu untuk merujuk pada kesukaan aktivitas."
             },
             {
                 id: "q_6_4",
                 type: "fill",
                 node_id: "grammar_jouzu_heta",
-                grammar_focus: "上手・下手 (jouzu/heta) — Pandai / Tidak pandai",
-                question: "Kata untuk 'Pandai/Mahir' adalah ___, lawan katanya 'Tidak pandai/Payah' adalah ___.",
-                correct: ["jouzu heta", "じょうず へた", "jōzu heta", "jouzu, heta"],
-                hint: "Nihongo ga jouzu desu ne! (Bahasa Jepangmu bagus!) vs uta ga heta desu. (Tidak pandai menyanyi.)"
+                grammar_focus: "のが下手 (no ga heta) — Tidak Pandai",
+                question: "Lengkapi kalimat: 私は<ruby>歌<rt>うた</rt></ruby>が ___ です。 (Saya tidak pandai bernyanyi.)",
+                correct: ["heta", "へた", "下手"],
+                hint: "Lawan kata dari 'jouzu' (pandai) adalah 'heta' (tidak pandai/payah)."
             },
             {
                 id: "q_6_5",
                 type: "fill",
                 node_id: "grammar_wakaru",
                 grammar_focus: "わかる (wakaru) — Mengerti / Paham",
-                question: "Kata kerja 'Mengerti / Paham' dalam bentuk sopan adalah ___.",
+                question: "Lengkapi kalimat: 私は<ruby>英語<rt>えいご</rt></ruby>がよく ___。 (Saya sangat paham bahasa Inggris.)",
                 correct: ["wakarimasu", "わかります", "wakaru", "わかる"],
-                hint: "Nihongo ga ___ ka? (Apakah mengerti bahasa Jepang?)"
+                hint: "Kata kerja 'mengerti/paham' dalam bentuk sopan desu/masu."
             },
             {
                 id: "q_6_6",
                 type: "mcq",
                 node_id: "grammar_ichiban",
-                grammar_focus: "一番 (ichiban) — Paling / Nomor satu",
-                question: "Kata untuk menyatakan 'Paling' atau 'Nomor Satu' (superlatif) adalah?",
-                options: ["Motto (もっと — lebih lagi)", "Zutto (ずっと — sejauh ini/terus)", "Ichiban (一番 — paling)", "Dake (だけ — hanya)"],
-                correctIndex: 2,
-                hint: "___ suki na tabemono wa nan desu ka? (Makanan yang paling kamu suka apa?)"
+                grammar_focus: "一番 (ichiban) — Paling / Nomor Satu",
+                question: "Lengkapi kalimat: くだものの中で、りんごが ___ 好きです。 (Di antara buah-buahan, saya paling suka apel.)",
+                options: ["もっと (motto)", "一番 (ichiban)", "ずっと (zutto)", "とても (totemo)"],
+                correctIndex: 1,
+                hint: "Kata 'ichiban' digunakan untuk menyatakan predikat superlatif ('paling/nomor satu')."
             },
             {
                 id: "q_6_7",
                 type: "fill",
                 node_id: "grammar_yori",
-                grammar_focus: "より (yori) — Daripada (perbandingan)",
-                question: "Untuk perbandingan 'A lebih ... daripada B': A wa B ___ ... desu.",
+                grammar_focus: "より (yori) — Daripada (Perbandingan)",
+                question: "Lengkapi kalimat perbandingan: <ruby>猫<rt>ねこ</rt></ruby>は<ruby>犬<rt>いぬ</rt></ruby> ___ <ruby>小<rt>ちい</rt></ruby>さいです。 (Kucing lebih kecil daripada anjing.)",
                 correct: ["yori", "より"],
-                hint: "Neko wa inu ___ chiisai desu. (Kucing lebih kecil daripada anjing.)"
+                hint: "Partikel 'yori' ditempelkan pada benda pembanding yang berarti 'daripada'."
             },
             {
                 id: "q_6_8",
                 type: "mcq",
                 node_id: "grammar_hou_ga_ii",
-                grammar_focus: "ほうがいい (hou ga ii) — Lebih baik / Sebaiknya",
-                question: "Pola untuk memberikan saran 'Lebih baik melakukan...' adalah?",
-                options: ["Hanya V-ta + hou ga ii (sudah melakukan)", "Hanya V-nai + hou ga ii (jangan melakukan)", "Keduanya bisa: V-ta hou ga ii (positif) dan V-nai hou ga ii (negatif)", "Hanya V-masu + hou ga ii"],
+                grammar_focus: "ほうがいい (hou ga ii) — Lebih Baik / Saran",
+                question: "Lengkapi kalimat: <ruby>風邪<rt>かぜ</rt></ruby>ですね。早く ___ ほうがいいですよ。 (Kamu sedang flu ya. Sebaiknya tidur cepat.)",
+                options: ["<ruby>寝<rt>ね</rt></ruby>る (neru)", "<ruby>寝<rt>ね</rt></ruby>て (nete)", "<ruby>寝<rt>ね</rt></ruby>た (neta)", "<ruby>寝<rt>ね</rt></ruby>ない (nenai)"],
                 correctIndex: 2,
-                hint: "Neta hou ga ii (Lebih baik tidur). vs Tabenai hou ga ii (Lebih baik tidak makan)."
+                hint: "Pola 'hou ga ii' (sebaiknya) untuk saran positif berpasangan dengan kata kerja bentuk lampau kasual (~ta)."
             },
             {
                 id: "q_6_9",
                 type: "fill",
                 node_id: "grammar_dou_desu_ka",
-                grammar_focus: "はどうですか (wa dou desu ka) — Bagaimana / Bagaimana kalau",
-                question: "Untuk menanyakan 'Bagaimana pendapatmu?' atau menawarkan sesuatu, digunakan ___.",
-                correct: ["dou desu ka", "どうですか", "wa dou desu ka"],
-                hint: "Koohii ___ ? (Bagaimana kalau kopi? / Mau kopi?)"
+                grammar_focus: "はどうですか (wa dou desu ka) — Bagaimana Kalau",
+                question: "Lengkapi penawaran berikut: <ruby>温<rt>あたた</rt></ruby>かいお<ruby>茶<rt>おちゃ</rt></ruby>は ___ ですか。 (Bagaimana kalau minum teh hangat?)",
+                correct: ["dou", "どう"],
+                hint: "Kata tanya 'dou desu ka' digunakan untuk menanyakan keadaan atau menawarkan sesuatu."
             },
             {
                 id: "q_6_10",
                 type: "translate",
                 node_id: "grammar_tai",
-                grammar_focus: "〜たい — Produksi kalimat keinginan",
-                question: "Terjemahkan: 'Saya ingin pergi ke Jepang suatu saat nanti.' (Gunakan: nihon / ni / itsu ka / ikitai desu / watashi wa)",
+                grammar_focus: "〜たい — Terjemahan Keinginan",
+                question: "Terjemahkan ke bahasa Jepang: 'Saya ingin pergi ke Jepang.' (Jepang = nihon, pergi = ikimasu)",
                 acceptedAnswers: [
-                    "watashi wa itsu ka nihon ni ikitai desu",
-                    "itsu ka nihon ni ikitai desu",
                     "nihon ni ikitai desu",
+                    "nihon ni ikitai desu.",
+                    "nihon e ikitai desu",
                     "watashi wa nihon ni ikitai desu"
                 ],
-                hint: "Ikimasu → iki + tai desu = ingin pergi. Itsu ka = suatu saat nanti."
+                hint: "Jepang = nihon, pergi = ikimasu -> ikitai desu."
             }
         ]
     },
-
     // ══════════════════════════════════════════════════════════════
     // TIER 3 — PRE-INTERMEDIATE (Level 7–9)
     // ══════════════════════════════════════════════════════════════
@@ -709,99 +687,99 @@ export const questLevels = [
                 id: "q_7_1",
                 type: "mcq",
                 node_id: "grammar_te_kudasai",
-                grammar_focus: "てください (te kudasai) — Tolong lakukan",
-                question: "Cara meminta tolong dengan sopan 'Tolong lakukan...' adalah?",
-                options: ["V-te kudasai", "V-masu kudasai", "V-nai kudasai", "V-dictionary kudasai"],
-                correctIndex: 0,
-                hint: "Mite kudasai (Tolong lihat). Kite kudasai (Tolong datang). Selalu pakai bentuk -te."
+                grammar_focus: "てください (te kudasai) — Tolong Lakukan",
+                question: "Lengkapi kalimat: <ruby>名前<rt>なまえ</rt></ruby>をここに ___ ください。 (Tolong tulis namamu di sini.)",
+                options: ["<ruby>書<rt>か</rt></ruby>く (kaku)", "<ruby>書<rt>か</rt></ruby>いて (kaite)", "<ruby>書<rt>か</rt></ruby>きます (kakimasu)", "<ruby>書<rt>か</rt></ruby>かない (kakanai)"],
+                correctIndex: 1,
+                hint: "Pola permintaan sopan 'tolong lakukan' dibentuk dari Kata Kerja bentuk -te + kudasai."
             },
             {
                 id: "q_7_2",
                 type: "fill",
                 node_id: "grammar_te_mo_ii",
-                grammar_focus: "てもいいです (temo ii desu) — Boleh / Diizinkan",
-                question: "Meminta atau memberi izin 'Boleh melakukan...': V-te ___ desu.",
-                correct: ["mo ii", "もいい", "mo ii desu"],
-                hint: "Tabete ___ desu ka? (Bolehkah makan?) → Hai, tabete mo ii desu. (Ya, boleh makan.)"
+                grammar_focus: "てもいいです (temo ii desu) — Boleh / Izin",
+                question: "Lengkapi izin berikut: <ruby>写真<rt>しゃしん</rt></ruby>を<ruby>撮<rt>と</rt></ruby>っても ___ ですか。 (Bolehkah saya mengambil foto?)",
+                correct: ["ii", "いい"],
+                hint: "Pola izin: V-te + mo ii desu ka?"
             },
             {
                 id: "q_7_3",
                 type: "mcq",
                 node_id: "grammar_te_wa_ikenai",
-                grammar_focus: "てはいけない (te wa ikenai) — Tidak boleh / Larangan",
-                question: "Untuk menyatakan larangan 'Tidak boleh...', pola yang digunakan adalah V-te ___.",
-                options: ["wa ikemasen (は行けません) — formal", "wa dame desu (はだめです) — standar", "wa ikenai (はいけない) — kasual", "Semua benar, berbeda tingkat kesopanan"],
-                correctIndex: 3,
-                hint: "Ketiganya bermakna sama (dilarang), tapi beda tingkat formalitas. Ikemasen paling sopan."
+                grammar_focus: "てはいけない (te wa ikenai) — Larangan",
+                question: "Lengkapi kalimat: ここは<ruby>危<rt>あぶ</rt></ruby>ないから、<ruby>入<rt>はい</rt></ruby>って ___。 (Karena di sini bahaya, kamu tidak boleh masuk.)",
+                options: ["はいいです (wa ii desu)", "はいけません (wa ikemasen)", "はだめ (wa dame)", "はいいですか (wa ii desu ka)"],
+                correctIndex: 1,
+                hint: "Pola larangan formal: V-te + wa ikemasen (tidak boleh)."
             },
             {
                 id: "q_7_4",
                 type: "fill",
                 node_id: "grammar_te_iru",
-                grammar_focus: "ている (te iru) — Sedang melakukan / Keadaan menetap",
-                question: "Untuk menyatakan aksi yang 'sedang berlangsung': V-te ___.",
-                correct: ["imasu", "iru", "います", "いる"],
-                hint: "Benkyou shite ___ (Sedang belajar). Kekkon shite ___ (Sudah menikah — keadaan menetap)."
+                grammar_focus: "ている (te iru) — Sedang Berlangsung",
+                question: "Lengkapi kalimat: 彼は今、日本語を勉強して ___。 (Dia sekarang sedang belajar bahasa Jepang.)",
+                correct: ["imasu", "います", "iru", "いる"],
+                hint: "Pola sedang berlangsung: V-te + imasu."
             },
             {
                 id: "q_7_5",
                 type: "mcq",
                 node_id: "grammar_te_iru_state",
-                grammar_focus: "ている — Keadaan menetap (meaning ke-2)",
-                question: "Selain menyatakan aksi 'sedang berlangsung', pola Te-imasu juga bisa menyatakan?",
-                options: ["Keinginan", "Keadaan/kondisi yang menetap sebagai hasil dari aksi", "Masa lalu", "Kemungkinan"],
+                grammar_focus: "ている — Keadaan Menetap",
+                question: "Pilihlah bentuk yang tepat untuk menyatakan 'Saya sudah menikah' (status saat ini):",
+                options: ["<ruby>結婚<rt>けっこん</rt></ruby>します (kekkon shimasu)", "<ruby>結婚<rt>けっこん</rt></ruby>しています (kekkon shite imasu)", "<ruby>結婚<rt>けっこん</rt></ruby>しました (kekkon shimashita)", "<ruby>結婚<rt>けっこん</rt></ruby>してありました (kekkon shite arimashita)"],
                 correctIndex: 1,
-                hint: "Kekkon shite imasu (Saya sudah menikah — menikah adalah hasilnya, statusnya menetap)."
+                hint: "Gunakan bentuk 'V-te imasu' untuk menunjukkan kondisi/status yang bertahan dari suatu aksi lampau."
             },
             {
                 id: "q_7_6",
                 type: "fill",
                 node_id: "grammar_te_kara",
-                grammar_focus: "てから (te kara) — Setelah melakukan",
-                question: "Untuk menyatakan 'Setelah melakukan A, baru B': V-te ___.",
+                grammar_focus: "てから (te kara) — Setelah Melakukan",
+                question: "Lengkapi kalimat: <ruby>手<rt>て</rt></ruby>を<ruby>洗<rt>あら</rt></ruby>t て ___ 、<ruby>ご飯<rt>ごはん</rt></ruby>を食べます。 (Setelah mencuci tangan, baru saya makan nasi.)",
                 correct: ["kara", "から"],
-                hint: "Tabete ___ benkyou shimasu. (Setelah makan, baru belajar.) Urutannya jelas: A dulu, baru B."
+                hint: "Pola V-te + kara berarti 'setelah melakukan [A], baru melakukan [B]'."
             },
             {
                 id: "q_7_7",
                 type: "mcq",
                 node_id: "grammar_te_ageru_morau_kureru",
-                grammar_focus: "てあげる・てもらう・てくれる — Memberi / Menerima jasa",
-                question: "Manakah yang berarti 'Melakukan sesuatu untuk orang lain (memberi jasa)'?",
-                options: ["~te morau (もらう) — menerima jasa dari orang lain", "~te kureru (くれる) — orang lain berbuat untuk saya", "~te ageru (あげる) — saya berbuat untuk orang lain", "~te iku (いく) — melakukan sambil pergi"],
-                correctIndex: 2,
-                hint: "Ageru = memberi (dari perspektif pembicara keluar). Morau = menerima. Kureru = orang lain memberi ke saya."
+                grammar_focus: "てあげる・てもらう・てくれる — Jasa/Bantuan",
+                question: "Pilihlah kalimat yang tepat untuk menyatakan 'Teman saya membacakan buku untuk saya':",
+                options: ["<ruby>友<rt>とも</rt></ruby>だちは<ruby>私<rt>わたし</rt></ruby>に<ruby>本<rt>ほん</rt></ruby>を<ruby>読<rt>よ</rt></ruby>んであげました", "<ruby>友<rt>とも</rt></ruby>だちは<ruby>私<rt>わたし</rt></ruby>に<ruby>本<rt>ほん</rt></ruby>を<ruby>読<rt>よ</rt></ruby>んでくれました", "<ruby>友<rt>とも</rt></ruby>だちは<ruby>私<rt>わたし</rt></ruby>に<ruby>本<rt>ほん</rt></ruby>を<ruby>読<rt>よ</rt></ruby>んでいいました", "<ruby>友<rt>とも</rt></ruby>だちは<ruby>私<rt>わたし</rt></ruby>に<ruby>本<rt>ほん</rt></ruby>を<ruby>読<rt>よ</rt></ruby>んでいきました"],
+                correctIndex: 1,
+                hint: "Kureru digunakan ketika orang lain memberikan/melakukan sesuatu yang menguntungkan pembicara."
             },
             {
                 id: "q_7_8",
                 type: "fill",
                 node_id: "grammar_tari_tari",
-                grammar_focus: "たり〜たりする (tari~tari suru) — Melakukan berbagai hal",
-                question: "Untuk menyebutkan beberapa aktivitas secara sampel/tidak lengkap, pola yang dipakai adalah V-___, V-___ shimasu.",
-                correct: ["tari tari", "たり たり", "tari, tari"],
-                hint: "Tabe-TARI, nomi-TARI shimasu. (Melakukan hal-hal seperti makan dan minum.) Bukan daftar lengkap."
+                grammar_focus: "たり〜たり (tari~tari) — Daftar Aktivitas Acak",
+                question: "Lengkapi kalimat: <ruby>休<rt>やす</rt></ruby>みの<ruby>日<rt>ひ</rt></ruby>は<ruby>本<rt>ほん</rt></ruby>を<ruby>読<rt>よ</rt></ruby>ん ___ 、<ruby>音楽<rt>おんがく</rt></ruby>を<ruby>聞<rt>き</rt></ruby>いたりします。 (Pada hari libur, saya membaca buku, mendengar musik, dll.)",
+                correct: ["dari", "だり"],
+                hint: "Pola tari~tari untuk daftar acak kata kerja. Karena form 'yonde' berakhiran 'de', maka 'tari' berubah menjadi 'dari'."
             },
             {
                 id: "q_7_9",
                 type: "fill",
                 node_id: "grammar_te_miru",
-                grammar_focus: "てみる (te miru) — Mencoba melakukan",
-                question: "Untuk menyatakan 'Mencoba melakukan sesuatu (dan lihat hasilnya)': V-te ___.",
-                correct: ["mimasu", "miru", "みます", "みる"],
-                hint: "Tabete ___ (Coba makan deh). Kite ___ (Coba pakai/datang). Implisit: ingin tahu hasilnya."
+                grammar_focus: "てみる (te miru) — Mencoba Melakukan",
+                question: "Lengkapi kalimat: おいしそうですね。食べて ___ ます。 (Kelihatannya enak ya. Saya akan coba memakannya.)",
+                correct: ["mi", "み"],
+                hint: "Pola 'mencoba melakukan sesuatu' dibentuk dari V-te + mimasu."
             },
             {
                 id: "q_7_10",
                 type: "translate",
                 node_id: "grammar_te_kudasai",
-                grammar_focus: "てください — Produksi kalimat permintaan",
-                question: "Terjemahkan: 'Tolong tulis namamu di sini.' (Gunakan: koko ni / namae / kaite / o / kudasai / anata no)",
+                grammar_focus: "てください — Terjemahan Permintaan",
+                question: "Terjemahkan ke bahasa Jepang: 'Tolong tunggu sebentar.' (Tunggu = machimasu -> matte)",
                 acceptedAnswers: [
-                    "koko ni namae o kaite kudasai",
-                    "koko ni anata no namae o kaite kudasai",
-                    "namae o koko ni kaite kudasai"
+                    "chotto matte kudasai",
+                    "chotto matte kudasai.",
+                    "sukoshi matte kudasai"
                 ],
-                hint: "Kakimasu → kaite. Pola: [Tempat] ni [Objek] o kaite kudasai."
+                hint: "Sebentar = chotto, menunggu = machimasu -> matte."
             }
         ]
     },
@@ -817,100 +795,101 @@ export const questLevels = [
                 id: "q_8_1",
                 type: "mcq",
                 node_id: "grammar_ta_koto_ga_aru",
-                grammar_focus: "たことがある (ta koto ga aru) — Pernah melakukan",
-                question: "Cara menyatakan pengalaman 'Pernah melakukan sesuatu (setidaknya sekali)' adalah?",
-                options: ["V-ta koto ga arimasu", "V-te koto ga arimasu", "V-dictionary koto ga arimasu", "V-nai koto ga arimasu"],
-                correctIndex: 0,
-                hint: "Nihon e itta koto ga arimasu. (Pernah pergi ke Jepang.) V-ta = past tense verb."
+                grammar_focus: "たことがある (ta koto ga aru) — Pernah",
+                question: "Pilihlah kalimat yang tepat untuk menyatakan 'Saya pernah pergi ke Jepang':",
+                options: ["<ruby>日本<rt>にほん</rt></ruby>に<ruby>行<rt>い</rt></ruby>きことがあります", "<ruby>日本<rt>にほん</rt></ruby>に<ruby>行<rt>い</rt></ruby>ったことがあります", "<ruby>日本<rt>にほん</rt></ruby>に<ruby>行<rt>い</rt></ruby>てことがあります", "<ruby>日本<rt>にほん</rt></ruby>に<ruby>行<rt>い</rt></ruby>くことがあります"],
+                correctIndex: 1,
+                hint: "Pola menyatakan pengalaman 'pernah': V-ta (bentuk lampau kasual) + koto ga arimasu."
             },
             {
                 id: "q_8_2",
                 type: "fill",
                 node_id: "grammar_mae_ni",
-                grammar_focus: "前に (mae ni) — Sebelum",
-                question: "Untuk menyatakan 'Sebelum melakukan sesuatu': V-dictionary ___.",
+                grammar_focus: "前に (mae ni) — Sebelum Melakukan",
+                question: "<ruby>寝<rt>ね</rt></ruby>る ___ スマホを<ruby>見<rt>み</rt></ruby>ちゃダメよ。 (Kamu tidak boleh melihat HP sebelum tidur.)",
                 correct: ["mae ni", "まえに", "前に"],
-                hint: "Neru ___ ha o migakimasu. (Sebelum tidur, gosok gigi.) V-dictionary + mae ni."
+                hint: "Pola V-dictionary (neru) + 'mae ni' berarti 'sebelum melakukan'."
             },
             {
                 id: "q_8_3",
                 type: "mcq",
                 node_id: "grammar_nagara",
-                grammar_focus: "ながら (nagara) — Sambil (melakukan dua hal bersamaan)",
-                question: "Untuk menyatakan 'Melakukan dua hal bersamaan (sambil...)', pola yang digunakan adalah?",
-                options: ["V-te", "V-masu (stem) + nagara", "V-dictionary + nagara", "V-ta + nagara"],
-                correctIndex: 1,
-                hint: "Ongaku o kiki-NAGARA tabemasu. (Makan sambil mendengar musik.) Gunakan V-masu stem + nagara."
+                grammar_focus: "ながら (nagara) — Sambil Melakukan",
+                question: "<ruby>音楽<rt>おんがく</rt></ruby>を ___ <ruby>ご飯<rt>ごはん</rt></ruby>を食べます。 (Makan nasi sambil mendengarkan musik.)",
+                options: ["<ruby>聞<rt>き</rt></ruby>くながら", "<ruby>聞<rt>き</rt></ruby>いてながら", "<ruby>聞<rt>き</rt></ruby>きながら", "<ruby>聞<rt>き</rt></ruby>かながら"],
+                correctIndex: 2,
+                hint: "Pola 'sambil': V-masu stem (kiki) + nagara."
             },
             {
                 id: "q_8_4",
                 type: "mcq",
                 node_id: "grammar_mou_mada",
-                grammar_focus: "もう・まだ (mou/mada) — Sudah / Belum",
-                question: "Pasangan kata yang tepat: 'Sudah' = ___, 'Belum' = ___.",
-                options: ["Mou (もう) / Mada (まだ)", "Mada (まだ) / Mou (もう)", "Yoku (よく) / Mada (まだ)", "Mou (もう) / Amari (あまり)"],
-                correctIndex: 0,
-                hint: "Mou tabemashita (Sudah makan). Mada tabete imasen (Belum makan). Perhatikan: mada butuh bentuk ~te imasen!"
+                grammar_focus: "まだ (mada) — Belum",
+                question: "Lengkapi tanya-jawab ini: A: Mou gohan o tabemashita ka? B: Iie, ___ tabete imasen. (Belum makan.)",
+                options: ["mou", "mada", "itsumo", "totemo"],
+                correctIndex: 1,
+                hint: "Mada (belum) digunakan bersama dengan bentuk negatif sedang berlangsung (~te imasen)."
             },
             {
                 id: "q_8_5",
                 type: "fill",
                 node_id: "grammar_naru",
                 grammar_focus: "なる (naru) — Menjadi",
-                question: "Kata kerja 'Menjadi (become)' dalam bentuk sopan adalah ___.",
-                correct: ["narimasu", "なります", "naru", "なる"],
-                hint: "Atsuku ___ (Menjadi panas). Sensei ni ___ (Menjadi guru)."
+                question: "<ruby>暖<rt>あたた</rt></ruby>かく ___ ましたね。 (Sudah menjadi hangat ya.)",
+                correct: ["nari", "なり"],
+                hint: "Kata kerja 'naru' (menjadi) dalam bentuk sopan lampau 'narimashita'."
             },
             {
                 id: "q_8_6",
                 type: "mcq",
                 node_id: "grammar_ndesu",
-                grammar_focus: "んです・のです (ndesu/no desu) — Penjelasan / Penekanan",
-                question: "Fungsi utama dari akhiran '~ndesu' (んです) atau '~no desu' (のです) adalah?",
-                options: ["Memberi perintah", "Memberikan penjelasan atau alasan dari suatu situasi", "Menanyakan waktu", "Menyatakan hobi"],
-                correctIndex: 1,
-                hint: "Doushite okureta no? - Densha ga okureta n desu. (Mengapa terlambat? - Karena keretanya terlambat.)"
+                grammar_focus: "んです (ndesu) — Penjelasan / Penekanan",
+                question: "Pilihlah ungkapan penjelasan/alasan yang tepat untuk menjawab 'Kenapa terlambat?':",
+                options: ["<ruby>電車<rt>でんしゃ</rt></ruby>が<ruby>遅<rt>おく</rt></ruby>れました", "<ruby>電車<rt>でんしゃ</rt></ruby>が<ruby>遅<rt>おく</rt></ruby>れたのです", "<ruby>電車<rt>でんしゃ</rt></ruby>が<ruby>遅<rt>おく</rt></ruby>れたんです", "Semua di atas benar tergantung nuansa kesopanan"],
+                correctIndex: 3,
+                hint: "Akhiran ndesu (dan no desu) digunakan untuk memberi penjelasan. Bentuk polosnya juga benar tapi tanpa penekanan."
             },
             {
                 id: "q_8_7",
                 type: "fill",
                 node_id: "grammar_toki",
                 grammar_focus: "とき (toki) — Ketika / Saat",
-                question: "Kata untuk menyatakan 'Ketika / Saat' adalah ___.",
+                question: "<ruby>子<rt>こ</rt></ruby>どもの ___ 、甘いものが好きでした。 (Ketika anak-anak, saya suka makanan manis.)",
                 correct: ["toki", "とき", "時"],
-                hint: "Kodomo no ___ (Ketika masih anak-anak). Nihon ni ita ___ (Ketika di Jepang)."
+                hint: "Kata benda (kodomo) + 'no' + 'toki' berarti 'ketika/saat'."
             },
             {
                 id: "q_8_8",
                 type: "mcq",
                 node_id: "grammar_sugiru",
                 grammar_focus: "すぎる (sugiru) — Terlalu / Berlebihan",
-                question: "Untuk menyatakan 'Terlalu / Berlebihan (sampai bermasalah)', pola yang dipakai adalah?",
-                options: ["~sugiru (すぎる)", "~totemo (とても)", "~motto (もっと)", "~dake (だけ)"],
-                correctIndex: 0,
-                hint: "Tabe-SUGIRU (Terlalu banyak makan). Nomi-sugiru (Terlalu banyak minum). i-adj: hatsu-sugiru → atsusugiru."
+                question: "昨日はお<ruby>酒<rt>さけ</rt></ruby>を ___ すぎました。 (Kemarin saya terlalu banyak minum alkohol.)",
+                options: ["<ruby>飲<rt>の</rt></ruby>む (nomu)", "<ruby>飲<rt>の</rt></ruby>み (nomi)", "<ruby>飲<rt>の</rt></ruby>んで (nonde)", "<ruby>飲<rt>の</rt></ruby>んだ (nonda)"],
+                correctIndex: 1,
+                hint: "Kata kerja stem-masu (nomi) + sugiru berarti 'terlalu berlebihan melakukan'."
             },
             {
                 id: "q_8_9",
                 type: "fill",
                 node_id: "grammar_deshou",
-                grammar_focus: "でしょう (deshou) — Sepertinya / Mungkin (sopan)",
-                question: "Bentuk sopan dari 'darou (だろう)' yang menyatakan perkiraan/kemungkinan adalah ___.",
+                grammar_focus: "でしょう (deshou) — Sepertinya / Kemungkinan",
+                question: "<ruby>明日<rt>あした</rt></ruby>は<ruby>雨<rt>あめ</rt></ruby>が<ruby>降<rt>ふ</rt></ruby>る ___。 (Sepertinya besok akan turun hujan.)",
                 correct: ["deshou", "でしょう"],
-                hint: "Ashita wa ame ga ___ (Sepertinya besok hujan). Lebih sopan dari 'darou'."
+                hint: "Deshou digunakan untuk memperkirakan sesuatu secara sopan."
             },
             {
                 id: "q_8_10",
                 type: "translate",
                 node_id: "grammar_ta_koto_ga_aru",
-                grammar_focus: "たことがある — Produksi kalimat pengalaman",
-                question: "Terjemahkan: 'Apakah kamu pernah makan sushi?' (Gunakan: sushi o / koto ga / tabeta / arimasu ka / anata wa)",
+                grammar_focus: "たことがある — Terjemahan Pengalaman",
+                question: "Terjemahkan ke bahasa Jepang: 'Apakah kamu pernah makan sushi?' (Sushi = sushi, makan = tabemasu)",
                 acceptedAnswers: [
-                    "anata wa sushi o tabeta koto ga arimasu ka",
                     "sushi o tabeta koto ga arimasu ka",
-                    "sushi wo tabeta koto ga arimasu ka"
+                    "sushi o tabeta koto ga arimasu ka.",
+                    "sushi wo tabeta koto ga arimasu ka",
+                    "watashi wa sushi o tabeta koto ga arimasu ka"
                 ],
-                hint: "Tabemasu → tabeta (past). Pola: [Objek] o V-ta koto ga arimasu ka?"
+                hint: "Sushi = sushi, makan = tabemasu -> tabeta, pernah = koto ga arimasu ka."
             }
         ]
     },
@@ -926,112 +905,102 @@ export const questLevels = [
                 id: "q_9_1",
                 type: "mcq",
                 node_id: "grammar_nakereba_naranai",
-                grammar_focus: "なければならない・なくてはいけない (nakereba naranai) — Harus",
-                question: "Cara menyatakan 'Harus melakukan sesuatu' dalam bahasa Jepang adalah?",
-                options: ["Hanya V-nakereba narimasen", "Hanya V-nai to ikenai", "Hanya V-nakucha", "Semua benar — ada banyak cara dalam bahasa Jepang"],
-                correctIndex: 3,
-                hint: "Nakereba narimasen (formal), nai to ikenai (standar), nakucha (sangat kasual) — semua bermakna 'harus'."
+                grammar_focus: "なくてはいけない (nakute wa ikenai) — Harus",
+                question: "<ruby>時間<rt>じかん</rt></ruby>がありませんから、早く ___。",
+                options: ["<ruby>起<rt>お</rt></ruby>きなければなりません (okinakereba narimasen)", "<ruby>起<rt>お</rt></ruby>きてはいけません (okite wa ikemasen)", "<ruby>起<rt>お</rt></ruby>きてもいいです (okite mo ii desu)", "<ruby>起<rt>お</rt></ruby>きないでください (okinaide kudasai)"],
+                correctIndex: 0,
+                hint: "Pola menyatakan kewajiban/keharusan: V-nai (tanpa -i) + kereba narimasen."
             },
             {
                 id: "q_9_2",
                 type: "fill",
                 node_id: "grammar_naide_kudasai",
-                grammar_focus: "ないでください (naide kudasai) — Tolong jangan",
-                question: "Untuk meminta seseorang TIDAK melakukan sesuatu: V-nai ___.",
-                correct: ["de kudasai", "でください"],
-                hint: "Wasurenai ___ (Tolong jangan lupa). Berbeda dengan te wa ikenai yang lebih kuat."
+                grammar_focus: "ないdeください (naide kudasai) — Tolong Jangan",
+                question: "<ruby>写真<rt>しゃしん</rt></ruby>を<ruby>撮<rt>と</rt></ruby>ら ___ ください。 (Tolong jangan ambil foto.)",
+                correct: ["naide", "ないで"],
+                hint: "Pola permintaan jangan melakukan: V-nai + de kudasai."
             },
             {
                 id: "q_9_3",
                 type: "mcq",
                 node_id: "grammar_tsumori",
                 grammar_focus: "つもり (tsumori) — Berencana / Berniat",
-                question: "Cara menyatakan rencana/niat 'Berencana untuk...', menggunakan pola mana?",
-                options: ["Hanya V-dictionary + tsumori desu (rencana positif)", "Hanya V-nai + tsumori desu (rencana tidak melakukan)", "Keduanya: V-dic tsumori desu ATAU V-nai tsumori desu", "V-ta + tsumori desu"],
-                correctIndex: 2,
-                hint: "Nihon e iku tsumori desu (Berencana pergi ke Jepang). Tabenai tsumori desu (Tidak berencana makan)."
+                question: "<ruby>来年<rt>らいねん</rt></ruby>、<ruby>日本<rt>にほん</rt></ruby>へ<ruby>行<rt>い</rt></ruby>く ___ です. (Tahun depan, saya berencana pergi ke Jepang.)",
+                options: ["つもり (tsumori)", "よてい (yotei)", "から (kara)", "こと (koto)"],
+                correctIndex: 0,
+                hint: "Pola niat/rencana personal: V-dictionary + tsumori desu."
             },
             {
                 id: "q_9_4",
                 type: "fill",
                 node_id: "grammar_naku_temo_ii",
-                grammar_focus: "なくてもいい (naku temo ii) — Tidak harus / Boleh tidak",
-                question: "Untuk menyatakan 'Tidak harus melakukan / Boleh tidak melakukan': V-nai ___ desu.",
-                correct: ["ku temo ii", "くてもいい", "naku temo ii", "なくてもいい"],
-                hint: "Isoganakute mo ii desu. (Tidak perlu buru-buru.) Isogu → isoganai → isogana-KU-TE MO II."
+                grammar_focus: "なくてもいい (naku temo ii) — Tidak Harus",
+                question: "<ruby>急<rt>いそ</rt></ruby>がなくても ___ ですよ。 (Kamu tidak harus terburu-buru lho.)",
+                correct: ["ii", "いい"],
+                hint: "Pola tidak harus: V-nakutemo ii desu."
             },
             {
                 id: "q_9_5",
                 type: "mcq",
                 node_id: "grammar_koto_ga_dekiru",
-                grammar_focus: "ことができる (koto ga dekiru) — Bisa / Mampu melakukan",
-                question: "Cara menyatakan kemampuan 'Bisa melakukan sesuatu' menggunakan pola?",
-                options: ["V-dictionary + koto ga dekimasu", "V-masu + dekimasu", "V-te + dekimasu", "V-nai + dekimasu"],
-                correctIndex: 0,
-                hint: "Yomu koto ga dekimasu. (Bisa membaca.) = V-dictionary + koto ga dekimasu."
+                grammar_focus: "ことができる (koto ga dekiru) — Bisa / Mampu",
+                question: "私は日本語を話すこと ___ できます。 (Saya bisa berbicara bahasa Jepang.)",
+                options: ["を (o)", "が (ga)", "に (ni)", "は (wa)"],
+                correctIndex: 1,
+                hint: "Pola kemampuan: V-dictionary + koto ga dekimasu."
             },
             {
                 id: "q_9_6",
                 type: "mcq",
                 node_id: "grammar_cha_ikenai",
-                grammar_focus: "ちゃいけない / じゃいけない (cha ikenai / ja ikenai) — Tidak boleh (kasual)",
-                question: "Dalam bahasa Jepang kasual (spoken), 'ちゃいけない (cha ikenai)' digunakan ketika bentuk -te dari kata kerjanya berakhiran ___.",
-                options: [
-                    "て (te) → ちゃ (cha)",
-                    "で (de) → ちゃ (cha)",
-                    "で (de) → じゃ (ja)",
-                    "A dan C benar: て→ちゃ, で→じゃ"
-                ],
-                correctIndex: 3,
-                hint: "Taberu → tabete → tabeCHA ikenai. Nomu → nonde → nonJA ikenai. Ini lebih kasual dari te wa ikenai."
+                grammar_focus: "ちゃいけない — Larangan Kasual (Spoken)",
+                question: "Pilihlah bentuk kasual lisan yang tepat untuk 'Jangan minum kopi itu' (dari nonde wa ikenai):",
+                options: ["コーヒーを<ruby>飲<rt>の</rt></ruby>んじゃダメ (koohii o nonja dame)", "コーヒーを<ruby>飲<rt>の</rt></ruby>みちゃダメ (koohii o nomicha dame)", "コーヒーを<ruby>飲<rt>の</rt></ruby>んだダメ (koohii o nonda dame)", "コーヒーを<ruby>飲<rt>の</rt></ruby>むちゃダメ (koohii o nomucha dame)"],
+                correctIndex: 0,
+                hint: "Dalam bahasa percakapan, bentuk V-te wa ikenai berubah menjadi cha/ja dame. Nomu -> nonde -> nonja dame."
             },
             {
                 id: "q_9_7",
                 type: "mcq",
                 node_id: "grammar_node",
-                grammar_focus: "ので (node) — Karena (objektif/sopan)",
-                question: "Apa perbedaan utama antara 'Kara (から)' dan 'Node (ので)' sebagai kata 'karena'?",
-                options: ["Tidak ada perbedaan", "Node terdengar lebih objektif dan sopan; Kara lebih subjektif/kasual", "Kara lebih sopan dari Node", "Node hanya untuk kalimat cuaca"],
-                correctIndex: 1,
-                hint: "Ame nano de, ie ni imasu (Karena hujan, di rumah) — Node terasa objektif. Ame da kara, ie ni iru — lebih kasual/subjektif."
+                grammar_focus: "ので (node) — Karena (Objektif)",
+                question: "ここは<ruby>危険<rt>きけん</rt></ruby>な ___、<ruby>入<rt>はい</rt></ruby>っちゃダメだよ。 (Karena tempat ini berbahaya, kamu dilarang masuk.)",
+                options: ["ので (node)", "から (kara)", "ため (tame)", "と (to)"],
+                correctIndex: 0,
+                hint: "Kata sifat-na (kikenna) + node untuk menyatakan alasan objektif/sopan."
             },
             {
                 id: "q_9_8",
                 type: "fill",
                 node_id: "grammar_shikashi",
-                grammar_focus: "しかし (shikashi) — Namun / Tetapi (formal)",
-                question: "Kata hubung FORMAL untuk 'Namun / Tetapi' (setara dengan 'however' dalam tulisan) adalah ___.",
+                grammar_focus: "しかし (shikashi) — Namun / Tetapi (Formal)",
+                question: "Lengkapi kalimat formal: <ruby>日本<rt>にほん</rt></ruby>の<ruby>生活<rt>せいかつ</rt></ruby>は<ruby>大変<rt>たいへん</rt></ruby>es. ___、<ruby>面白<rt>おもしろ</rt></ruby>いです。 (Kehidupan di Jepang berat. Namun, menarik.)",
                 correct: ["shikashi", "しかし"],
-                hint: "Demo (でも) dipakai dalam percakapan. Shikashi dipakai dalam tulisan formal/resmi."
+                hint: "Kata hubung tertulis formal yang berarti 'namun / tetapi' (shikashi)."
             },
             {
                 id: "q_9_9",
                 type: "mcq",
                 node_id: "grammar_ne_yo",
-                grammar_focus: "ね・よ (ne/yo) — Partikel akhir kalimat",
-                question: "Apa perbedaan partikel akhir 'ね (ne)' dan 'よ (yo)'?",
-                options: [
-                    "Tidak ada beda",
-                    "Ne = meminta konfirmasi/persetujuan dari pendengar; Yo = memberikan informasi baru/meyakinkan",
-                    "Yo = meminta konfirmasi; Ne = memberikan informasi baru",
-                    "Keduanya hanya untuk pertanyaan"
-                ],
+                grammar_focus: "よ (yo) — Partikel Penegas Akhir",
+                question: "Lengkapi kalimat: A: Kono keeki wa oishii desu ka? B: Hai, totemo oishii desu ___! (Ya, sangat enak lho!)",
+                options: ["ね (ne)", "よ (yo)", "か (ka)", "な (na)"],
                 correctIndex: 1,
-                hint: "Oishii desu NE! (Enak ya? — kita berdua rasakan.) vs Oishii desu YO! (Ini enak lho! — kamu mungkin belum tahu.)"
+                hint: "Partikel 'yo' digunakan untuk memberikan informasi baru atau meyakinkan pendengar."
             },
             {
                 id: "q_9_10",
                 type: "translate",
                 node_id: "grammar_nakereba_naranai",
-                grammar_focus: "なければならない — Produksi kalimat kewajiban",
-                question: "Terjemahkan: 'Besok saya harus bangun jam 6.' (Gunakan: ashita / wa / roku-ji ni / okina kereba / narimasen / watashi)",
+                grammar_focus: "なければならない — Terjemahan Keharusan",
+                question: "Terjemahkan ke bahasa Jepang: 'Besok saya harus bangun jam 6.' (Besok = ashita, bangun = okiru)",
                 acceptedAnswers: [
-                    "watashi wa ashita roku-ji ni okinakereba narimasen",
                     "ashita roku-ji ni okinakereba narimasen",
-                    "watashi wa ashita rokuji ni okinakereba narimasen",
-                    "ashita rokuji ni okinakereba narimasen"
+                    "watashi wa ashita roku-ji ni okinakereba narimasen",
+                    "ashita rokuji ni okinakereba narimasen",
+                    "watashi wa ashita rokuji ni okinakereba narimasen"
                 ],
-                hint: "Okiru (bangun) → okinai → okinakereba narimasen. Roku-ji ni = pada jam 6."
+                hint: "Besok = ashita, jam 6 = roku-ji ni, harus bangun = okinakereba narimasen."
             }
         ]
     }

@@ -98,19 +98,19 @@
         activeLevelData = questLevels.find(l => l.id === levelId);
         if (!activeLevelData) return;
 
-        // Cek prerequisite sebelum memulai level
-        const userId = $user?.id;
-        if (userId && activeLevelData.prerequisites?.length > 0) {
-            const { nodes: masteredNodes, source } = await getMasteredNodes(userId);
-            const { unlocked, missingNodes } = checkLocalPrerequisites(levelId, masteredNodes);
+        // Cek prerequisite sebelum memulai level: level sebelumnya harus diselesaikan dengan nilai >= 90
+        const currentLevelIndex = questLevels.findIndex(l => l.id === levelId);
+        if (currentLevelIndex > 0) {
+            const prevLevel = questLevels[currentLevelIndex - 1];
+            const completedQuests = $profile?.completed_quests || [];
+            const hasPassedPrev = completedQuests.some(q => q.level_id === prevLevel.id && q.score >= 90);
 
-            if (!unlocked) {
-                // Tampilkan notifikasi (QuestMap akan handle ini via prop)
+            if (!hasPassedPrev) {
                 prerequisiteAlert = {
                     show: true,
                     levelTitle: activeLevelData.title,
-                    missingNodes,
-                    source
+                    prevLevelTitle: prevLevel.title,
+                    requiredScore: 90
                 };
                 activeLevelData = null;
                 saveQuestState();

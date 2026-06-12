@@ -1682,14 +1682,15 @@ class LLMAgent:
                 def run_chat():
                     kwargs = {
                         "messages": messages,
-                        "max_tokens": 256,
+                        "max_tokens": 120,
                     }
                     if extra_body:
                         kwargs["extra_body"] = extra_body
                     return client.chat_completion(**kwargs)
                 resp = await asyncio.to_thread(run_chat)
                 feedback = resp.choices[0].message.content if resp.choices else ""
-                return {"feedback": feedback, "audio_url": None}
+                audio_filename = await self._tts(feedback)
+                return {"feedback": feedback, "audio_url": audio_filename}
 
             # ── Local Llama.cpp provider ──────────────────────────────────
             model = await get_llama_model_async()
@@ -1697,12 +1698,13 @@ class LLMAgent:
                 resp = await asyncio.to_thread(
                     model.create_chat_completion,
                     messages    = [{"role": "system", "content": _QUEST_FEEDBACK_PROMPT}, {"role": "user", "content": prompt}],
-                    max_tokens  = 256,
+                    max_tokens  = 120,
                     temperature = 0.5,
                     stop        = ["<|im_end|>", "<|eot_id|>"],
                 )
             feedback = resp["choices"][0]["message"]["content"]
-            return {"feedback": feedback, "audio_url": None}
+            audio_filename = await self._tts(feedback)
+            return {"feedback": feedback, "audio_url": audio_filename}
         except Exception as e:
             logger.error(f"Feedback error: {e}")
             return {"feedback": f"Maaf, gagal membuat feedback: {e}", "audio_url": None}

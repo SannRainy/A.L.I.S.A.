@@ -17,12 +17,13 @@
     $: kanjiProgress = Math.round((kanjiMasteredSets / 13) * 100);
 
     $: completedIds = $profile.completed_quests ? $profile.completed_quests.map(q => q.level_id) : [];
+    $: completedQuests = $profile.completed_quests || [];
 
-    // Level dianggap terbuka jika level sebelumnya sudah selesai (linear gate)
-    // Prerequisite node-level check terjadi di QuestMode.svelte saat user klik Mulai
+    // Level dianggap terbuka jika level sebelumnya sudah diselesaikan dengan nilai >= 90
     function isLevelLocked(index) {
         if (index === 0) return false;
-        return !completedIds.includes(levels[index - 1].id);
+        const prevLevelId = levels[index - 1].id;
+        return !completedQuests.some(q => q.level_id === prevLevelId && q.score >= 90);
     }
 
     function handleStart(levelId) {
@@ -67,6 +68,7 @@
     <!-- ── Confirmation Modal ── -->
     {#if showConfirm && activeLevel}
         {@const tier = getTierInfo(activeLevel.difficulty_tier)}
+        {@const prevLevel = levels[levels.findIndex(l => l.id === activeLevel.id) - 1]}
         <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md" in:fade>
             <div class="bg-white/10 backdrop-blur-2xl rounded-[2.5rem] p-10 max-w-sm w-full shadow-2xl border border-white/20" in:fly={{ y: 20 }}>
                 <div class="text-5xl mb-4 text-center drop-shadow-lg">{activeLevel.icon}</div>
@@ -82,10 +84,10 @@
                 <p class="text-white/70 text-center text-sm mb-4 leading-relaxed">{activeLevel.description}</p>
 
                 <!-- Prerequisite info -->
-                {#if activeLevel.prerequisites?.length > 0}
+                {#if prevLevel}
                     <div class="mb-6 p-3 rounded-xl bg-white/5 border border-white/10 text-center">
-                        <p class="text-xs text-white/50 font-semibold uppercase tracking-wider mb-1">Prasyarat Grammar</p>
-                        <p class="text-xs text-indigo-300">{activeLevel.prerequisites.length} node grammar harus dikuasai</p>
+                        <p class="text-xs text-white/50 font-semibold uppercase tracking-wider mb-1">Prasyarat Level</p>
+                        <p class="text-xs text-indigo-300">Nilai {prevLevel.title} harus ≥ 90</p>
                     </div>
                 {:else}
                     <div class="mb-6 p-3 rounded-xl bg-white/5 border border-white/10 text-center">
@@ -119,26 +121,10 @@
             <div class="bg-white/10 backdrop-blur-2xl rounded-[2.5rem] p-10 max-w-sm w-full shadow-2xl border border-white/20 text-center" in:fly={{ y: 20 }}>
                 <div class="text-5xl mb-4">🔒</div>
                 <h3 class="text-xl font-black text-white mb-2">Level Terkunci</h3>
-                <p class="text-white/70 text-sm mb-4 leading-relaxed">
+                <p class="text-white/70 text-sm mb-6 leading-relaxed">
                     Untuk membuka <span class="text-indigo-300 font-bold">{prerequisiteAlert.levelTitle}</span>,
-                    kamu perlu menguasai beberapa poin grammar dulu.
+                    kamu harus menyelesaikan level <span class="text-amber-300 font-bold">{prerequisiteAlert.prevLevelTitle}</span> dengan nilai minimal <span class="text-emerald-400 font-bold">{prerequisiteAlert.requiredScore || 90}</span>.
                 </p>
-
-                {#if prerequisiteAlert.missingNodes?.length > 0}
-                    <div class="mb-6 p-4 rounded-2xl bg-white/5 border border-white/10 text-left">
-                        <p class="text-xs text-white/50 font-bold uppercase tracking-wider mb-2">Poin yang Perlu Dikuasai:</p>
-                        {#each prerequisiteAlert.missingNodes as node}
-                            <div class="flex items-center gap-2 py-1">
-                                <span class="w-2 h-2 rounded-full bg-rose-400 shrink-0"></span>
-                                <span class="text-xs text-white/70 font-medium">{node.replace('grammar_', '').replace(/_/g, ' ')}</span>
-                            </div>
-                        {/each}
-                    </div>
-                {/if}
-
-                {#if prerequisiteAlert.source === 'local'}
-                    <p class="text-xs text-amber-400/80 mb-4">⚠️ Pengecekan dari data lokal (backend KG tidak tersedia)</p>
-                {/if}
 
                 <button
                     on:click={() => dispatch('dismissAlert')}
@@ -269,7 +255,7 @@
 
                         <!-- Status -->
                         {#if isLocked}
-                            <p class="text-[10px] text-rose-400 font-bold mt-2 uppercase tracking-widest">🔒 Locked — Selesaikan Level Sebelumnya</p>
+                            <p class="text-[10px] text-rose-400 font-bold mt-2 uppercase tracking-widest">🔒 Terkunci — Nilai Level Sebelumnya Harus ≥ 90</p>
                         {:else if isCompleted}
                             <p class="text-[10px] text-emerald-400 font-bold mt-2 uppercase tracking-widest">✅ Completed</p>
                         {:else}

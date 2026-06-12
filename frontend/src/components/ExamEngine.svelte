@@ -7,6 +7,8 @@
     } from "../lib/data/exam_n5_dataset.js";
     import { user } from "../stores/auth_store";
     import { sfx } from "../lib/sfx_manager";
+    import { applyFurigana } from "../lib/furigana";
+
 
     export let batchId = "exam_1";
     export let onFinish = () => {};
@@ -492,7 +494,7 @@
                             <h3
                                 class="text-xl font-black text-white leading-snug whitespace-pre-line"
                             >
-                                {currentQuestion.question}
+                                {@html applyFurigana(currentQuestion.question)}
                             </h3>
                         </div>
 
@@ -522,7 +524,7 @@
                                         </div>
                                         <span
                                             class="text-sm font-semibold leading-snug"
-                                            >{option}</span
+                                            >{@html applyFurigana(option)}</span
                                         >
                                     </button>
                                 {/each}
@@ -815,7 +817,7 @@
                             <p
                                 class="text-white text-sm font-bold mb-4 whitespace-pre-line leading-snug"
                             >
-                                {q.question}
+                                {@html applyFurigana(q.question)}
                             </p>
 
                             <!-- Answer comparison -->
@@ -837,9 +839,9 @@
                                             ? 'text-emerald-200'
                                             : 'text-rose-200 line-through opacity-70'}"
                                     >
-                                        {skipped
+                                        {@html skipped
                                             ? "— (dilewati)"
-                                            : getUserAnswerDisplay(q, ua)}
+                                            : applyFurigana(getUserAnswerDisplay(q, ua))}
                                     </p>
                                 </div>
                                 {#if !isCorrect}
@@ -854,7 +856,7 @@
                                         <p
                                             class="text-sm font-bold text-emerald-200"
                                         >
-                                            {getCorrectDisplay(q)}
+                                            {@html applyFurigana(getCorrectDisplay(q))}
                                         </p>
                                     </div>
                                 {/if}
@@ -873,7 +875,7 @@
                                     <p
                                         class="text-sm text-white/80 leading-relaxed font-medium"
                                     >
-                                        {q.explanation}
+                                        {@html applyFurigana(q.explanation)}
                                     </p>
                                 </div>
                             {/if}
