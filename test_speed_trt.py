@@ -97,24 +97,48 @@ def build_dummy_inputs(hps, device, dtype=torch.float32):
             bert_t, ja_bert_t, en_bert_t, style_vec)
 
 
+class SynthInferWrapper(torch.nn.Module):
+    def __init__(self, net_g):
+        super().__init__()
+        self.net_g = net_g
+
+    def forward(self, *args, **kwargs):
+        return self.net_g.infer(*args, **kwargs)
+
+
 def run_infer(net_g, inputs, is_jp_extra=False):
     """Jalankan satu kali inferensi. Return audio tensor."""
     (x_tst, x_tst_lengths, sid_t, tones_t, lang_ids_t,
      bert_t, ja_bert_t, en_bert_t, style_vec) = inputs
 
-    if is_jp_extra:
-        output = net_g.infer(
-            x_tst, x_tst_lengths, sid_t, tones_t, lang_ids_t, ja_bert_t,
-            style_vec=style_vec, length_scale=1.0,
-            sdp_ratio=0.2, noise_scale=0.6, noise_scale_w=0.8,
-        )
+    if isinstance(net_g, SynthInferWrapper) or (hasattr(net_g, "forward") and not hasattr(net_g, "infer")):
+        if is_jp_extra:
+            output = net_g(
+                x_tst, x_tst_lengths, sid_t, tones_t, lang_ids_t, ja_bert_t,
+                style_vec=style_vec, length_scale=1.0,
+                sdp_ratio=0.2, noise_scale=0.6, noise_scale_w=0.8,
+            )
+        else:
+            output = net_g(
+                x_tst, x_tst_lengths, sid_t, tones_t, lang_ids_t,
+                bert_t, ja_bert_t, en_bert_t,
+                style_vec=style_vec, length_scale=1.0,
+                sdp_ratio=0.2, noise_scale=0.6, noise_scale_w=0.8,
+            )
     else:
-        output = net_g.infer(
-            x_tst, x_tst_lengths, sid_t, tones_t, lang_ids_t,
-            bert_t, ja_bert_t, en_bert_t,
-            style_vec=style_vec, length_scale=1.0,
-            sdp_ratio=0.2, noise_scale=0.6, noise_scale_w=0.8,
-        )
+        if is_jp_extra:
+            output = net_g.infer(
+                x_tst, x_tst_lengths, sid_t, tones_t, lang_ids_t, ja_bert_t,
+                style_vec=style_vec, length_scale=1.0,
+                sdp_ratio=0.2, noise_scale=0.6, noise_scale_w=0.8,
+            )
+        else:
+            output = net_g.infer(
+                x_tst, x_tst_lengths, sid_t, tones_t, lang_ids_t,
+                bert_t, ja_bert_t, en_bert_t,
+                style_vec=style_vec, length_scale=1.0,
+                sdp_ratio=0.2, noise_scale=0.6, noise_scale_w=0.8,
+            )
     return output[0][0, 0]
 
 
@@ -248,8 +272,9 @@ def main():
     # Cara ini membuat compiler melempar operasi spline transform yang tidak stabil kembali
     # ke PyTorch dalam FP32, sedangkan layer berat (Conv/Linear) dikompilasi ke TRT FP16.
     try:
+        wrapper = SynthInferWrapper(net_g)
         optimized_model = torch.compile(
-            net_g,
+            wrapper,
             backend="torch_tensorrt",
             options={
                 "precision": torch.float16,

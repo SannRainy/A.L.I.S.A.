@@ -51,7 +51,7 @@ async def get_llama_model_async() -> Llama:
                 _llama_model = await asyncio.to_thread(
                     Llama,
                     model_path   = _active_model_path,
-                    n_gpu_layers = 32,
+                    n_gpu_layers = 0,
                     n_ctx        = 2048,
                     n_batch      = 512,
                     verbose      = False,
@@ -123,7 +123,7 @@ async def switch_model_async(model_filename: str) -> None:
             _llama_model = await asyncio.to_thread(
                 Llama,
                 model_path   = _active_model_path,
-                n_gpu_layers = 32,
+                n_gpu_layers = 0,
                 n_ctx        = 2048,
                 n_batch      = 512,
                 verbose      = False,
@@ -1326,10 +1326,9 @@ class LLMAgent:
                                 })
                                 continue
 
-                            # Baris JP: atau baris bebas — strip prefix JP: lalu synthesize
-                            tts_text = _extract_jp_from_line(line) if _LINE_JP_RE.match(line_stripped) else line
-                            if tts_text.strip():
-                                task = asyncio.create_task(_tts_worker(tts_text + '\n'))
+                            # Baris JP: atau baris bebas — kirim line asli (termasuk prefix JP:) ke TTS worker agar client bisa parse
+                            if line.strip():
+                                task = asyncio.create_task(_tts_worker(line + '\n'))
                                 await audio_tasks_queue.put(task)
                             else:
                                 # Kosong setelah strip → kirim sebagai dict (no audio)
@@ -1379,9 +1378,8 @@ class LLMAgent:
                                 "audio_b64": None,
                             })
                         else:
-                            tts_text = _extract_jp_from_line(sentence_buf) if _LINE_JP_RE.match(remaining) else sentence_buf
-                            if tts_text.strip():
-                                task = asyncio.create_task(_tts_worker(tts_text))
+                            if sentence_buf.strip():
+                                task = asyncio.create_task(_tts_worker(sentence_buf))
                                 await audio_tasks_queue.put(task)
                             else:
                                 await audio_tasks_queue.put({

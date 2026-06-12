@@ -26,7 +26,7 @@ def test_model():
         # Load the model with standard settings
         model = Llama(
             model_path=model_path,
-            n_gpu_layers=32,
+            n_gpu_layers=0,
             n_ctx=512,  # Short context for quick connection test
             verbose=False
         )

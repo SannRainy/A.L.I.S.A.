@@ -169,8 +169,8 @@
         if (romMatch) result.rom = romMatch[1].trim();
         if (idMatch) result.id = idMatch[1].trim();
 
-        // Fallback
-        if (!result.jp && !result.rom) {
+        // Fallback jika tidak ada prefix JP:
+        if (!result.jp) {
             result.jp = raw
                 .replace(/KOREKSI:.+?(\n|$)/gi, "")
                 .replace(/USER_JP:.+?(\n|$)/gi, "")
@@ -520,8 +520,12 @@
             const blob = new Blob([arr], { type: "audio/wav" });
             const url = URL.createObjectURL(blob);
             currentAudio = new Audio(url);
-            currentAudio.play().catch(() => {});
+            if (vrmController) vrmController.setSpeaking(true);
+            currentAudio.play().catch(() => {
+                if (vrmController) vrmController.setSpeaking(false);
+            });
             currentAudio.onended = () => {
+                if (vrmController) vrmController.setSpeaking(false);
                 URL.revokeObjectURL(url);
                 currentAudio = null;
                 isPlaying = false;
@@ -529,12 +533,14 @@
             };
         } catch (e) {
             console.warn("Audio play error:", e);
+            if (vrmController) vrmController.setSpeaking(false);
             isPlaying = false;
             processAudioQueue();
         }
     }
 
     function stopCurrentAudio() {
+        if (vrmController) vrmController.setSpeaking(false);
         if (currentAudio) {
             try {
                 currentAudio.pause();

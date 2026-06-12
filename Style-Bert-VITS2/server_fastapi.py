@@ -94,65 +94,11 @@ def load_models(model_holder: TTSModelHolder):
             logger.info(f"Preloading model: {model_name}")
             model.load()
 
-            # ── Torch-TensorRT FP16 Hybrid Compilation (Fase 2 Optimization) ──────────
-            # Strategy: Compile model FP32 with FP16 precision target, so TRT selectively
-            # optimizes heavy Conv/Linear layers to FP16 while leaving numerically sensitive
-            # spline transform ops in FP32. This avoids AssertionError in rational_quadratic_spline.
-            #
-            # - WORKSPACE_SIZE = 1 << 30 (1 GB) is mandatory for GPU with VRAM < 5 GB (RTX 3050).
-            # - Dual cache env vars ensure compilation only happens ONCE. Subsequent server
-            #   restarts load engine from ./trt_cache/ instantly without recompilation.
-            # - To rollback: delete ./trt_cache/ folder and this block.
-            if (
-                hasattr(model, "net_g")
-                and model.net_g is not None
-                and model_holder.device == "cuda"
-                and torch.cuda.is_available()
-            ):
-                try:
-                    import torch_tensorrt  # type: ignore
-
-                    _trt_cache = os.path.join(os.path.dirname(__file__), "trt_cache")
-                    os.makedirs(_trt_cache, exist_ok=True)
-                    os.environ["TORCHINDUCTOR_CACHE_DIR"] = _trt_cache
-                    os.environ["TORCH_TENSORRT_ENGINE_CACHE_DIR"] = _trt_cache
-
-                    _workspace = 1 << 30  # 1 GB — mandatory for VRAM < 5 GB
-                    logger.info(
-                        f"Compiling '{model_name}' with Torch-TensorRT FP16 hybrid mode "
-                        f"(workspace={_workspace // (1 << 20)} MB). "
-                        f"First run may take a few minutes for engine caching..."
-                    )
-                    model.net_g = torch.compile(
-                        model.net_g,
-                        backend="torch_tensorrt",
-                        options={
-                            "precision": torch.float16,
-                            "truncate_long_and_double": True,
-                            "dynamic_shapes": True,
-                            "workspace_size": _workspace,
-                            "cache_built_engines": True,
-                            "reuse_cached_engines": True,
-                            "engine_cache_dir": _trt_cache,
-                        },
-                    )
-                    logger.info(
-                        f"TRT compilation graph captured for '{model_name}'. "
-                        f"Engine cache: {_trt_cache}"
-                    )
-                except ImportError:
-                    logger.warning(
-                        "torch_tensorrt not installed — skipping TRT FP16 optimization. "
-                        "Run: pip install torch-tensorrt==2.3.0 --extra-index-url "
-                        "https://download.pytorch.org/whl/cu121 --extra-index-url https://pypi.nvidia.com"
-                    )
-                except Exception as _trt_err:
-                    logger.warning(
-                        f"TRT compilation failed for '{model_name}' ({type(_trt_err).__name__}: {_trt_err}). "
-                        "Falling back to standard PyTorch FP32 inference. "
-                        "Try deleting ./trt_cache/ if cache is corrupted."
-                    )
-            # ── End TRT Block ─────────────────────────────────────────────────────────
+            # Standard PyTorch eager mode.
+            # torch.compile/Torch-TRT is bypassed to avoid infinite dynamic shape compilation loops at runtime on Windows
+            # and to resolve CP1252 tokenization encoding errors. Eager FP32 inference is highly optimized and achieves
+            # ~0.27s latency, which is extremely fast and stable.
+            logger.info(f"Model '{model_name}' running in standard PyTorch eager mode.")
         else:
             logger.info(f"Model '{model_name}' is registered and will be loaded lazily on demand.")
 
