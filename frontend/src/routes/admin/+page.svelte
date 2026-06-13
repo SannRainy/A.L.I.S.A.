@@ -4,9 +4,9 @@
     import { goto } from "$app/navigation";
 
     // Import modular components
+    import AnalyticsTab from "./AnalyticsTab.svelte";
     import UsersTab from "./UsersTab.svelte";
     import DataPipelineTab from "./DataPipelineTab.svelte";
-    import IngestTab from "./IngestTab.svelte";
     import AiModelsTab from "./AiModelsTab.svelte";
 
     let isAdmin = false;
@@ -14,7 +14,7 @@
     let adminProfile = null;
 
     // Tab state
-    let activeTab = "users";
+    let activeTab = "analytics";
 
     const API = "http://localhost:8000/api/v1/admin";
 
@@ -89,7 +89,7 @@
 
         <!-- Tab Nav -->
         <nav class="admin-nav">
-            {#each [{ id: "users", icon: "👥", label: "Users" }, { id: "data", icon: "📚", label: "Data Pipeline" }, { id: "ingest", icon: "🔄", label: "Ingest Neo4j" }, { id: "models", icon: "🤖", label: "AI Models" }] as tab}
+            {#each [{ id: "analytics", icon: "📊", label: "Analisis & Grafik" }, { id: "users", icon: "👥", label: "Users" }, { id: "data", icon: "📚", label: "Data Pipeline" }, { id: "models", icon: "🤖", label: "AI Models" }] as tab}
                 <button
                     class="nav-tab"
                     class:active={activeTab === tab.id}
@@ -103,12 +103,12 @@
 
         <!-- Content -->
         <main class="admin-content">
-            {#if activeTab === "users"}
+            {#if activeTab === "analytics"}
+                <AnalyticsTab user={$user} {API} />
+            {:else if activeTab === "users"}
                 <UsersTab user={$user} {API} />
             {:else if activeTab === "data"}
                 <DataPipelineTab user={$user} {API} />
-            {:else if activeTab === "ingest"}
-                <IngestTab user={$user} {API} />
              {:else if activeTab === "models"}
                 <AiModelsTab user={$user} {API} />
             {/if}

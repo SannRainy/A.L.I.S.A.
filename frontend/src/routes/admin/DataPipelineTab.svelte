@@ -79,6 +79,25 @@
     function deleteRow(idx) {
         editRows = editRows.filter((_, i) => i !== idx);
     }
+
+    // Integrated Neo4j Ingestion
+    let ingestRunning = false;
+    let ingestResult = null;
+
+    async function triggerIngest() {
+        ingestRunning = true;
+        ingestResult = null;
+        try {
+            const res = await fetch(`${API}/ingest?admin_id=${user.id}`, {
+                method: "POST",
+            });
+            ingestResult = await res.json();
+        } catch (e) {
+            ingestResult = { status: "error", output: "", errors: e.message };
+        } finally {
+            ingestRunning = false;
+        }
+    }
 </script>
 
 {#if editingCsv && csvData}
@@ -138,8 +157,42 @@
     </div>
 {:else}
     <div class="tab-header">
-        <h2>📁 Data Pipeline Files</h2>
+        <h2>📁 Data Pipeline Files & Ingest</h2>
     </div>
+
+    <!-- Integrated Ingest Panel -->
+    <div class="ingest-card">
+        <div class="ingest-card-info">
+            <span class="ingest-icon-badge">🔄</span>
+            <div>
+                <h4>Ingest Data ke Neo4j Knowledge Graph</h4>
+                <p>Membaca seluruh berkas CSV di folder <code>data_pipeline/</code> lalu meng-upload/sinkronisasi relasi ke Neo4j database.</p>
+                <p class="warn-txt">⚠️ Proses ini bersifat MERGE dan aman dijalankan berulang kali tanpa menghapus data sebelumnya.</p>
+            </div>
+        </div>
+        <button
+            class="btn-ingest"
+            on:click={triggerIngest}
+            disabled={ingestRunning}
+        >
+            {ingestRunning ? "⏳ Sedang Ingest..." : "🚀 Jalankan Ingest Neo4j"}
+        </button>
+    </div>
+
+    {#if ingestResult}
+        <div class="ingest-result-box" class:ingest-error={ingestResult.status === "error"}>
+            <div class="ingest-result-header">
+                <strong>{ingestResult.status === "success" ? "✅ Ingest Selesai dengan Sukses!" : "❌ Ingest Gagal"}</strong>
+                <button class="btn-close-result" on:click={() => ingestResult = null}>×</button>
+            </div>
+            <pre>{ingestResult.output || ""}{ingestResult.errors ? "\n--- ERRORS ---\n" + ingestResult.errors : ""}</pre>
+        </div>
+    {/if}
+
+    <div class="section-divider">
+        <span>Daftar Berkas CSV ({csvFiles.length})</span>
+    </div>
+
     {#if loading}
         <div class="csv-loading">
             <div class="admin-spinner"></div>
@@ -386,5 +439,126 @@
         to {
             transform: rotate(360deg);
         }
+    }
+
+    /* Integrated Ingest Card */
+    .ingest-card {
+        background: rgba(99, 102, 241, 0.05);
+        border: 1px solid rgba(99, 102, 241, 0.15);
+        border-radius: 16px;
+        padding: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 20px;
+        gap: 20px;
+        flex-shrink: 0;
+    }
+    .ingest-card-info {
+        display: flex;
+        align-items: flex-start;
+        gap: 16px;
+    }
+    .ingest-icon-badge {
+        font-size: 24px;
+        background: rgba(99, 102, 241, 0.15);
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+    .ingest-card-info h4 {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 800;
+        color: #fff;
+    }
+    .ingest-card-info p {
+        margin: 4px 0 0;
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.6);
+        line-height: 1.5;
+    }
+    .ingest-card-info .warn-txt {
+        color: #fbbf24;
+        font-size: 11px;
+        font-weight: 600;
+        margin-top: 6px;
+    }
+    .btn-ingest {
+        padding: 12px 24px;
+        background: #6366f1;
+        color: #fff;
+        border: none;
+        border-radius: 10px;
+        font-size: 12px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s;
+        white-space: nowrap;
+    }
+    .btn-ingest:hover:not(:disabled) {
+        background: #4f46e5;
+        box-shadow: 0 0 16px rgba(99, 102, 241, 0.4);
+    }
+    .btn-ingest:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    /* Ingest Result Box */
+    .ingest-result-box {
+        background: rgba(16, 185, 129, 0.05);
+        border: 1px solid rgba(16, 185, 129, 0.2);
+        border-radius: 12px;
+        padding: 16px;
+        margin-bottom: 20px;
+        flex-shrink: 0;
+    }
+    .ingest-result-box.ingest-error {
+        background: rgba(239, 68, 68, 0.05);
+        border-color: rgba(239, 68, 68, 0.2);
+    }
+    .ingest-result-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+        font-size: 12px;
+        color: #fff;
+    }
+    .btn-close-result {
+        background: transparent;
+        border: none;
+        color: rgba(255, 255, 255, 0.4);
+        font-size: 18px;
+        cursor: pointer;
+    }
+    .ingest-result-box pre {
+        margin: 0;
+        font-family: monospace;
+        font-size: 11px;
+        white-space: pre-wrap;
+        color: rgba(255, 255, 255, 0.8);
+        max-height: 200px;
+        overflow-y: auto;
+    }
+
+    /* Section divider */
+    .section-divider {
+        display: flex;
+        align-items: center;
+        margin-bottom: 16px;
+        font-size: 11px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: rgba(255, 255, 255, 0.35);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        padding-bottom: 8px;
+        flex-shrink: 0;
     }
 </style>
