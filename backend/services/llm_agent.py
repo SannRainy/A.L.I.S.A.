@@ -51,7 +51,7 @@ async def get_llama_model_async() -> Llama:
                 _llama_model = await asyncio.to_thread(
                     Llama,
                     model_path   = _active_model_path,
-                    n_gpu_layers = 0,
+                    n_gpu_layers = 10,
                     n_ctx        = 2048,
                     n_batch      = 512,
                     verbose      = False,
@@ -123,7 +123,7 @@ async def switch_model_async(model_filename: str) -> None:
             _llama_model = await asyncio.to_thread(
                 Llama,
                 model_path   = _active_model_path,
-                n_gpu_layers = 0,
+                n_gpu_layers = 10,
                 n_ctx        = 2048,
                 n_batch      = 512,
                 verbose      = False,
@@ -329,6 +329,11 @@ def _tokenize(text: str) -> list[str]:
         tok = _JP_PUNCT_RE.sub("", m.group()).strip()
         if tok:
             jp_tokens.append(tok)
+            # Ekstrak karakter Kanji tunggal secara individual untuk fallback search
+            kanjis = re.findall(r'[\u4e00-\u9fff]', tok)
+            for k in kanjis:
+                if k not in jp_tokens:
+                    jp_tokens.append(k)
     latin_text = _JP_RE.sub(" ", text).strip()
     latin_tokens: list[str] = []
     kw = _get_kw_model()
@@ -375,6 +380,8 @@ Romaji: [romaji]
 Arti: [arti]
 
 7. Jika menyertakan contoh kalimat dari database, kamu WAJIB menyalin arti/terjemahan bahasa Indonesianya persis kata-per-kata sesuai yang tertulis setelah tanda '＝' di [KONTEKS WIKI NEO4J] tanpa mengubah atau menerjemahkan ulang sendiri.
+8. [CRITICAL RULE] Jika kata mengandung KATAKANA (seperti スーパー, デパート), kamu DILARANG KERAS mengidentifikasinya sebagai Kanji atau memberikan properti On'yomi/Kun'yomi. Katakan dengan jujur bahwa itu adalah Katakana serapan.
+9. Jika data pendukung dari Knowledge Graph (KG) tidak tersedia, jangan pernah mengarang atau berspekulasi tentang dekonstruksi radikal Kanji atau pembacaan Romaji yang tidak kamu yakini 100%. Jawab dengan basis data N5 standar yang ringkas atau akui keterbatasan database.
 """
 
 _QUEST_FEEDBACK_PROMPT = """\
@@ -976,7 +983,7 @@ class LLMAgent:
                             line = f"• **{r.get('id','-')}** | On: {r.get('onyomi','-')} | Kun: {r.get('kunyomi','-')} | Arti: {r.get('arti','-')}"
                             exs = [e for e in r.get("examples", []) if e.get("text")]
                             if exs:
-                                line += " | Contoh: " + " / ".join(f"{e['text']} ＝ {e.get('meaning','')}" for e in exs[:2])
+                                line += " | Contoh: " + " / ".join(f"{e['text']} (Romaji: {e['romaji']}) ＝ {e.get('meaning','')}" if e.get('romaji') else f"{e['text']} ＝ {e.get('meaning','')}" for e in exs[:2])
                             lines.append(line)
                             kanji_data.append(r)
                         context_parts.append(f"[KONTEKS NEO4J — {limit} Kanji N5]\n" + "\n".join(lines))
@@ -988,7 +995,7 @@ class LLMAgent:
                             line = f"• **{r.get('id','-')}** ({r.get('romaji','-')}) → {r.get('indonesian_meaning','-')}"
                             exs = [e for e in r.get("examples", []) if e.get("text")]
                             if exs:
-                                line += " | Contoh: " + " / ".join(f"{e['text']} ＝ {e.get('meaning','')}" for e in exs[:2])
+                                line += " | Contoh: " + " / ".join(f"{e['text']} (Romaji: {e['romaji']}) ＝ {e.get('meaning','')}" if e.get('romaji') else f"{e['text']} ＝ {e.get('meaning','')}" for e in exs[:2])
                             lines.append(line)
                             vocab_data.append(r)
                         context_parts.append(f"[KONTEKS NEO4J — {limit} Kosakata N5]\n" + "\n".join(lines))
@@ -1001,7 +1008,7 @@ class LLMAgent:
                             line = f"• **{r.get('name', r.get('id','-'))}** → {rules}"
                             exs = [e for e in r.get("examples", []) if e.get("text")]
                             if exs:
-                                line += " | Contoh: " + " / ".join(f"{e['text']} ＝ {e.get('meaning','')}" for e in exs[:2])
+                                line += " | Contoh: " + " / ".join(f"{e['text']} (Romaji: {e['romaji']}) ＝ {e.get('meaning','')}" if e.get('romaji') else f"{e['text']} ＝ {e.get('meaning','')}" for e in exs[:2])
                             lines.append(line)
                             grammar_data.append(r)
                         context_parts.append(f"[KONTEKS NEO4J — {limit} Grammar N5]\n" + "\n".join(lines))
@@ -1035,7 +1042,10 @@ class LLMAgent:
             lines.append(kline)
         exs = [e for e in v.get('examples', []) if e.get('text')]
         for e in exs[:1]:
-            lines.append(f"  → Contoh: {e['text']} ＝ {e.get('meaning', '')}")
+            if e.get('romaji'):
+                lines.append(f"  → Contoh: {e['text']} (Romaji: {e['romaji']}) ＝ {e.get('meaning', '')}")
+            else:
+                lines.append(f"  → Contoh: {e['text']} ＝ {e.get('meaning', '')}")
         return "\n".join(lines)
 
     @staticmethod
@@ -1047,7 +1057,10 @@ class LLMAgent:
             lines.append("  Aturan: " + " | ".join(rules[:2]))
         exs = [e for e in g.get('examples', []) if e.get('text')]
         for e in exs[:1]:
-            lines.append(f"  → Contoh: {e['text']} ＝ {e.get('meaning', '')}")
+            if e.get('romaji'):
+                lines.append(f"  → Contoh: {e['text']} (Romaji: {e['romaji']}) ＝ {e.get('meaning', '')}")
+            else:
+                lines.append(f"  → Contoh: {e['text']} ＝ {e.get('meaning', '')}")
         return "\n".join(lines)
 
     @staticmethod
@@ -1062,7 +1075,10 @@ class LLMAgent:
         lines = [head]
         exs = [e for e in k.get('examples', []) if e.get('text')]
         for e in exs[:1]:
-            lines.append(f"  → Contoh: {e['text']} ＝ {e.get('meaning', '')}")
+            if e.get('romaji'):
+                lines.append(f"  → Contoh: {e['text']} (Romaji: {e['romaji']}) ＝ {e.get('meaning', '')}")
+            else:
+                lines.append(f"  → Contoh: {e['text']} ＝ {e.get('meaning', '')}")
         return "\n".join(lines)
 
     async def _handle_rag(self, query: str, student_id: str, mode: str = "discovery") -> tuple[str, list, list, list]:

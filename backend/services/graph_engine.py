@@ -214,6 +214,7 @@ class GraphEngine:
                 WHERE toLower(v.id) CONTAINS toLower(token)
                    OR toLower(v.romaji) CONTAINS toLower(token)
                    OR toLower(v.indonesian_meaning) CONTAINS toLower(token)
+                   OR (size(v.id) >= 2 AND toLower(token) CONTAINS toLower(v.id))
                 OPTIONAL MATCH (v)-[:BELONGS_TO_TOPIC]->(t:Topic)
                 OPTIONAL MATCH (v)-[:WRITTEN_IN]->(k:Kanji)
                 OPTIONAL MATCH (v)-[:HAS_POS]->(p:POS)
@@ -233,6 +234,7 @@ class GraphEngine:
                        collect(DISTINCT p.name) AS pos,
                        collect(DISTINCT {
                            text: s.japanese_text,
+                           romaji: s.romaji,
                            meaning: s.indonesian_translation
                        })[..2] AS examples
                 LIMIT toInteger($limit)
@@ -266,13 +268,14 @@ class GraphEngine:
                            id: k.id, onyomi: k.onyomi,
                            kunyomi: k.kunyomi, arti: k.arti
                        }) AS kanji,
-                       collect(DISTINCT {id: t.id, name: t.name}) AS topics,
-                       collect(DISTINCT p.name) AS pos,
-                       collect(DISTINCT {
-                           text: s.japanese_text,
-                           meaning: s.indonesian_translation
-                       })[..2] AS examples
-                LIMIT 1
+                        collect(DISTINCT {id: t.id, name: t.name}) AS topics,
+                        collect(DISTINCT p.name) AS pos,
+                        collect(DISTINCT {
+                            text: s.japanese_text,
+                            romaji: s.romaji,
+                            meaning: s.indonesian_translation
+                        })[..2] AS examples
+                 LIMIT 1
             """, word=word)
             rec = result.single()
             if rec:
@@ -299,6 +302,7 @@ class GraphEngine:
                        collect(DISTINCT {id: t.id, name: t.name}) AS topics,
                        collect(DISTINCT {
                            text: s.japanese_text,
+                           romaji: s.romaji,
                            meaning: s.indonesian_translation
                        })[..2] AS examples,
                        norm_id,
@@ -331,6 +335,7 @@ class GraphEngine:
                        k.description AS description,
                        collect(DISTINCT {
                            text: s.japanese_text,
+                           romaji: s.romaji,
                            meaning: s.indonesian_translation
                        })[..2] AS examples
                 LIMIT 1
@@ -347,7 +352,7 @@ class GraphEngine:
                 RETURN v.id AS id,
                        v.romaji AS romaji,
                        v.indonesian_meaning AS indonesian_meaning,
-                       collect(DISTINCT {text: s.japanese_text, meaning: s.indonesian_translation})[..2] AS examples
+                       collect(DISTINCT {text: s.japanese_text, romaji: s.romaji, meaning: s.indonesian_translation})[..2] AS examples
                 ORDER BY rand()
                 LIMIT toInteger($limit)
             """, level=level, limit=limit)
@@ -430,6 +435,8 @@ class GraphEngine:
                 WHERE toLower(g.id) CONTAINS toLower(token)
                    OR toLower(g.name) CONTAINS toLower(token)
                    OR (r IS NOT NULL AND toLower(r.description) CONTAINS toLower(token))
+                   OR toLower(token) CONTAINS toLower(g.id)
+                   OR toLower(token) CONTAINS toLower(g.name)
                 WITH DISTINCT g, token
                 OPTIONAL MATCH (g)-[:HAS_RULE]->(r2:Rule)
                 OPTIONAL MATCH (g)-[:HAS_COMMON_ERROR]->(e:ErrorPattern)
@@ -444,6 +451,7 @@ class GraphEngine:
                        collect(DISTINCT {id: t.id, name: t.name}) AS topics,
                        collect(DISTINCT {
                            text: s.japanese_text,
+                           romaji: s.romaji,
                            meaning: s.indonesian_translation
                        })[..2] AS examples
                 LIMIT toInteger($limit)
@@ -461,7 +469,7 @@ class GraphEngine:
                        g.name AS name,
                        g.level AS level,
                        collect(DISTINCT r.description) AS rules,
-                       collect(DISTINCT {text: s.japanese_text, meaning: s.indonesian_translation})[..2] AS examples
+                       collect(DISTINCT {text: s.japanese_text, romaji: s.romaji, meaning: s.indonesian_translation})[..2] AS examples
                 ORDER BY rand()
                 LIMIT toInteger($limit)
             """, level=level, limit=limit)
@@ -517,8 +525,8 @@ class GraphEngine:
                 OPTIONAL MATCH (k)<-[:WRITTEN_IN]-(v:Vocab)<-[:CONTAINS_VOCAB]-(sv:Sentence)
                 OPTIONAL MATCH (sk:Sentence)-[:CONTAINS_KANJI]->(k)
                 WITH k,
-                     collect(DISTINCT {text: sv.japanese_text, meaning: sv.indonesian_translation}) AS via_vocab,
-                     collect(DISTINCT {text: sk.japanese_text, meaning: sk.indonesian_translation}) AS via_direct
+                     collect(DISTINCT {text: sv.japanese_text, romaji: sv.romaji, meaning: sv.indonesian_translation}) AS via_vocab,
+                     collect(DISTINCT {text: sk.japanese_text, romaji: sk.romaji, meaning: sk.indonesian_translation}) AS via_direct
                 RETURN k.id AS id,
                        k.onyomi AS onyomi,
                        k.kunyomi AS kunyomi,
@@ -669,7 +677,7 @@ class GraphEngine:
                        n.indonesian_meaning AS indonesian_meaning,
                        n.name AS name,
                        n.level AS level,
-                       collect(DISTINCT {text: s.japanese_text, meaning: s.indonesian_translation})[..1] AS examples
+                       collect(DISTINCT {text: s.japanese_text, romaji: s.romaji, meaning: s.indonesian_translation})[..1] AS examples
                 ORDER BY rand()
                 LIMIT toInteger($limit)
             """, student_id=student_id, limit=limit)
