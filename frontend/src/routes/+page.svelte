@@ -190,7 +190,7 @@
     $: if (browser) {
         localStorage.setItem("tvjp_is_demo_mode", isDemoMode.toString());
     }
-    $: if (vrmController && mode !== 'voice') {
+    $: if (vrmController && mode !== "voice") {
         vrmController.setLoading(loading);
     }
     let isRegistering = false;
@@ -211,7 +211,9 @@
 
     function renderMarkdown(content) {
         if (!content) return "";
-        const html = DOMPurify.sanitize(marked.parse(content, { breaks: true }));
+        const html = DOMPurify.sanitize(
+            marked.parse(content, { breaks: true }),
+        );
         return applyFurigana(html);
     }
 
@@ -1763,17 +1765,26 @@
             </header>
 
             <!-- ── MAIN TABS DISPLAY ── -->
-            <div class="flex-1 min-h-0 flex flex-col" style="display: {mainTab === 'profile' ? 'flex' : 'none'}">
+            <div
+                class="flex-1 min-h-0 flex flex-col"
+                style="display: {mainTab === 'profile' ? 'flex' : 'none'}"
+            >
                 <!-- PROFILE TAB -->
                 <Profile user={$user} />
             </div>
 
-            <div class="flex-1 min-h-0 flex flex-col" style="display: {mainTab === 'achievement' ? 'flex' : 'none'}">
+            <div
+                class="flex-1 min-h-0 flex flex-col"
+                style="display: {mainTab === 'achievement' ? 'flex' : 'none'}"
+            >
                 <!-- ACHIEVEMENT TAB -->
                 <Achievement />
             </div>
 
-            <div class="flex-1 min-h-0 flex flex-col" style="display: {mainTab === 'study' ? 'flex' : 'none'}">
+            <div
+                class="flex-1 min-h-0 flex flex-col"
+                style="display: {mainTab === 'study' ? 'flex' : 'none'}"
+            >
                 <!-- ── STUDY / CHAT TAB ── -->
 
                 <!-- ── MODE TABS ── -->
@@ -1801,12 +1812,20 @@
                 <audio bind:this={audioPlayer} class="hidden"></audio>
 
                 <!-- ── MAIN CONTENT ── -->
-                <div class="flex-1 min-h-0 overflow-hidden flex flex-col relative">
-                    <div class="flex-1 min-h-0 flex flex-col" style="display: {mode === 'quest' ? 'flex' : 'none'}">
+                <div
+                    class="flex-1 min-h-0 overflow-hidden flex flex-col relative"
+                >
+                    <div
+                        class="flex-1 min-h-0 flex flex-col"
+                        style="display: {mode === 'quest' ? 'flex' : 'none'}"
+                    >
                         <QuestMode {vrmController} />
                     </div>
 
-                    <div class="flex-1 min-h-0 flex flex-col" style="display: {mode === 'voice' ? 'flex' : 'none'}">
+                    <div
+                        class="flex-1 min-h-0 flex flex-col"
+                        style="display: {mode === 'voice' ? 'flex' : 'none'}"
+                    >
                         <!-- ── VOICE: full-panel speaking practice ── -->
                         <VoiceMode
                             bind:this={voiceModeRef}
@@ -1819,11 +1838,19 @@
                         />
                     </div>
 
-                    <div class="flex-1 min-h-0 flex flex-col" style="display: {mode === 'reading' ? 'flex' : 'none'}">
+                    <div
+                        class="flex-1 min-h-0 flex flex-col"
+                        style="display: {mode === 'reading' ? 'flex' : 'none'}"
+                    >
                         <ReadingMode {vrmController} />
                     </div>
 
-                    <div class="flex-1 min-h-0 flex flex-col" style="display: {mode === 'discovery' ? 'flex' : 'none'}">
+                    <div
+                        class="flex-1 min-h-0 flex flex-col"
+                        style="display: {mode === 'discovery'
+                            ? 'flex'
+                            : 'none'}"
+                    >
                         <!-- ── MESSAGES ── -->
                         <div
                             bind:this={chatContainer}
@@ -2028,7 +2055,9 @@
                                                                                 <span
                                                                                     class="text-success"
                                                                                     >Cocok:
-                                                                                    "{fact.matched_prop}"</span
+                                                                                    "{fact.matched_prop ||
+                                                                                        fact.matched_keyword ||
+                                                                                        "Terverifikasi"}"</span
                                                                                 >
                                                                             {:else}
                                                                                 <span

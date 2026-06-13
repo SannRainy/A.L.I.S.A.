@@ -633,7 +633,7 @@ def validate_response(ai_text: str, vocab_data: list, grammar_data: list, query:
             facts_detail.append({
                 "type": ftype, "subject": display_subj,
                 "matched_keyword": matched_keyword,
-                "props": [], "matched_prop": None, "match": True
+                "props": [], "matched_prop": matched_keyword, "match": True
             })
             continue
 
