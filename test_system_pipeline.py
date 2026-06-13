@@ -124,12 +124,19 @@ reporter = TestReporter()
 
 # Helper: Generate minimal silent WAV 16kHz mono (Standard input for STT/Whisper)
 def generate_minimal_wav() -> bytes:
+    import math
+    import struct
     wav_io = io.BytesIO()
     with wave.open(wav_io, 'wb') as wav_file:
         wav_file.setnchannels(1)      # Mono
         wav_file.setsampwidth(2)      # 16-bit
         wav_file.setframerate(16000)  # 16kHz
-        wav_file.writeframes(b'\x00' * 32000)  # 1 second of silence
+        # Generate 1 second of a 440Hz sine wave beep
+        samples = []
+        for i in range(16000):
+            val = int(16384 * math.sin(2 * math.pi * 440 * i / 16000))
+            samples.append(struct.pack('<h', val))
+        wav_file.writeframes(b''.join(samples))
     return wav_io.getvalue()
 
 
@@ -707,7 +714,7 @@ async def run_tests():
                 res = await client.get(f"{API_PREFIX}/admin/kg-data?admin_id={ADMIN_ID}")
                 if res.status_code == 200:
                     data = res.json()
-                    return "SUCCESS", f"GET /admin/kg-data -> HTTP 200. Elements: {len(data.get('nodes', []))} nodes, {len(data.get('edges', []))} edges"
+                    return "SUCCESS", f"GET /admin/kg-data -> HTTP 200. Elements: {len(data.get('nodes', []))} nodes, {len(data.get('links', []))} links"
                 return "FAILED", f"GET /admin/kg-data failed -> HTTP {res.status_code}"
             await run_test_step(cat, "F9", "Visual Knowledge Graph Network Export", test_f9)
 
