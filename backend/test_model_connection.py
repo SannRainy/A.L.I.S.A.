@@ -21,7 +21,7 @@ def test_model():
         print("ERROR: File model tidak ditemukan!")
         sys.exit(1)
         
-    print("Memuat model Llama (Qwen3-Swallow-8B-RL-v0.2-Q4_K_M.gguf) ke VRAM...")
+    print(f"Memuat model Llama ({settings.UNSLOTH_MODEL_PATH}) ke VRAM...")
     try:
         # Load the model with standard settings
         model = Llama(

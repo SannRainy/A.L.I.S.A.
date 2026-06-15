@@ -508,24 +508,22 @@
                                             submitAnswer(i);
                                         }}
                                         disabled={isEvaluating}
-                                        class="exam-option group flex items-center gap-4 p-4 text-left rounded-xl transition-all duration-200
+                                        class="exam-option group flex items-start gap-4 p-4 text-left rounded-xl transition-all duration-200
                                             {selectedOption === i
                                             ? 'border-indigo-400 bg-indigo-500/20 text-white'
                                             : 'text-slate-300 hover:text-white hover:border-indigo-400/50'}
                                             disabled:opacity-50"
                                     >
                                         <div
-                                            class="w-8 h-8 rounded-lg {selectedOption ===
-                                            i
+                                            class="w-8 h-8 rounded-lg {selectedOption === i
                                                 ? 'bg-indigo-500 text-white'
-                                                : 'bg-white/10 text-white/50 group-hover:bg-indigo-500/20'} flex items-center justify-center text-xs font-black shrink-0 transition-all"
+                                                : 'bg-white/10 text-white/50 group-hover:bg-indigo-500/20'} flex items-center justify-center text-xs font-black shrink-0 transition-all mt-0.5"
                                         >
                                             {String.fromCharCode(65 + i)}
                                         </div>
-                                        <span
-                                            class="text-sm font-semibold leading-snug"
-                                            >{@html applyFurigana(option)}</span
-                                        >
+                                        <div class="flex-grow pt-0.5 text-sm font-semibold leading-relaxed break-words">
+                                            {@html applyFurigana(option)}
+                                        </div>
                                     </button>
                                 {/each}
                             </div>

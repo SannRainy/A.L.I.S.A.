@@ -96,7 +96,15 @@ async def switch_model_async(model_filename: str) -> None:
     if not os.path.exists(candidate_path):
         candidate_path = os.path.join("models", base_name)
         if not os.path.exists(candidate_path):
-            raise FileNotFoundError(f"Model file {base_name} tidak ditemukan di folder models/.")
+            if not base_name.endswith(".gguf"):
+                base_name_gguf = base_name + ".gguf"
+                candidate_path = os.path.join(backend_dir, "models", base_name_gguf)
+                if not os.path.exists(candidate_path):
+                    candidate_path = os.path.join("models", base_name_gguf)
+                    if not os.path.exists(candidate_path):
+                        raise FileNotFoundError(f"Model file {base_name} atau {base_name_gguf} tidak ditemukan di folder models/.")
+            else:
+                raise FileNotFoundError(f"Model file {base_name} tidak ditemukan di folder models/.")
 
     logger.info(f"Mengalihkan model ke: {candidate_path}")
 

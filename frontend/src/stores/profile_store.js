@@ -20,6 +20,7 @@ export const profile = writable({
 let _kanjiBulkSynced = false;
 
 async function syncKanjiMasteryToNeo4j(userId) {
+    if (typeof window === 'undefined') return;
     if (_kanjiBulkSynced || !userId || userId === 'default') return;
     try {
         const masteredSetIds = JSON.parse(localStorage.getItem('tvjp_kanji_mastered') || '[]');

@@ -11,19 +11,35 @@
 
     // ── Kanji Dojo Stats (dari localStorage, sama sumber dengan KanjiStudyMode) ──
     let kanjiMasteredSets = 0;
-    try {
-        kanjiMasteredSets = JSON.parse(localStorage.getItem('tvjp_kanji_mastered') || '[]').length;
-    } catch {}
+    if (typeof window !== 'undefined') {
+        try {
+            kanjiMasteredSets = JSON.parse(localStorage.getItem('tvjp_kanji_mastered') || '[]').length;
+        } catch {}
+    }
     $: kanjiProgress = Math.round((kanjiMasteredSets / 13) * 100);
 
     $: completedIds = $profile.completed_quests ? $profile.completed_quests.map(q => q.level_id) : [];
     $: completedQuests = $profile.completed_quests || [];
 
-    // Level dianggap terbuka jika level sebelumnya sudah diselesaikan dengan nilai >= 90
-    function isLevelLocked(index) {
-        if (index === 0) return false;
-        const prevLevelId = levels[index - 1].id;
+    // Hitung nilai tertinggi secara reactive untuk tiap level
+    $: bestScores = levels.reduce((acc, lvl) => {
+        const attempts = completedQuests.filter(q => q.level_id === lvl.id);
+        acc[lvl.id] = attempts.length > 0 ? Math.max(...attempts.map(q => q.score ?? 0)) : null;
+        return acc;
+    }, {});
+
+    // Hitung apakah level terkunci secara reactive
+    $: lockedLevels = levels.map((lvl, idx) => {
+        if (idx === 0) return false;
+        const prevLevelId = levels[idx - 1].id;
         return !completedQuests.some(q => q.level_id === prevLevelId && q.score >= 90);
+    });
+
+    // Hitung jumlah bintang berdasarkan score
+    function getStarCount(score) {
+        if (score >= 90) return 3;
+        if (score >= 70) return 2;
+        return 1;
     }
 
     function handleStart(levelId) {
@@ -212,7 +228,7 @@
 
         {#each levels as level, index}
             {@const isCompleted = completedIds.includes(level.id)}
-            {@const isLocked = isLevelLocked(index)}
+            {@const isLocked = lockedLevels[index]}
             {@const tier = getTierInfo(level.difficulty_tier)}
             {@const questCount = level.questions.length}
             {@const translateCount = level.questions.filter(q => q.type === 'translate').length}
@@ -223,23 +239,46 @@
                     disabled={isLocked}
                     class="group relative flex flex-col items-center transition-all duration-500 hover:scale-110 active:scale-95"
                 >
-                    <!-- Node Circle -->
-                    <div class="w-24 h-24 rounded-full flex items-center justify-center text-4xl shadow-2xl transition-all duration-500 border-4 z-10
-                        {isCompleted ? 'bg-gradient-to-br from-emerald-400 to-teal-500 border-white/40 shadow-emerald-500/30' :
-                         isLocked ? 'bg-white/5 border-white/10 opacity-40 grayscale scale-90' :
-                         `bg-gradient-to-br ${tier.active} border-white/40 ${tier.shadow} animate-pulse-slow`}">
-                        <span class="drop-shadow-md">{isLocked ? '🔒' : isCompleted ? '✅' : level.icon}</span>
+                    <!-- Node Circle (wrapper relative agar badge menempel di circle) -->
+                    <div class="relative">
+                        <div class="w-24 h-24 rounded-full flex items-center justify-center text-4xl shadow-2xl transition-all duration-500 border-4 z-10
+                            {isCompleted ? 'bg-gradient-to-br from-emerald-400 to-teal-500 border-white/40 shadow-emerald-500/30' :
+                             isLocked ? 'bg-white/5 border-white/10 opacity-40 grayscale scale-90' :
+                             `bg-gradient-to-br ${tier.active} border-white/40 ${tier.shadow} animate-pulse-slow`}">
+                            <span class="drop-shadow-md">{isLocked ? '🔒' : isCompleted ? '✅' : level.icon}</span>
+                        </div>
+
+                        <!-- Level number badge — menempel di pojok kanan atas circle -->
+                        <div class="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-[10px] font-black text-white z-20">
+                            {index + 1}
+                        </div>
                     </div>
 
-                    <!-- Level number -->
-                    <div class="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-[10px] font-black text-white z-20">
-                        {index + 1}
-                    </div>
-
-                    <!-- Completed badge -->
+                    <!-- Stars + XP — tepat di bawah circle, tanpa absolute -->
                     {#if isCompleted}
-                        <div class="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-yellow-400 flex items-center justify-center text-sm z-20 shadow-md border-2 border-white">
-                            ⭐
+                        {@const bestScore = bestScores[level.id]}
+                        {@const stars = bestScore !== null ? getStarCount(bestScore) : 1}
+                        <div class="mt-2 flex flex-col items-center gap-1">
+                            <!-- Bintang visual -->
+                            <div class="flex gap-1">
+                                {#each [1, 2, 3] as star}
+                                    <svg
+                                        width="18" height="18" viewBox="0 0 24 24"
+                                        fill={star <= stars ? '#FBBF24' : 'rgba(255,255,255,0.15)'}
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        style="filter: {star <= stars ? 'drop-shadow(0 0 4px rgba(251,191,36,0.7))' : 'none'}"
+                                    >
+                                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                                    </svg>
+                                {/each}
+                            </div>
+                            <!-- Angka nilai -->
+                            {#if bestScore !== null}
+                                <span class="text-xs font-black leading-none tracking-wide"
+                                      style="color: {stars === 3 ? '#FCD34D' : stars === 2 ? '#A5F3FC' : '#FDA4AF'}">
+                                    {bestScore} XP
+                                </span>
+                            {/if}
                         </div>
                     {/if}
 
@@ -269,7 +308,26 @@
                         {#if isLocked}
                             <p class="text-[10px] text-rose-400 font-bold mt-2 uppercase tracking-widest">🔒 Terkunci — Nilai Level Sebelumnya Harus ≥ 90</p>
                         {:else if isCompleted}
-                            <p class="text-[10px] text-emerald-400 font-bold mt-2 uppercase tracking-widest">✅ Completed</p>
+                            {@const tooltipBest = bestScores[level.id]}
+                            {@const tooltipStars = tooltipBest !== null ? getStarCount(tooltipBest) : 1}
+                            <div class="mt-2 flex items-center justify-between">
+                                <p class="text-[10px] text-emerald-400 font-bold uppercase tracking-widest">✅ Completed</p>
+                                <!-- Nilai terbaik di tooltip -->
+                                {#if tooltipBest !== null}
+                                    <div class="flex items-center gap-1">
+                                        <div class="flex gap-0.5">
+                                            {#each [1, 2, 3] as star}
+                                                <svg width="9" height="9" viewBox="0 0 24 24"
+                                                     fill={star <= tooltipStars ? '#FBBF24' : 'rgba(255,255,255,0.2)'}
+                                                     xmlns="http://www.w3.org/2000/svg">
+                                                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                                                </svg>
+                                            {/each}
+                                        </div>
+                                        <span class="text-[10px] font-black text-amber-300">{tooltipBest} XP</span>
+                                    </div>
+                                {/if}
+                            </div>
                         {:else}
                             <p class="text-[10px] text-indigo-300 font-bold mt-2 uppercase tracking-widest">▶ Siap Dimainkan</p>
                         {/if}

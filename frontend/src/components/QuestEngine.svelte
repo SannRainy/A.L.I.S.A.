@@ -520,23 +520,25 @@
                             {#if currentQuestion.type === "mcq"}
                                 {#if !showAiFeedback}
                                     <div
-                                        class="grid grid-cols-1 sm:grid-cols-2 gap-4"
+                                        class="grid grid-cols-1 gap-3.5"
                                     >
                                         {#each currentQuestion.options as option, i}
                                             <button
                                                 on:click={() => handleAnswer(i)}
                                                 disabled={isEvaluating ||
                                                     showAiFeedback}
-                                                class="glass-card p-5 font-bold text-lg text-slate-200 hover:text-white hover:border-indigo-400 hover:bg-indigo-600/20 hover:shadow-indigo-500/10 transition-all disabled:opacity-50 text-left flex items-center gap-4"
+                                                class="glass-card p-5 font-bold text-base md:text-lg text-slate-200 hover:text-white hover:border-indigo-400 hover:bg-indigo-600/20 hover:shadow-indigo-500/10 transition-all disabled:opacity-50 text-left flex items-start gap-4"
                                             >
                                                 <div
-                                                    class="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center text-xs text-indigo-500 font-black shrink-0"
+                                                    class="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center text-xs text-indigo-500 font-black shrink-0 mt-0.5"
                                                 >
                                                     {String.fromCharCode(
                                                         65 + i,
                                                     )}
                                                 </div>
-                                                {@html applyFurigana(option)}
+                                                <div class="flex-grow pt-0.5 leading-relaxed break-words">
+                                                    {@html applyFurigana(option)}
+                                                </div>
                                             </button>
                                         {/each}
                                     </div>
