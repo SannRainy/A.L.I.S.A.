@@ -1,6 +1,7 @@
 import logging
 import os
 import socket
+import asyncio
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -66,7 +67,18 @@ async def lifespan(app: FastAPI):
 
     if not settings.SUPABASE_URL or not settings.SUPABASE_KEY:
         logger.warning("⚠️ WARNING: Kredensial Supabase belum lengkap. Fitur Auth & Quest akan berjalan dalam mode Simulasi (Mock).")
-    
+
+    # ── WARMUP: Pre-warm Neo4j & LLM di background ───────────────────────
+    # Dijalankan sebagai background task agar server langsung siap menerima
+    # request. Warmup berjalan paralel — user tidak perlu menunggu.
+    try:
+        from services.warmup_service import run_warmup
+        from api.chat_router import graph as _graph_instance
+        asyncio.create_task(run_warmup(_graph_instance))
+        logger.info("🔄 Warmup task dijadwalkan di background.")
+    except Exception as e:
+        logger.warning(f"⚠️ Gagal menjadwalkan warmup task: {e}")
+
     yield  # Server berjalan
 
     # ── SHUTDOWN ─────────────────────────────────────────────────────────

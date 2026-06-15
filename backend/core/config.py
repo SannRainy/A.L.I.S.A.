@@ -27,6 +27,12 @@ class Settings(BaseSettings):
     HF_TOKEN: str = ""
     HF_MODEL_REPO: str = "Qwen/Qwen2.5-7B-Instruct"
 
+    # --- Whisper STT (local path) ---
+    # Jika diisi, model diload dari folder lokal (tidak butuh internet).
+    # Kosongkan agar fallback ke HuggingFace Hub cache (~/.cache/huggingface).
+    # Download sekali dengan: python backend/utils/download_whisper.py
+    WHISPER_MODEL_PATH: str = "models/kotoba-whisper-v1.0-faster"
+
     # --- Supabase ---
     SUPABASE_URL: str = ""
     SUPABASE_KEY: str = ""

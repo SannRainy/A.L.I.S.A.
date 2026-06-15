@@ -257,6 +257,60 @@ _LISTING_PATTERNS = [
     (re.compile(r"^(tata\s*bahasa|grammar|bunpou)$", re.I), "list_grammar"),
 ]
 
+# ── Guard: Deteksi intent "minta soal/kuis/test" di Discovery mode ─────────
+_QUIZ_REQUEST_RE = re.compile(
+    r"\b("
+    r"soal|kuis|quiz|ujian|test|latihan\s*soal|pertanyaan\s*ujian|pertanyaan\s*kuis|"
+    r"kasih\s*soal|beri\s*soal|berikan\s*soal|buatkan\s*soal|bikin\s*soal|"
+    r"kasih\s*kuis|beri\s*kuis|berikan\s*kuis|buatkan\s*kuis|"
+    r"kasih\s*pertanyaan|beri\s*pertanyaan|berikan\s*pertanyaan|buatkan\s*pertanyaan|"
+    r"kasih\s*test|beri\s*test|berikan\s*test|buatkan\s*test|"
+    r"coba\s*soal|coba\s*kuis|latihan\s*kuis|"
+    r"tanya\s*soal|tanya\s*kuis|"
+    r"mau\s*soal|ingin\s*soal|pengen\s*soal|minta\s*soal|"
+    r"mau\s*kuis|ingin\s*kuis|pengen\s*kuis|minta\s*kuis|"
+    r"mau\s*test|ingin\s*test|pengen\s*test|minta\s*test"
+    r")\b",
+    re.IGNORECASE
+)
+
+_QUEST_REDIRECT_MESSAGE = (
+    "Eits, kayaknya kamu mau latihan soal nih! 😄\n\n"
+    "Untuk soal, kuis, dan latihan interaktif, kamu bisa pergi ke **Mode Quest** ya — "
+    "di sana ada banyak soal N5 yang seru dengan sistem level dan skor! 🎯\n\n"
+    "Kalau di sini (Discovery Mode), Alisa siap bantu kamu **belajar materi**, "
+    "jelasin kosakata, kanji, atau grammar N5 yang kamu mau. Mau belajar materi apa dulu? 📚"
+)
+
+def _is_quiz_request(query: str) -> bool:
+    """Deteksi apakah user meminta soal/kuis/test di Discovery mode."""
+    return bool(_QUIZ_REQUEST_RE.search(query))
+
+_AGENT_DIR = os.path.dirname(os.path.abspath(__file__))
+_TEMP_DIR = os.path.join(os.path.dirname(_AGENT_DIR), "temp")
+
+def _get_static_audio(name: str) -> str | None:
+    """Check if static WAV exists, return the filename if so, else None."""
+    filename = f"static_{name}.wav"
+    path = os.path.join(_TEMP_DIR, filename)
+    if os.path.exists(path):
+        return filename
+    return None
+
+def _get_static_audio_b64(name: str) -> str | None:
+    """Check if static WAV exists, return base64 encoded string if so, else None."""
+    filename = f"static_{name}.wav"
+    path = os.path.join(_TEMP_DIR, filename)
+    if os.path.exists(path):
+        try:
+            with open(path, "rb") as f:
+                data = f.read()
+            return base64.b64encode(data).decode()
+        except Exception as e:
+            logger.error(f"Failed to read static audio {filename}: {e}")
+            return None
+    return None
+
 def _detect_listing_intent(query: str, history: list) -> list:
     has_listing_verb = re.search(
         r"\b(sebutkan|berikan|kasih|tampilkan|list|tunjukkan|minta|ajari|ajarkan|jelaskan|mau|ingin|contoh|daftar|belajar)\b",
@@ -1219,6 +1273,17 @@ class LLMAgent:
         if student_id != "default_user":
             asyncio.create_task(SupabaseService.save_chat_log(student_id, "user", query, mode))
 
+        # ── Guard: Tolak permintaan soal/kuis di Discovery & Speaking mode ──
+        if mode in ("discovery", "speaking") and _is_quiz_request(query):
+            # Coba serve static pre-generated WAV jika sudah ada
+            _static_wav = _get_static_audio("quiz_redirect")
+            yield f"data: {json.dumps({'type': 'status', 'content': 'Mengarahkan ke Mode Quest...'})}\n\n"
+            yield f"data: {json.dumps({'type': 'metadata', 'vocab': [], 'grammar': [], 'suggestions': []})}\n\n"
+            yield f"data: {json.dumps({'type': 'sentence', 'content': _QUEST_REDIRECT_MESSAGE, 'audio': _static_wav})}\n\n"
+            accuracy = {"pct": -1, "label": "💬 Casual Chat", "verified": 0, "total": 0, "category": "casual", "facts_detail": []}
+            yield f"data: {json.dumps({'type': 'done', 'accuracy': accuracy})}\n\n"
+            return
+
         if mode == "speaking":
             kg_context, vocab_data, grammar_data, kanji_data = "", [], [], []
         else:
@@ -1298,6 +1363,16 @@ class LLMAgent:
             asyncio.create_task(
                 SupabaseService.save_chat_log(student_id, "user", query, mode)
             )
+
+        # ── Guard: Tolak permintaan soal/kuis di Discovery & Speaking mode ──
+        if mode in ("discovery", "speaking") and _is_quiz_request(query):
+            # Coba serve static pre-generated WAV (base64) jika sudah ada
+            _static_b64 = _get_static_audio_b64("quiz_redirect")
+            yield {"type": "status", "content": "Mengarahkan ke Mode Quest..."}
+            yield {"type": "metadata", "vocab": [], "grammar": [], "suggestions": []}
+            yield {"type": "sentence", "content": _QUEST_REDIRECT_MESSAGE, "audio_b64": _static_b64}
+            yield {"type": "done"}
+            return
 
         if mode == "speaking":
             # For speaking mode: fetch grammar context from KG so correction can be validated

@@ -138,43 +138,74 @@
         }
 
         const textToType = item.text;
-        const durationAvgMs = item.audioUrl ? 60 : 30;
+        const defaultSpeed = item.audioUrl ? 60 : 30;
 
         // Reset state typewriter untuk chunk ini
         _typing = { text: textToType, index: 0 };
 
-        typeInterval = setInterval(() => {
-            if (_typing.index < _typing.text.length) {
-                activeStreamText += _typing.text[_typing.index];
-                _typing.index++;
-            } else {
-                clearInterval(typeInterval);
-                typeInterval = null;
-                if (
-                    sentencePlaybackQueue.length === 0 &&
-                    isStreamDone &&
-                    !isPlayingAudio
-                ) {
-                    finalizeStream();
+        function startTyping(speedMs) {
+            if (typeInterval) clearInterval(typeInterval);
+            typeInterval = setInterval(() => {
+                if (_typing.index < _typing.text.length) {
+                    activeStreamText += _typing.text[_typing.index];
+                    _typing.index++;
+                } else {
+                    clearInterval(typeInterval);
+                    typeInterval = null;
+                    if (
+                        sentencePlaybackQueue.length === 0 &&
+                        isStreamDone &&
+                        !isPlayingAudio
+                    ) {
+                        finalizeStream();
+                    }
                 }
-            }
-        }, durationAvgMs);
+            }, speedMs);
+        }
+
+        // Mulai pengetikan dengan kecepatan default segera agar tidak ada lag
+        startTyping(defaultSpeed);
 
         if (item.audioUrl) {
             if (vrmController) vrmController.setSpeaking(true);
+
+            // Pasang metadata listener untuk menyesuaikan kecepatan ketik dengan durasi audio
+            audioPlayer.onloadedmetadata = () => {
+                const duration = audioPlayer.duration;
+                if (duration && duration > 0) {
+                    const calculatedSpeed = (duration * 1000) / textToType.length;
+                    // Batasi kecepatan antara 10ms (sangat cepat) dan 120ms (lambat) agar tetap natural
+                    const speedMs = Math.max(10, Math.min(120, calculatedSpeed));
+                    startTyping(speedMs);
+                }
+            };
+
             audioPlayer.src = item.audioUrl;
             audioPlayer.play().catch(() => {
                 if (vrmController) vrmController.setSpeaking(false);
                 if (item.blobUrl) URL.revokeObjectURL(item.audioUrl);
+                // Jika audio gagal, gunakan kecepatan default 60ms dan lanjut ke antrean berikutnya
+                startTyping(60);
                 playNextAudio();
             });
+
             audioPlayer.onended = () => {
-                // Revoke Blob URL to free memory (only for WS path)
+                // Hentikan typewriter jika masih berjalan, dan tampilkan sisa teks seketika
+                if (typeInterval) {
+                    clearInterval(typeInterval);
+                    typeInterval = null;
+                }
+                if (_typing.index < _typing.text.length) {
+                    activeStreamText += _typing.text.slice(_typing.index);
+                    _typing.index = _typing.text.length;
+                }
+
+                // Revoke Blob URL untuk membebaskan memori (khusus jalur WS)
                 if (item.blobUrl) URL.revokeObjectURL(item.audioUrl);
                 playNextAudio();
             };
         } else {
-            setTimeout(playNextAudio, durationAvgMs * textToType.length + 500);
+            setTimeout(playNextAudio, defaultSpeed * textToType.length + 500);
         }
     }
 

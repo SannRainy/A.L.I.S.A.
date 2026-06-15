@@ -44,11 +44,15 @@ class VoiceService:
         self._cleanup_stale_files()
 
     def _cleanup_stale_files(self):
-        """Hapus file .wav yang sudah terlalu lama di temp dir saat startup."""
+        """Hapus file .wav yang sudah terlalu lama di temp dir saat startup.
+        File dengan prefix 'static_' tidak dihapus — itu adalah response statis pre-generated."""
         now = time.time()
         cleaned = 0
         try:
             for f in self.temp_dir.glob("response_*.wav"):
+                # Skip static pre-generated files
+                if f.name.startswith("static_"):
+                    continue
                 if (now - f.stat().st_mtime) > _TEMP_MAX_AGE_SECONDS:
                     f.unlink(missing_ok=True)
                     cleaned += 1
@@ -60,13 +64,32 @@ class VoiceService:
     def _load_whisper(self):
         if self.whisper_model is None:
             from faster_whisper import WhisperModel
-            logger.info("Membuka model Kotoba-Whisper v1.0 (faster) pada GPU dengan compute_type='float16'...")
-            # Load Kotoba-Whisper model on GPU with float16 compute_type for better precision
+            from core.config import settings
+            import os
+
+            # ── Prioritaskan path lokal agar tidak butuh internet saat startup ──
+            # Path lokal relatif terhadap direktori backend/
+            backend_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            local_path = os.path.join(backend_dir, settings.WHISPER_MODEL_PATH)
+
+            if os.path.isdir(local_path):
+                model_source = local_path
+                logger.info(f"🔊 Loading Kotoba-Whisper dari path LOKAL: {local_path}")
+            else:
+                # Fallback ke HuggingFace Hub (butuh internet / HF cache)
+                model_source = "kotoba-tech/kotoba-whisper-v1.0-faster"
+                logger.warning(
+                    f"⚠️ Model lokal tidak ditemukan di '{local_path}'. "
+                    f"Fallback ke HF Hub (butuh internet). "
+                    f"Jalankan: python backend/utils/download_whisper.py"
+                )
+
             self.whisper_model = WhisperModel(
-                "kotoba-tech/kotoba-whisper-v1.0-faster",
+                model_source,
                 device="cuda",
-                compute_type="float16"
+                compute_type="float16",
             )
+            logger.info("✅ Kotoba-Whisper model berhasil dimuat ke GPU.")
         return self.whisper_model
 
     async def transcribe_audio(self, file_path: str, mode: str = None) -> str:

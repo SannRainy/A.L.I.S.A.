@@ -1,0 +1,152 @@
+# ==============================================================================
+# TVJP - MONOREPO GLOBAL GITIGNORE (SANGAT AMAN & EFISIEN)
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# 1. SISTEM OPERASI & IDE (OS & Editor Temp Files)
+# ------------------------------------------------------------------------------
+.DS_Store
+Thumbs.db
+desktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+# Editor / IDE settings
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+
+# ------------------------------------------------------------------------------
+# 2. KEAMANAN & KREDENSIAL (Credentials & Environment Variables)
+# ------------------------------------------------------------------------------
+# Abaikan semua file environment di root, backend, frontend, dll.
+.env
+.env.local
+.env.*.local
+*.env
+backend/.env
+frontend/.env
+
+# File kredensial Neo4j / Database lokal
+backend/Neo4j-*.txt
+*.sql.bak
+*.db.bak
+
+# ------------------------------------------------------------------------------
+# 3. PYTHON GLOBAL (Virtual Environments & Cache)
+# ------------------------------------------------------------------------------
+# Python Cache
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# Virtual Environments
+venv-backend/
+venv/
+.venv/
+Style-Bert-VITS2/venv-tts/
+Style-Bert-VITS2/venv/
+Style-Bert-VITS2/.venv/
+
+# ------------------------------------------------------------------------------
+# 4. BACKEND SPECIFIC (FastAPI & Local LLM Models)
+# ------------------------------------------------------------------------------
+# Abaikan model GGUF berukuran Gigabytes di folder backend/models
+backend/models/*.gguf
+
+# Tetapi TETAP LACAK file konfigurasi Ollama (Modelfile) jika ada
+!backend/models/Modelfile
+
+# Folder file audio sementara backend
+backend/backend/temp/
+
+# ------------------------------------------------------------------------------
+# 5. FRONTEND SPECIFIC (SvelteKit, Vite & Node)
+# ------------------------------------------------------------------------------
+# Dependencies
+frontend/node_modules/
+node_modules/
+
+# SvelteKit & Vite Build Outputs / Cache
+frontend/.svelte-kit/
+frontend/dist/
+frontend/build/
+frontend/vite.config.js.timestamp-*.mjs
+frontend/vite.config.js.timestamp-*.js
+
+# Logs frontend
+frontend/*.log
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+frontend/pnpm-debug.log*
+
+# ------------------------------------------------------------------------------
+# 6. STYLE-BERT-VITS2 SPECIFIC (TTS Models & Large Datasets)
+# ------------------------------------------------------------------------------
+# Menjamin model bert, pretrained, data latih, dan audio wav tidak tercommit ke root
+Style-Bert-VITS2/Data/
+Style-Bert-VITS2/inputs/
+Style-Bert-VITS2/model_assets/
+Style-Bert-VITS2/mos_results/
+Style-Bert-VITS2/static/
+Style-Bert-VITS2/playgrounds/
+Style-Bert-VITS2/playground.ipynb
+Style-Bert-VITS2/safetensors.ipynb
+
+# Abaikan file biner/model besar di dalam folder TTS
+Style-Bert-VITS2/bert/*/*.bin
+Style-Bert-VITS2/bert/*/*.h5
+Style-Bert-VITS2/bert/*/*.model
+Style-Bert-VITS2/bert/*/*.safetensors
+Style-Bert-VITS2/bert/*/*.msgpack
+Style-Bert-VITS2/bert/*/*.onnx
+Style-Bert-VITS2/pretrained/*.safetensors
+Style-Bert-VITS2/pretrained/*.pth
+Style-Bert-VITS2/pretrained_jp_extra/*.safetensors
+Style-Bert-VITS2/pretrained_jp_extra/*.pth
+Style-Bert-VITS2/slm/*/*.bin
+
+# Format file besar dan output audio
+Style-Bert-VITS2/*.yml
+!Style-Bert-VITS2/default_config.yml
+Style-Bert-VITS2/configs/paths.yml
+Style-Bert-VITS2/*.wav
+Style-Bert-VITS2/*.zip
+Style-Bert-VITS2/*.csv
+Style-Bert-VITS2/*.bak
+Style-Bert-VITS2/*.dic
+style-Bert-VITS2/bert_cache/
+
+# ------------------------------------------------------------------------------
+# 7. ADDITIONS & CACHE (Whisper, TensorRT, Data Pipeline)
+# ------------------------------------------------------------------------------
+# Whisper local model directory
+backend/models/kotoba-whisper-v1.0-faster/
+
+# Data pipeline CSV data, raw documents, and backups (keeping python code)
+backend/data_pipeline/*.csv
+backend/data_pipeline/document/
+backend/data_pipeline/backup_before_enrichment/
+
+# TensorRT & Whisper GPU local cache directories
+trt_cache/
+test_trt_cache_dir/
+test_trt_native_cache/
+
+# Temporary root files (audio and debug text logs)
+/*.wav
+/*.txt
+
+*.md
+!README.md
+.gitignore
