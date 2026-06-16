@@ -6,6 +6,9 @@ from services.llm_agent import LLMAgent
 from services.voice_service import VoiceService
 from services.quest_data import QUEST_LEVELS
 from services.supabase_service import SupabaseService
+from services.bkt_engine import BKTEngine
+from services.srs_service import SRSService
+from services.streak_service import StreakService
 from core.supabase_client import supabase
 from core.config import settings
 import httpx
@@ -359,6 +362,16 @@ async def submit_quest(request: QuestSubmitRequest):
         score=request.score,
         level_id=request.level_id
     )
+    # Log activity for streak and daily goals
+    try:
+        await StreakService.log_activity(
+            user_id=request.user_id,
+            study_minutes=15,       # Quest levels take approx 15 minutes
+            quests_completed=1,
+            xp_earned=request.score
+        )
+    except Exception as e:
+        logger.warning(f"Failed to log streak activity for quest submit: {e}")
     return {"status": "success", "message": f"Skor {request.score} disimpan!"}
 
 @router.post("/quest/ai-correction")
@@ -436,13 +449,29 @@ async def get_mastered_nodes(student_id: str):
     
     return {"student_id": student_id, "mastered_nodes": mastered_nodes, "kg_available": graph is not None}
 
+@router.get("/kg/node/{node_id}")
+async def get_kg_node_detail(node_id: str):
+    """Ambil data detail dari suatu node kognitif (Vocab/Grammar/Kanji) di Neo4j."""
+    if not graph:
+        raise HTTPException(status_code=503, detail="Graph engine tidak tersedia.")
+    
+    node_detail = graph.get_exact_node(node_id)
+    if not node_detail:
+        # Fallback: jika node_id tidak langsung ketemu (misal wa, ga, dll), coba map
+        # di FRONTEND_TO_NEO4J_MAP
+        neo4j_id = FRONTEND_TO_NEO4J_MAP.get(node_id, node_id)
+        node_detail = graph.get_exact_node(neo4j_id)
+        
+    if not node_detail:
+        raise HTTPException(status_code=404, detail=f"Node '{node_id}' tidak ditemukan.")
+        
+    return {"status": "success", "node": node_detail}
+
 @router.post("/quest/session-stats")
 async def log_quest_session_stats(request: QuestSessionStatsRequest):
     """
-    Memproses statistik sesi kuis di akhir level dan memperbarui status node di Neo4j.
-    - Jika correct > 0 dan wrong == 0 dan hint == 0 -> MASTERED
-    - Jika correct > 0 -> LEARNED
-    - Jika wrong > correct -> STRUGGLING
+    Memproses statistik sesi kuis di akhir level dan memperbarui status node di Neo4j
+    menggunakan Bayesian Knowledge Tracing (BKTEngine) untuk perhitungan kognitif.
     """
     logger.info(f"log_quest_session_stats called with student_id={request.student_id}, level_id={request.level_id}, stats={request.stats}")
     if not graph:
@@ -454,31 +483,60 @@ async def log_quest_session_stats(request: QuestSessionStatsRequest):
         for frontend_node_id, stat in request.stats.items():
             neo4j_node_id = FRONTEND_TO_NEO4J_MAP.get(frontend_node_id, frontend_node_id)
             if neo4j_node_id not in aggregated_stats:
-                aggregated_stats[neo4j_node_id] = {"correct": 0, "wrong": 0, "hint": 0}
+                aggregated_stats[neo4j_node_id] = {"correct": 0, "wrong": 0}
             
             aggregated_stats[neo4j_node_id]["correct"] += stat.get("correct", 0)
             aggregated_stats[neo4j_node_id]["wrong"] += stat.get("wrong", 0)
-            aggregated_stats[neo4j_node_id]["hint"] += stat.get("hint", 0)
             
         updated_count = 0
         for neo4j_node_id, stat in aggregated_stats.items():
             correct = stat["correct"]
             wrong = stat["wrong"]
-            hint = stat["hint"]
             
-            status = "LEARNED"
-            if correct > 0 and wrong == 0 and hint == 0:
+            if correct == 0 and wrong == 0:
+                continue
+                
+            # Tentukan tipe node untuk parameter BKT
+            node_type = "grammar"
+            # Cek jika id adalah karakter kanji tunggal
+            if len(neo4j_node_id) == 1 and ord(neo4j_node_id[0]) >= 0x4e00:
+                node_type = "kanji"
+                
+            bkt_params = BKTEngine.get_params(node_type)
+            
+            # Ambil belief awal dari Neo4j, default ke p_l0
+            current_p_l = graph.get_node_belief(request.student_id, neo4j_node_id)
+            if current_p_l is None:
+                current_p_l = bkt_params["p_l0"]
+                
+            # Buat runtunan observasi (Benar/Salah)
+            observations = [True] * correct + [False] * wrong
+            p_l = current_p_l
+            for obs in observations:
+                p_l = BKTEngine.update_belief(p_l, obs, bkt_params)
+                
+            # Tentukan status kognitif kognitif baru berdasarkan p_l
+            if p_l >= 0.85: # MASTERY_THRESHOLD
                 status = "MASTERED"
-            elif wrong > correct:
+            elif p_l >= 0.40:
+                status = "LEARNED"
+            else:
                 status = "STRUGGLING"
-            elif correct == 0 and wrong > 0:
-                status = "STRUGGLING"
+                
+            graph.update_node_status(request.student_id, neo4j_node_id, status, p_mastered=p_l)
             
-            graph.update_node_status(request.student_id, neo4j_node_id, status)
+            # Tambahkan ke SRS jika berhasil dipelajari/dikuasai agar user bisa mereviewnya nanti
+            if status in ("LEARNED", "MASTERED") and request.student_id != "default":
+                try:
+                    await SRSService.get_or_create_item(request.student_id, neo4j_node_id, node_type)
+                    logger.info(f"Registered node {neo4j_node_id} ({node_type}) to SRS for user {request.student_id}")
+                except Exception as srs_err:
+                    logger.warning(f"Failed to add node {neo4j_node_id} to SRS: {srs_err}")
+                    
             updated_count += 1
             
         logger.info(f"Successfully processed quest session stats for student {request.student_id}. Updated {updated_count} nodes.")
-        return {"status": "success", "message": f"{updated_count} status node berhasil diperbarui."}
+        return {"status": "success", "message": f"{updated_count} status node berhasil diperbarui secara kognitif."}
     except Exception as e:
         logger.error(f"Failed to log quest session stats: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -516,6 +574,18 @@ async def log_kanji_mastery(request: KanjiMasteryRequest):
         # Award XP: 10 XP per kanji yang dijawab benar
         xp_gain = request.score * 10
         await SupabaseService.update_user_stats(request.student_id, "KANJI_DOJO_COMPLETED", custom_xp=xp_gain)
+        
+        # Log activity for streak and daily goals
+        try:
+            await StreakService.log_activity(
+                user_id=request.student_id,
+                study_minutes=5,            # Kanji Dojo sessions take approx 5 minutes
+                items_reviewed=request.score, # Each correct kanji counts as a reviewed item
+                xp_earned=xp_gain
+            )
+        except Exception as e:
+            logger.warning(f"Failed to log streak activity for kanji dojo completion: {e}")
+            
         logger.info(f"Kanji mastery OK: {len(request.kanji_ids)} kanji MASTERED, +{xp_gain} XP untuk {request.student_id}")
         return {
             "status": "success",

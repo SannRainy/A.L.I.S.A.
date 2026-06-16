@@ -5,13 +5,15 @@
     import QuestResult from './QuestResult.svelte';
     import KanjiStudyMode from './KanjiStudyMode.svelte';
     import ExamEngine from './ExamEngine.svelte';
+    import PlacementTest from './PlacementTest.svelte';
+    import SRSReview from './SRSReview.svelte';
     import { user } from "../stores/auth_store";
     import { profile, fetchFullProfile } from "../stores/profile_store";
     import { onMount } from "svelte";
 
     export let vrmController = null;
 
-    let currentState = "map"; // 'map', 'quiz', 'result', 'kanji_dojo', 'exam_dojo'
+    let currentState = "map"; // 'map', 'quiz', 'result', 'kanji_dojo', 'exam_dojo', 'placement_test', 'srs_dojo'
     let activeExamBatchId = "exam_1"; // Batch ujian yang aktif
     let activeLevelData = null;
     let quizResultsData = null;
@@ -170,6 +172,32 @@
         saveQuestState();
     }
 
+    function handleOpenPlacementTest() {
+        currentState = "placement_test";
+        saveQuestState();
+    }
+
+    async function handlePlacementFinish() {
+        currentState = "map";
+        saveQuestState();
+        if ($user) {
+            await fetchFullProfile($user.id);
+        }
+    }
+
+    function handleOpenSrsDojo() {
+        currentState = "srs_dojo";
+        saveQuestState();
+    }
+
+    async function handleSrsFinish() {
+        currentState = "map";
+        saveQuestState();
+        if ($user) {
+            await fetchFullProfile($user.id);
+        }
+    }
+
     async function handleExamFinish(results) {
         // Exam mode: kembali ke map setelah review (review ada di dalam ExamEngine)
         // Score sudah disubmit dari dalam ExamEngine.svelte
@@ -188,6 +216,8 @@
             on:dismissAlert={() => prerequisiteAlert = { show: false }}
             on:openKanjiDojo={handleOpenKanjiDojo}
             on:openExamDojo={(e) => handleOpenExamDojo(e.detail?.batchId || 'exam_1')}
+            on:openPlacementTest={handleOpenPlacementTest}
+            on:openSrsDojo={handleOpenSrsDojo}
         />
 
     {:else if currentState === "quiz"}
@@ -214,6 +244,18 @@
         <ExamEngine
             batchId={activeExamBatchId}
             onFinish={handleExamFinish}
+            onQuit={handleBackToMap}
+        />
+
+    {:else if currentState === "placement_test"}
+        <PlacementTest
+            onFinish={handlePlacementFinish}
+            onQuit={handleBackToMap}
+        />
+
+    {:else if currentState === "srs_dojo"}
+        <SRSReview
+            onFinish={handleSrsFinish}
             onQuit={handleBackToMap}
         />
     {/if}

@@ -599,24 +599,32 @@ def validate_response(ai_text: str, vocab_data: list, grammar_data: list, query:
 
     # Setiap fakta: (type, display_subject, [search_keywords], [props])
     facts: list = []
+    seen_facts = set()
+
+    def add_fact(ftype, display_subj, keywords, props):
+        key = (ftype, display_subj)
+        if key in seen_facts:
+            return
+        seen_facts.add(key)
+        facts.append((ftype, display_subj, keywords, props))
 
     # ── Extract facts dari vocab ──
     for v in vocab_data:
         vid = v.get("id", "")
         romaji  = v.get("romaji", "")
         meaning = v.get("indonesian_meaning", "")
-        if vid:
-            facts.append(("vocab", vid, [vid], [romaji, meaning]))
+        if vid and not meaning.startswith("kanji "):
+            add_fact("vocab", vid, [vid], [romaji, meaning])
         # Kanji sub-facts dari vocab
         for k in v.get("kanji", []):
             kid = k.get("id", "")
             if kid:
-                facts.append(("kanji", kid, [kid], [k.get("onyomi", ""), k.get("kunyomi", ""), k.get("arti", "")]))
+                add_fact("kanji", kid, [kid], [k.get("onyomi", ""), k.get("kunyomi", ""), k.get("arti", "")])
         # Contoh kalimat dari vocab
         for ex in v.get("examples", []):
             jp = (ex.get("text") or "").strip()
             if jp and len(jp) > 3:
-                facts.append(("example", jp, [jp, _normalize_jp_text(jp)], [ex.get("meaning", "")]))
+                add_fact("example", jp, [jp, _normalize_jp_text(jp)], [ex.get("meaning", "")])
 
     # ── Extract facts dari grammar ──
     for g in grammar_data:
@@ -625,23 +633,23 @@ def validate_response(ai_text: str, vocab_data: list, grammar_data: list, query:
             rules = [r for r in g.get("rules", []) if r]
             # Ekstrak keyword JP untuk matching fleksibel
             g_keywords = _extract_grammar_keywords(gname)
-            facts.append(("grammar", gname, g_keywords, rules[:2]))
+            add_fact("grammar", gname, g_keywords, rules[:2])
         # Contoh kalimat dari grammar
         for ex in g.get("examples", []):
             jp = (ex.get("text") or "").strip()
             if jp and len(jp) > 3:
-                facts.append(("example", jp, [jp, _normalize_jp_text(jp)], [ex.get("meaning", "")]))
+                add_fact("example", jp, [jp, _normalize_jp_text(jp)], [ex.get("meaning", "")])
 
     # ── Extract facts dari kanji_data (listing mode) ──
     for k in kanji_data:
         kid = k.get("id", "")
         if kid:
-            facts.append(("kanji", kid, [kid], [k.get("onyomi", ""), k.get("kunyomi", ""), k.get("arti", "")]))
+            add_fact("kanji", kid, [kid], [k.get("onyomi", ""), k.get("kunyomi", ""), k.get("arti", "")])
         # Contoh kalimat dari kanji listing
         for ex in k.get("examples", []):
             jp = (ex.get("text") or "").strip()
             if jp and len(jp) > 3:
-                facts.append(("example", jp, [jp, _normalize_jp_text(jp)], [ex.get("meaning", "")]))
+                add_fact("example", jp, [jp, _normalize_jp_text(jp)], [ex.get("meaning", "")])
 
     if not facts:
         return {"pct": -1, "label": "💬 Casual Chat", "verified": 0, "total": 0, "category": "casual", "facts_detail": []}

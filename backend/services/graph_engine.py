@@ -80,16 +80,16 @@ class GraphEngine:
                 RETURN t.id AS topic_id,
                        t.name AS topic_name,
                        t.category AS topic_category,
-                       collect(DISTINCT {
+                       collect(DISTINCT case when v.id is not null then {
                            id: v.id,
                            romaji: v.romaji,
                            indonesian_meaning: v.indonesian_meaning
-                       }) AS vocabulary,
-                       collect(DISTINCT {
+                       } else null end) AS vocabulary,
+                       collect(DISTINCT case when g.id is not null then {
                            id: g.id,
                            name: g.name,
                            level: g.level
-                       }) AS grammar
+                       } else null end) AS grammar
             """, topic_id=topic_id)
             rec = result.single()
             return dict(rec) if rec else None
@@ -135,14 +135,14 @@ class GraphEngine:
                        v.romaji AS romaji,
                        v.indonesian_meaning AS indonesian_meaning,
                        v.level AS level,
-                       collect(DISTINCT {
+                       collect(DISTINCT case when k.id is not null then {
                            id: k.id,
                            onyomi: k.onyomi,
                            kunyomi: k.kunyomi,
                            arti: k.arti
-                       }) AS kanji,
-                       collect(DISTINCT {id: t.id, name: t.name}) AS topics,
-                       collect(DISTINCT {id: p.id, name: p.name, japanese_term: p.japanese_term}) AS pos,
+                       } else null end) AS kanji,
+                       collect(DISTINCT case when t.id is not null then {id: t.id, name: t.name} else null end) AS topics,
+                       collect(DISTINCT case when p.id is not null then {id: p.id, name: p.name, japanese_term: p.japanese_term} else null end) AS pos,
                        collect(DISTINCT ka.id) AS kana_spelling
                 LIMIT 1
             """, word=word)
@@ -224,19 +224,19 @@ class GraphEngine:
                        v.romaji AS romaji,
                        v.indonesian_meaning AS indonesian_meaning,
                        v.level AS level,
-                       collect(DISTINCT {id: t.id, name: t.name}) AS topics,
-                       collect(DISTINCT {
+                       collect(DISTINCT case when t.id is not null then {id: t.id, name: t.name} else null end) AS topics,
+                       collect(DISTINCT case when k.id is not null then {
                            id: k.id,
                            onyomi: k.onyomi,
                            kunyomi: k.kunyomi,
                            arti: k.arti
-                       }) AS kanji,
+                       } else null end) AS kanji,
                        collect(DISTINCT p.name) AS pos,
-                       collect(DISTINCT {
+                       collect(DISTINCT case when s.id is not null then {
                            text: s.japanese_text,
                            romaji: s.romaji,
                            meaning: s.indonesian_translation
-                       })[..2] AS examples
+                       } else null end)[..2] AS examples
                 LIMIT toInteger($limit)
             """, tokens=tokens, limit=limit)
             return [dict(r) for r in result]
@@ -299,12 +299,12 @@ class GraphEngine:
                        g.level AS level,
                        collect(DISTINCT r.description) AS rules,
                        collect(DISTINCT e.description) AS common_errors,
-                       collect(DISTINCT {id: t.id, name: t.name}) AS topics,
-                       collect(DISTINCT {
+                       collect(DISTINCT case when t.id is not null then {id: t.id, name: t.name} else null end) AS topics,
+                       collect(DISTINCT case when s.id is not null then {
                            text: s.japanese_text,
                            romaji: s.romaji,
                            meaning: s.indonesian_translation
-                       })[..2] AS examples,
+                       } else null end)[..2] AS examples,
                        norm_id,
                        norm_name
                 ORDER BY
@@ -333,11 +333,11 @@ class GraphEngine:
                        k.strokes AS strokes,
                        k.level AS level,
                        k.description AS description,
-                       collect(DISTINCT {
+                       collect(DISTINCT case when s.id is not null then {
                            text: s.japanese_text,
                            romaji: s.romaji,
                            meaning: s.indonesian_translation
-                       })[..2] AS examples
+                       } else null end)[..2] AS examples
                 LIMIT 1
             """, word=word)
             rec = result.single()
@@ -352,7 +352,7 @@ class GraphEngine:
                 RETURN v.id AS id,
                        v.romaji AS romaji,
                        v.indonesian_meaning AS indonesian_meaning,
-                       collect(DISTINCT {text: s.japanese_text, romaji: s.romaji, meaning: s.indonesian_translation})[..2] AS examples
+                       collect(DISTINCT case when s.id is not null then {text: s.japanese_text, romaji: s.romaji, meaning: s.indonesian_translation} else null end)[..2] AS examples
                 ORDER BY rand()
                 LIMIT toInteger($limit)
             """, level=level, limit=limit)
@@ -375,8 +375,8 @@ class GraphEngine:
                        g.level AS level,
                        collect(DISTINCT {id: r.id, description: r.description}) AS rules,
                        collect(DISTINCT {id: e.id, description: e.description}) AS common_errors,
-                       collect(DISTINCT {id: v.id, romaji: v.romaji, indonesian_meaning: v.indonesian_meaning}) AS vocab,
-                       collect(DISTINCT {id: t.id, name: t.name}) AS topics
+                       collect(DISTINCT case when v.id is not null then {id: v.id, romaji: v.romaji, indonesian_meaning: v.indonesian_meaning} else null end) AS vocab,
+                       collect(DISTINCT case when t.id is not null then {id: t.id, name: t.name} else null end) AS topics
             """, grammar_id=grammar_id)
             rec = result.single()
             return dict(rec) if rec else None
@@ -448,12 +448,12 @@ class GraphEngine:
                        g.level AS level,
                        collect(DISTINCT r2.description) AS rules,
                        collect(DISTINCT e.description) AS common_errors,
-                       collect(DISTINCT {id: t.id, name: t.name}) AS topics,
-                       collect(DISTINCT {
+                       collect(DISTINCT case when t.id is not null then {id: t.id, name: t.name} else null end) AS topics,
+                       collect(DISTINCT case when s.id is not null then {
                            text: s.japanese_text,
                            romaji: s.romaji,
                            meaning: s.indonesian_translation
-                       })[..2] AS examples
+                       } else null end)[..2] AS examples
                 LIMIT toInteger($limit)
             """, tokens=tokens, limit=limit)
             return [dict(r) for r in result]
@@ -469,7 +469,7 @@ class GraphEngine:
                        g.name AS name,
                        g.level AS level,
                        collect(DISTINCT r.description) AS rules,
-                       collect(DISTINCT {text: s.japanese_text, romaji: s.romaji, meaning: s.indonesian_translation})[..2] AS examples
+                       collect(DISTINCT case when s.id is not null then {text: s.japanese_text, romaji: s.romaji, meaning: s.indonesian_translation} else null end)[..2] AS examples
                 ORDER BY rand()
                 LIMIT toInteger($limit)
             """, level=level, limit=limit)
@@ -494,11 +494,11 @@ class GraphEngine:
                        g.level AS level,
                        collect(DISTINCT r.description) AS rules,
                        collect(DISTINCT e.description) AS common_errors,
-                       collect(DISTINCT {
+                       collect(DISTINCT case when s.id is not null then {
                            text: s.japanese_text,
                            romaji: s.romaji,
                            meaning: s.indonesian_translation
-                       })[..3] AS examples
+                       } else null end)[..3] AS examples
                 LIMIT 1
             """, grammar_id=grammar_id)
             rec = result.single()
@@ -525,8 +525,8 @@ class GraphEngine:
                 OPTIONAL MATCH (k)<-[:WRITTEN_IN]-(v:Vocab)<-[:CONTAINS_VOCAB]-(sv:Sentence)
                 OPTIONAL MATCH (sk:Sentence)-[:CONTAINS_KANJI]->(k)
                 WITH k,
-                     collect(DISTINCT {text: sv.japanese_text, romaji: sv.romaji, meaning: sv.indonesian_translation}) AS via_vocab,
-                     collect(DISTINCT {text: sk.japanese_text, romaji: sk.romaji, meaning: sk.indonesian_translation}) AS via_direct
+                     collect(DISTINCT case when sv.id is not null then {text: sv.japanese_text, romaji: sv.romaji, meaning: sv.indonesian_translation} else null end) AS via_vocab,
+                     collect(DISTINCT case when sk.id is not null then {text: sk.japanese_text, romaji: sk.romaji, meaning: sk.indonesian_translation} else null end) AS via_direct
                 RETURN k.id AS id,
                        k.onyomi AS onyomi,
                        k.kunyomi AS kunyomi,
@@ -557,9 +557,10 @@ class GraphEngine:
                     s.updated_at = timestamp()
             """, student_id=student_id, topic_id=topic_id)
 
-    def update_node_status(self, student_id: str, node_id: str, status: str):
+    def update_node_status(self, student_id: str, node_id: str, status: str, p_mastered: float = None):
         """
         Update relasi status (LEARNED | MASTERED | STRUGGLING) antara Student dan node materi.
+        Juga menyimpan nilai probabilitas penguasaan kognitif p_mastered jika diberikan.
 
         Strategi satu-session:
           1. MERGE student agar ada.
@@ -588,20 +589,37 @@ class GraphEngine:
                 session.run("""
                     MERGE (s:Student {id: $student_id})
                     MATCH (n) WHERE n.id = $node_id AND (n:Vocab OR n:Grammar OR n:Kanji)
-                    MERGE (s)-[:LEARNED]->(n)
-                """, student_id=student_id, node_id=node_id)
+                    MERGE (s)-[r:LEARNED]->(n)
+                    SET r.p_mastered = $p_mastered
+                """, student_id=student_id, node_id=node_id, p_mastered=p_mastered)
             elif status == "MASTERED":
                 session.run("""
                     MERGE (s:Student {id: $student_id})
                     MATCH (n) WHERE n.id = $node_id AND (n:Vocab OR n:Grammar OR n:Kanji)
-                    MERGE (s)-[:MASTERED]->(n)
-                """, student_id=student_id, node_id=node_id)
+                    MERGE (s)-[r:MASTERED]->(n)
+                    SET r.p_mastered = $p_mastered
+                """, student_id=student_id, node_id=node_id, p_mastered=p_mastered)
             elif status == "STRUGGLING":
                 session.run("""
                     MERGE (s:Student {id: $student_id})
                     MATCH (n) WHERE n.id = $node_id AND (n:Vocab OR n:Grammar OR n:Kanji)
-                    MERGE (s)-[:STRUGGLING]->(n)
-                """, student_id=student_id, node_id=node_id)
+                    MERGE (s)-[r:STRUGGLING]->(n)
+                    SET r.p_mastered = $p_mastered
+                """, student_id=student_id, node_id=node_id, p_mastered=p_mastered)
+
+    def get_node_belief(self, student_id: str, node_id: str) -> float | None:
+        """Ambil nilai p_mastered dari relasi Student dengan node tertentu."""
+        with self.driver.session() as session:
+            result = session.run("""
+                MATCH (s:Student {id: $student_id})-[r:LEARNED|MASTERED|STRUGGLING]->(n)
+                WHERE n.id = $node_id
+                RETURN r.p_mastered AS p_mastered
+                LIMIT 1
+            """, student_id=student_id, node_id=node_id)
+            rec = result.single()
+            if rec and rec["p_mastered"] is not None:
+                return float(rec["p_mastered"])
+            return None
 
     def get_student_progress(self, student_id: str) -> dict | None:
         with self.driver.session() as session:
@@ -677,7 +695,7 @@ class GraphEngine:
                        n.indonesian_meaning AS indonesian_meaning,
                        n.name AS name,
                        n.level AS level,
-                       collect(DISTINCT {text: s.japanese_text, romaji: s.romaji, meaning: s.indonesian_translation})[..1] AS examples
+                       collect(DISTINCT case when s.id is not null then {text: s.japanese_text, romaji: s.romaji, meaning: s.indonesian_translation} else null end)[..1] AS examples
                 ORDER BY rand()
                 LIMIT toInteger($limit)
             """, student_id=student_id, limit=limit)

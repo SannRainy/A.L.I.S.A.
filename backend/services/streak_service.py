@@ -218,6 +218,42 @@ class StreakService:
             # Get goals
             goals = await StreakService.get_daily_goals(user_id)
 
+            # Count vocab and grammar progress from srs_items
+            vocab_progress = 0
+            grammar_progress = 0
+            try:
+                import datetime
+                utc_today_str = datetime.datetime.now(datetime.timezone.utc).date().isoformat()
+                local_today_str = datetime.date.today().isoformat()
+                
+                srs_resp = supabase.table("srs_items") \
+                    .select("node_type, last_reviewed, created_at") \
+                    .eq("user_id", user_id) \
+                    .execute()
+                    
+                if srs_resp.data:
+                    for item in srs_resp.data:
+                        is_today = False
+                        
+                        created_at = item.get("created_at")
+                        if created_at:
+                            if created_at.startswith(utc_today_str) or created_at.startswith(local_today_str):
+                                is_today = True
+                                
+                        last_reviewed = item.get("last_reviewed")
+                        if last_reviewed:
+                            if last_reviewed.startswith(utc_today_str) or last_reviewed.startswith(local_today_str):
+                                is_today = True
+                                
+                        if is_today:
+                            ntype = item.get("node_type", "")
+                            if ntype == "vocab":
+                                vocab_progress += 1
+                            elif ntype == "grammar":
+                                grammar_progress += 1
+            except Exception as srs_err:
+                logger.warning(f"Error counting daily vocab/grammar progress: {srs_err}")
+
             return {
                 "activity": activity,
                 "goals": goals,
@@ -227,6 +263,14 @@ class StreakService:
                     )),
                     "minutes_pct": min(100, round(
                         (activity.get("study_minutes", 0) / max(goals.get("study_minutes_target", 15), 1)) * 100
+                    )),
+                    "vocab_progress": vocab_progress,
+                    "grammar_progress": grammar_progress,
+                    "vocab_pct": min(100, round(
+                        (vocab_progress / max(goals.get("vocab_target", 10), 1)) * 100
+                    )),
+                    "grammar_pct": min(100, round(
+                        (grammar_progress / max(goals.get("grammar_target", 2), 1)) * 100
                     )),
                 },
             }

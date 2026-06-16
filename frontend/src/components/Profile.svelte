@@ -7,6 +7,153 @@
     import EquippedEmblems from "./EquippedEmblems.svelte";
 
     export let user;
+    import { onMount } from "svelte";
+
+    // ── Streak & Daily Goals State ──
+    let streakCalendar = [];
+    let dailyProgress = {
+        activity: { study_minutes: 0, items_reviewed: 0, quests_completed: 0, xp_earned: 0 },
+        goals: { vocab_target: 10, grammar_target: 2, review_target: 5, study_minutes_target: 15 },
+        completion: { review_pct: 0, minutes_pct: 0, vocab_progress: 0, grammar_progress: 0, vocab_pct: 0, grammar_pct: 0 }
+    };
+    let dailyGoals = {
+        vocab_target: 10,
+        grammar_target: 2,
+        review_target: 5,
+        study_minutes_target: 15
+    };
+    let loadingGoals = true;
+    let loadingCalendar = true;
+
+    // Daily Goals Modal Editing State
+    let isEditingGoals = false;
+    let editVocabTarget = 10;
+    let editGrammarTarget = 2;
+    let editReviewTarget = 5;
+    let editStudyMinutesTarget = 15;
+    let goalsError = "";
+    let goalsLoading = false;
+
+    async function loadStreakAndGoals() {
+        if (!user || !user.id) return;
+        try {
+            // Load Today's Progress
+            const progRes = await fetch(`http://localhost:8000/api/v1/daily-goals/progress/${user.id}`);
+            if (progRes.ok) {
+                const data = await progRes.json();
+                if (data.status === "success" && data.progress) {
+                    dailyProgress = data.progress;
+                    if (data.progress.goals) {
+                        dailyGoals = { ...data.progress.goals };
+                    }
+                }
+            }
+        } catch (e) {
+            console.error("Error fetching daily progress:", e);
+        } finally {
+            loadingGoals = false;
+        }
+
+        try {
+            // Load Streak Calendar (90 days heatmap)
+            const calRes = await fetch(`http://localhost:8000/api/v1/streak/calendar/${user.id}?days=90`);
+            if (calRes.ok) {
+                const data = await calRes.json();
+                if (data.status === "success" && data.calendar) {
+                    streakCalendar = data.calendar;
+                }
+            }
+        } catch (e) {
+            console.error("Error fetching streak calendar:", e);
+        } finally {
+            loadingCalendar = false;
+        }
+    }
+
+    onMount(() => {
+        loadStreakAndGoals();
+    });
+
+    // Helper functions for calendar heatmap
+    function getPast90Days() {
+        const list = [];
+        const today = new Date();
+        for (let i = 89; i >= 0; i--) {
+            const d = new Date();
+            d.setDate(today.getDate() - i);
+            const dateStr = d.toISOString().split('T')[0];
+            list.push(dateStr);
+        }
+        return list;
+    }
+
+    function getCalendarGrid() {
+        const list = getPast90Days();
+        const firstDate = new Date(list[0]);
+        const dayOfWeek = firstDate.getDay(); // 0 is Sunday, etc.
+        
+        // Pad the beginning with nulls so the columns align (Sunday is row 0, etc.)
+        const paddedList = [...Array(dayOfWeek).fill(null), ...list];
+        
+        // Slice into weeks of 7 days
+        const weeks = [];
+        for (let i = 0; i < paddedList.length; i += 7) {
+            weeks.push(paddedList.slice(i, i + 7));
+        }
+        return weeks;
+    }
+
+    function formatIndoDate(dateStr) {
+        if (!dateStr) return "";
+        const parts = dateStr.split('-');
+        if (parts.length !== 3) return dateStr;
+        const months = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agt", "Sep", "Okt", "Nov", "Des"];
+        const day = parseInt(parts[2]);
+        const month = months[parseInt(parts[1]) - 1];
+        const year = parts[0];
+        return `${day} ${month} ${year}`;
+    }
+
+    function startEditGoals() {
+        editVocabTarget = dailyGoals.vocab_target;
+        editGrammarTarget = dailyGoals.grammar_target;
+        editReviewTarget = dailyGoals.review_target;
+        editStudyMinutesTarget = dailyGoals.study_minutes_target;
+        goalsError = "";
+        isEditingGoals = true;
+    }
+
+    async function handleSaveGoals() {
+        if (editVocabTarget < 1 || editGrammarTarget < 1 || editReviewTarget < 1 || editStudyMinutesTarget < 1) {
+            goalsError = "Target harian minimal bernilai 1.";
+            return;
+        }
+        goalsLoading = true;
+        goalsError = "";
+        try {
+            const res = await fetch(`http://localhost:8000/api/v1/daily-goals/${user.id}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    vocab_target: parseInt(editVocabTarget),
+                    grammar_target: parseInt(editGrammarTarget),
+                    review_target: parseInt(editReviewTarget),
+                    study_minutes_target: parseInt(editStudyMinutesTarget)
+                })
+            });
+            if (!res.ok) throw new Error("Gagal menyimpan target.");
+            
+            // Re-fetch progress
+            await loadStreakAndGoals();
+            isEditingGoals = false;
+        } catch (e) {
+            goalsError = e.message || "Gagal memperbarui target harian.";
+        } finally {
+            goalsLoading = false;
+        }
+    }
+
+    $: calendarMap = new Map(streakCalendar.map(c => [c.study_date, c]));
 
     // ── Rank System (lebih granular, sesuai konteks skripsi Jepang) ──────────
     // Menggunakan sistem rank samurai yang lebih kaya untuk motivasi
@@ -334,6 +481,107 @@
                     <p class="text-[10px] text-slate-300 mt-2">Kombinasi dari progres kanji, vocab, dan grammar yang dikuasai.</p>
                 </div>
 
+                <!-- Target Belajar Harian (Daily Goals) -->
+                <h3 class="flex items-center justify-between text-xs font-black text-slate-300 uppercase tracking-[0.25em]">
+                    <span class="flex items-center gap-3">
+                        <span class="w-1.5 h-5 bg-gradient-to-b from-indigo-400 to-fuchsia-400 rounded-full"></span>
+                        Target Belajar Harian
+                    </span>
+                    <button 
+                        on:click={startEditGoals}
+                        class="text-[9px] font-black uppercase tracking-wider text-indigo-300 hover:text-white hover:bg-indigo-600 bg-indigo-900/40 border border-indigo-400/30 px-2.5 py-1 rounded-xl transition-all shadow-sm cursor-pointer"
+                    >
+                        ⚙️ Target
+                    </button>
+                </h3>
+                <div class="glass-card p-5 space-y-4">
+                    {#if loadingGoals}
+                        <div class="flex items-center justify-center py-6">
+                            <span class="text-xs text-slate-400 animate-pulse">Memuat target harian...</span>
+                        </div>
+                    {:else}
+                        <!-- Waktu Belajar (Study Time) -->
+                        <div class="space-y-1.5">
+                            <div class="flex justify-between items-baseline text-xs">
+                                <span class="font-bold text-slate-200">⏱️ Waktu Belajar</span>
+                                <span class="text-slate-300 font-medium">{dailyProgress.activity.study_minutes} / {dailyProgress.goals.study_minutes_target} menit</span>
+                            </div>
+                            <div class="relative w-full h-3 bg-slate-700/60 rounded-full overflow-hidden border border-white/10">
+                                <div class="h-full bg-gradient-to-r from-blue-400 to-cyan-400 rounded-full transition-all duration-700 relative"
+                                     style="width: {dailyProgress.completion.minutes_pct}%">
+                                    {#if dailyProgress.completion.minutes_pct >= 100}
+                                        <div class="absolute inset-0 bg-white/20 animate-pulse"></div>
+                                    {/if}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Ulasan Kartu (Review Target) -->
+                        <div class="space-y-1.5">
+                            <div class="flex justify-between items-baseline text-xs">
+                                <span class="font-bold text-slate-200">🗂️ Ulasan Kartu (SRS)</span>
+                                <span class="text-slate-300 font-medium">{dailyProgress.activity.items_reviewed} / {dailyProgress.goals.review_target} kartu</span>
+                            </div>
+                            <div class="relative w-full h-3 bg-slate-700/60 rounded-full overflow-hidden border border-white/10">
+                                <div class="h-full bg-gradient-to-r from-indigo-400 to-purple-400 rounded-full transition-all duration-700 relative"
+                                     style="width: {dailyProgress.completion.review_pct}%">
+                                    {#if dailyProgress.completion.review_pct >= 100}
+                                        <div class="absolute inset-0 bg-white/20 animate-pulse"></div>
+                                    {/if}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Kosakata Baru (Vocab Target) -->
+                        <div class="space-y-1.5">
+                            <div class="flex justify-between items-baseline text-xs">
+                                <span class="font-bold text-slate-200">語彙 Kosakata Baru</span>
+                                <span class="text-slate-300 font-medium">{dailyProgress.completion.vocab_progress} / {dailyProgress.goals.vocab_target} kata</span>
+                            </div>
+                            <div class="relative w-full h-3 bg-slate-700/60 rounded-full overflow-hidden border border-white/10">
+                                <div class="h-full bg-gradient-to-r from-emerald-400 to-teal-400 rounded-full transition-all duration-700 relative"
+                                     style="width: {dailyProgress.completion.vocab_pct}%">
+                                    {#if dailyProgress.completion.vocab_pct >= 100}
+                                        <div class="absolute inset-0 bg-white/20 animate-pulse"></div>
+                                    {/if}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Grammar (Grammar Target) -->
+                        <div class="space-y-1.5">
+                            <div class="flex justify-between items-baseline text-xs">
+                                <span class="font-bold text-slate-200">文法 Tata Bahasa</span>
+                                <span class="text-slate-300 font-medium">{dailyProgress.completion.grammar_progress} / {dailyProgress.goals.grammar_target} node</span>
+                            </div>
+                            <div class="relative w-full h-3 bg-slate-700/60 rounded-full overflow-hidden border border-white/10">
+                                <div class="h-full bg-gradient-to-r from-rose-400 to-pink-400 rounded-full transition-all duration-700 relative"
+                                     style="width: {dailyProgress.completion.grammar_pct}%">
+                                    {#if dailyProgress.completion.grammar_pct >= 100}
+                                        <div class="absolute inset-0 bg-white/20 animate-pulse"></div>
+                                    {/if}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- XP Harian (50 XP Target) -->
+                        <div class="space-y-1.5">
+                            <div class="flex justify-between items-baseline text-xs">
+                                <span class="font-bold text-slate-200">🔥 XP Hari Ini</span>
+                                <span class="text-slate-300 font-medium">{dailyProgress.activity.xp_earned} / 50 XP</span>
+                            </div>
+                            <div class="relative w-full h-3 bg-slate-700/60 rounded-full overflow-hidden border border-white/10">
+                                <div class="h-full bg-gradient-to-r from-amber-400 to-orange-400 rounded-full transition-all duration-700 relative"
+                                     style="width: {Math.min(100, Math.round((dailyProgress.activity.xp_earned / 50) * 100))}%">
+                                    {#if dailyProgress.activity.xp_earned >= 50}
+                                        <div class="absolute inset-0 bg-white/20 animate-pulse"></div>
+                                    {/if}
+                                </div>
+                            </div>
+                        </div>
+                    {/if}
+                </div>
+
                 <!-- Radar Penguasaan -->
                 <h3 class="flex items-center gap-3 text-xs font-black text-slate-300 uppercase tracking-[0.25em]">
                     <span class="w-1.5 h-5 bg-fuchsia-400 rounded-full"></span>
@@ -341,6 +589,81 @@
                 </h3>
                 <div class="glass-card p-6 flex justify-center">
                     <RadarChart profile={$profile} />
+                </div>
+
+                <!-- Kalender Aktivitas Belajar (Heatmap) -->
+                <h3 class="flex items-center gap-3 text-xs font-black text-slate-300 uppercase tracking-[0.25em]">
+                    <span class="w-1.5 h-5 bg-indigo-400 rounded-full"></span>
+                    Kalender Aktivitas Belajar
+                </h3>
+                <div class="glass-card p-5 overflow-hidden">
+                    {#if loadingCalendar}
+                        <div class="flex items-center justify-center py-6">
+                            <span class="text-xs text-slate-400 animate-pulse">Memuat kalender aktivitas...</span>
+                        </div>
+                    {:else}
+                        <div class="flex gap-1.5 overflow-x-auto py-2 pr-1 custom-scroll max-w-full">
+                            <!-- Day names column -->
+                            <div class="flex flex-col justify-between text-[8px] font-bold text-slate-400 pr-1 select-none pt-2 pb-2">
+                                <span>Min</span>
+                                <span>Sel</span>
+                                <span>Kam</span>
+                                <span>Sab</span>
+                            </div>
+                            
+                            {#each getCalendarGrid() as week}
+                                <div class="flex flex-col gap-1 shrink-0">
+                                    {#each week as dateStr}
+                                        {#if dateStr === null}
+                                            <div class="w-3 h-3 rounded-sm bg-transparent"></div>
+                                        {:else}
+                                            {@const activity = calendarMap.get(dateStr)}
+                                            {@const xp = activity?.xp_earned ?? 0}
+                                            {@const minutes = activity?.study_minutes ?? 0}
+                                            {@const reviews = activity?.items_reviewed ?? 0}
+                                            {@const bgClass = 
+                                                xp === 0 ? 'bg-slate-700/30' :
+                                                xp <= 15 ? 'bg-indigo-900/40 border border-indigo-500/20' :
+                                                xp <= 35 ? 'bg-indigo-700/60 border border-indigo-400/30' :
+                                                xp <= 70 ? 'bg-indigo-500 shadow-[0_0_6px_rgba(99,102,241,0.3)]' :
+                                                'bg-fuchsia-500 shadow-[0_0_8px_rgba(217,70,239,0.5)] border border-fuchsia-300/30'}
+                                            
+                                            <div 
+                                                class="w-3 h-3 rounded-sm {bgClass} transition-all duration-300 hover:scale-125 relative group cursor-pointer"
+                                            >
+                                                <!-- Premium Tooltip on hover -->
+                                                <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 hidden group-hover:block z-[100] bg-slate-900/95 border border-slate-700 rounded-xl p-3 shadow-xl backdrop-blur-md text-[10px] text-slate-200 font-semibold pointer-events-none select-none">
+                                                    <p class="font-black text-indigo-400 text-[11px] mb-1">{formatIndoDate(dateStr)}</p>
+                                                    {#if xp > 0}
+                                                        <div class="space-y-0.5">
+                                                            <p class="text-white">✨ XP: {xp} XP</p>
+                                                            <p>⏱️ Belajar: {minutes} menit</p>
+                                                            <p>🗂️ Review: {reviews} kartu</p>
+                                                        </div>
+                                                    {:else}
+                                                        <p class="text-slate-400 italic">Tidak ada aktivitas belajar</p>
+                                                    {/if}
+                                                </div>
+                                            </div>
+                                        {/if}
+                                    {/each}
+                                </div>
+                            {/each}
+                        </div>
+                        
+                        <div class="flex justify-between items-center text-[10px] text-slate-400 mt-3 border-t border-slate-700/30 pt-2 select-none">
+                            <span>90 Hari Terakhir</span>
+                            <div class="flex items-center gap-1.5">
+                                <span>Mulai</span>
+                                <div class="w-2.5 h-2.5 rounded-sm bg-slate-700/30"></div>
+                                <div class="w-2.5 h-2.5 rounded-sm bg-indigo-900/40 border border-indigo-500/20"></div>
+                                <div class="w-2.5 h-2.5 rounded-sm bg-indigo-700/60 border border-indigo-400/30"></div>
+                                <div class="w-2.5 h-2.5 rounded-sm bg-indigo-500"></div>
+                                <div class="w-2.5 h-2.5 rounded-sm bg-fuchsia-500"></div>
+                                <span>Rajin 🔥</span>
+                            </div>
+                        </div>
+                    {/if}
                 </div>
 
                 <!-- Status Knowledge Graph -->
@@ -627,6 +950,116 @@
                     class="px-5 py-2.5 bg-gradient-to-r from-indigo-500 to-fuchsia-500 text-white font-bold rounded-xl shadow-lg hover:shadow-indigo-500/25 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 border-none text-sm cursor-pointer"
                 >
                     {editLoading ? 'Menyimpan...' : 'Simpan Perubahan'}
+                </button>
+            </div>
+        </div>
+    </div>
+{/if}
+
+<!-- Edit Daily Goals Modal -->
+{#if isEditingGoals}
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-md" transition:fade={{ duration: 200 }}>
+        <!-- Modal Backdrop click to close -->
+        <button 
+            type="button"
+            class="absolute inset-0 w-full h-full cursor-default bg-transparent border-none" 
+            on:click={() => isEditingGoals = false}
+            aria-label="Tutup modal"
+        ></button>
+        
+        <div class="bg-white/95 backdrop-blur-2xl border border-white/50 rounded-[2.5rem] w-full max-w-md p-6 md:p-8 shadow-2xl relative z-10 flex flex-col max-h-[90vh] overflow-hidden" transition:fly={{ y: 20, duration: 300 }}>
+            <!-- Modal Header -->
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+                    🎯 Sesuaikan Target Harian
+                </h3>
+                <button 
+                    type="button"
+                    on:click={() => isEditingGoals = false} 
+                    class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-700 flex items-center justify-center transition-all border-none font-bold cursor-pointer"
+                    aria-label="Tutup"
+                >
+                    ✕
+                </button>
+            </div>
+
+            <!-- Modal Content - Scrollable -->
+            <div class="flex-1 overflow-y-auto pr-2 custom-scroll space-y-4">
+                {#if goalsError}
+                    <div class="p-3.5 bg-rose-50 border border-rose-100 rounded-2xl text-xs font-bold text-rose-600 flex items-center gap-2">
+                        ⚠️ {goalsError}
+                    </div>
+                {/if}
+
+                <!-- Waktu Belajar Target -->
+                <div class="flex flex-col gap-1.5">
+                    <label for="edit-study-minutes-target" class="text-xs font-black text-slate-400 uppercase tracking-wider">⏱️ Target Waktu Belajar (Menit)</label>
+                    <input 
+                        id="edit-study-minutes-target" 
+                        type="number" 
+                        bind:value={editStudyMinutesTarget} 
+                        class="w-full px-4 py-3 bg-slate-100/80 border border-slate-200 rounded-2xl text-sm font-medium text-slate-800 focus:outline-none focus:border-indigo-500 focus:bg-white transition-all shadow-inner" 
+                        min="1" 
+                        max="180" 
+                    />
+                </div>
+
+                <!-- Review Target -->
+                <div class="flex flex-col gap-1.5">
+                    <label for="edit-review-target" class="text-xs font-black text-slate-400 uppercase tracking-wider">🗂️ Target Review Kartu (SRS)</label>
+                    <input 
+                        id="edit-review-target" 
+                        type="number" 
+                        bind:value={editReviewTarget} 
+                        class="w-full px-4 py-3 bg-slate-100/80 border border-slate-200 rounded-2xl text-sm font-medium text-slate-800 focus:outline-none focus:border-indigo-500 focus:bg-white transition-all shadow-inner" 
+                        min="1" 
+                        max="100" 
+                    />
+                </div>
+
+                <!-- Vocab Target -->
+                <div class="flex flex-col gap-1.5">
+                    <label for="edit-vocab-target" class="text-xs font-black text-slate-400 uppercase tracking-wider">語彙 Target Kosakata Baru</label>
+                    <input 
+                        id="edit-vocab-target" 
+                        type="number" 
+                        bind:value={editVocabTarget} 
+                        class="w-full px-4 py-3 bg-slate-100/80 border border-slate-200 rounded-2xl text-sm font-medium text-slate-800 focus:outline-none focus:border-indigo-500 focus:bg-white transition-all shadow-inner" 
+                        min="1" 
+                        max="50" 
+                    />
+                </div>
+
+                <!-- Grammar Target -->
+                <div class="flex flex-col gap-1.5">
+                    <label for="edit-grammar-target" class="text-xs font-black text-slate-400 uppercase tracking-wider">文法 Target Tata Bahasa (Node)</label>
+                    <input 
+                        id="edit-grammar-target" 
+                        type="number" 
+                        bind:value={editGrammarTarget} 
+                        class="w-full px-4 py-3 bg-slate-100/80 border border-slate-200 rounded-2xl text-sm font-medium text-slate-800 focus:outline-none focus:border-indigo-500 focus:bg-white transition-all shadow-inner" 
+                        min="1" 
+                        max="20" 
+                    />
+                </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="flex justify-end gap-3 mt-6 pt-4 border-t border-slate-100">
+                <button 
+                    type="button" 
+                    on:click={() => isEditingGoals = false} 
+                    class="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold rounded-xl transition-all border-none text-sm cursor-pointer"
+                >
+                    Batal
+                </button>
+                <button 
+                    type="button" 
+                    on:click={handleSaveGoals} 
+                    disabled={goalsLoading}
+                    class="px-5 py-2.5 bg-gradient-to-r from-indigo-500 to-fuchsia-500 text-white font-bold rounded-xl shadow-lg hover:shadow-indigo-500/25 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 border-none text-sm cursor-pointer"
+                >
+                    {goalsLoading ? 'Menyimpan...' : 'Simpan Target'}
                 </button>
             </div>
         </div>

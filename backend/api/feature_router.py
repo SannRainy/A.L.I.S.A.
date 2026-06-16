@@ -12,7 +12,6 @@ from services.streak_service import StreakService
 from services.placement_data import get_placement_questions, calculate_placement_result
 from services.grammar_checker import GrammarCheckerService
 from services.reading_data import get_reading_passages, get_passage_by_id
-from services.bkt_engine import BKTEngine
 from core.supabase_client import supabase
 
 logger = logging.getLogger(__name__)

@@ -4,11 +4,15 @@
     export let prerequisiteAlert = { show: false }; // { show, levelTitle, missingNodes, source }
 
     import { profile } from "../stores/profile_store";
+    import { user } from "../stores/auth_store";
     import { fade, fly } from "svelte/transition";
-    import { createEventDispatcher } from "svelte";
+    import { createEventDispatcher, onMount } from "svelte";
 
     const dispatch = createEventDispatcher();
 
+    // ── SRS Due Count ──
+    let srsDueCount = 0;
+    
     // ── Kanji Dojo Stats (dari localStorage, sama sumber dengan KanjiStudyMode) ──
     let kanjiMasteredSets = 0;
     if (typeof window !== 'undefined') {
@@ -17,6 +21,20 @@
         } catch {}
     }
     $: kanjiProgress = Math.round((kanjiMasteredSets / 13) * 100);
+
+    onMount(async () => {
+        if ($user) {
+            try {
+                const res = await fetch(`http://localhost:8000/api/v1/srs/due/${$user.id}`);
+                const data = await res.json();
+                if (data.status === "success" && data.items) {
+                    srsDueCount = data.items.length;
+                }
+            } catch (e) {
+                console.warn("Gagal mengambil data SRS due:", e);
+            }
+        }
+    });
 
     $: completedIds = $profile.completed_quests ? $profile.completed_quests.map(q => q.level_id) : [];
     $: completedQuests = $profile.completed_quests || [];
@@ -176,6 +194,29 @@
         </div>
     </div>
 
+    <!-- ── PLACEMENT TEST BANNER ── -->
+    {#if $profile && $profile.placement_completed === false}
+        <div class="w-full max-w-md mx-auto mb-6 relative rounded-[1.5rem] p-[1.5px] overflow-hidden shadow-xl"
+             style="background: linear-gradient(135deg, rgba(99,102,241,0.6), rgba(217,70,239,0.5), rgba(99,102,241,0.3));"
+             in:fade>
+            <div class="bg-slate-900/60 backdrop-blur-xl rounded-[1.4rem] p-5 flex items-center gap-4 relative overflow-hidden">
+                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-fuchsia-500 flex items-center justify-center text-xl shrink-0 shadow-lg border border-white/30 z-10">
+                    🎓
+                </div>
+                <div class="flex-grow text-left z-10">
+                    <h3 class="font-black text-white text-sm">Tes Penempatan (Placement Test)</h3>
+                    <p class="text-white/60 text-xs mt-0.5 leading-snug">Ingin melompati level-level dasar? Cari tahu kemampuanmu sekarang.</p>
+                    <button
+                        on:click={() => dispatch('openPlacementTest')}
+                        class="mt-2 text-xs font-black text-indigo-300 hover:text-indigo-200 uppercase tracking-wider transition cursor-pointer"
+                    >
+                        ▶ Mulai Tes Penempatan
+                    </button>
+                </div>
+            </div>
+        </div>
+    {/if}
+
     <!-- ── KANJI DOJO Entry Card ── -->
     <button
         on:click={() => dispatch('openKanjiDojo')}
@@ -211,6 +252,51 @@
 
                 <!-- Arrow -->
                 <div class="w-8 h-8 rounded-xl bg-white/10 flex items-center justify-center text-amber-400 shrink-0 z-10 group-hover:bg-amber-500/20 transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </button>
+
+    <!-- ── SRS REVIEW DOJO Entry Card ── -->
+    <button
+        on:click={() => dispatch('openSrsDojo')}
+        class="w-full max-w-md mx-auto mb-10 group block"
+    >
+        <div class="relative rounded-[1.5rem] p-[1.5px] overflow-hidden shadow-xl transition-all duration-300 group-hover:scale-[1.02] group-hover:shadow-2xl"
+             style="background: linear-gradient(135deg, rgba(16,185,129,0.6), rgba(20,184,166,0.5), rgba(16,185,129,0.3));">
+            <div class="bg-slate-900/60 backdrop-blur-xl rounded-[1.4rem] p-5 flex items-center gap-5 relative overflow-hidden">
+                <!-- Ambient glow -->
+                <div class="absolute inset-0 bg-gradient-to-r from-emerald-500/10 to-teal-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+
+                <!-- Icon -->
+                <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-2xl shrink-0 shadow-lg shadow-emerald-500/30 border border-white/20 z-10 text-white">
+                    🗂️
+                </div>
+
+                <!-- Info -->
+                <div class="flex-grow text-left z-10 min-w-0">
+                    <div class="flex items-center gap-2 mb-1">
+                        <h3 class="font-black text-white text-base tracking-tight">SRS Review Dojo</h3>
+                        <span class="px-2 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-[9px] font-black text-emerald-300 uppercase tracking-widest">SM-2 Spaced Repetition</span>
+                    </div>
+                    <p class="text-white/50 text-xs font-medium leading-snug">Ulas kembali materi yang sudah jatuh tempo agar tidak lupa</p>
+                    
+                    <div class="mt-2 flex items-center gap-1.5">
+                        {#if srsDueCount > 0}
+                            <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                            <span class="text-[10px] font-black text-emerald-400 uppercase tracking-wider">{srsDueCount} kartu due hari ini</span>
+                        {:else}
+                            <span class="w-2.5 h-2.5 rounded-full bg-slate-500"></span>
+                            <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Semua kartu bersih!</span>
+                        {/if}
+                    </div>
+                </div>
+
+                <!-- Arrow -->
+                <div class="w-8 h-8 rounded-xl bg-white/10 flex items-center justify-center text-emerald-400 shrink-0 z-10 group-hover:bg-emerald-500/20 transition">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
                     </svg>
