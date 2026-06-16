@@ -85,23 +85,12 @@
             rom: "",
             id: "",
             correction: "",
-            user_jp: "",
-            user_rom: "",
-            user_id: "",
         };
         if (!raw) return result;
 
         // Koreksi
         const corrMatch = raw.match(/KOREKSI:[ \t]*(.+?)(?:\n|$)/i);
         if (corrMatch) result.correction = corrMatch[1].trim();
-
-        // USER turn fields
-        const userJpMatch = raw.match(/USER_JP:[ \t]*(.+?)(?:\n|$)/i);
-        const userRomMatch = raw.match(/USER_ROM:[ \t]*(.+?)(?:\n|$)/i);
-        const userIdMatch = raw.match(/USER_ID:[ \t]*(.+?)(?:\n|$)/i);
-        if (userJpMatch) result.user_jp = userJpMatch[1].trim();
-        if (userRomMatch) result.user_rom = userRomMatch[1].trim();
-        if (userIdMatch) result.user_id = userIdMatch[1].trim();
 
         // AI reply fields
         const jpMatch = raw.match(/^JP:[ \t]*(.+?)(?:\n|$)/im);
@@ -435,6 +424,9 @@
                     if (msg.audio_b64) bufferedAudio.push(msg.audio_b64);
                     halveRemainingTime();
                 }
+
+                const parsed = parseAiResponse(rawAccumulator);
+                updateTurn(parsed.jp, parsed.rom, parsed.id, msg.audio, parsed.correction);
             }
 
             if (msg.type === "user_translation") {
@@ -446,7 +438,6 @@
             }
 
             if (msg.type === "done") {
-                ws.removeEventListener("message", handler);
                 const parsed = parseAiResponse(rawAccumulator);
                 if (assistantTranslation.rom) parsed.rom = assistantTranslation.rom;
                 if (assistantTranslation.id) parsed.id = assistantTranslation.id;

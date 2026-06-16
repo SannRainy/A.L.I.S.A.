@@ -475,8 +475,11 @@ Jika tidak ada contoh sama sekali di konteks, tulis: "(Contoh kalimat belum ters
 _MODE_SPEAKING = """
 [MODE: SPEAKING PRACTICE — Latihan Percakapan Kasual]
 Kamu adalah Alisa, teman ngobrol ramah bergaya Onee-san yang membantu user berlatih berbicara bahasa Jepang secara kasual.
-- Jika user bicara bahasa Indonesia, tetap isi USER_JP dengan terjemahan JP-nya
-- Jika ada [KONTEKS WIKI NEO4J], gunakan kosakata dari situ untuk latihan percakapan
+Aturan KETAT:
+1. HANYA keluarkan kalimat balasanmu dalam bahasa Jepang (Hiragana/Katakana/Kanji).
+2. JANGAN sertakan terjemahan, romaji, atau prefix apapun (seperti JP:, ID:, dll).
+3. JANGAN PERNAH membocorkan, menyebutkan, atau menyalin tag [KONTEKS WIKI NEO4J]. Gunakan kosakata dari konteks secara natural tanpa menyebut sumbernya.
+4. Balas dengan maksimal 1-2 kalimat pendek yang natural dan diakhiri dengan pertanyaan balik.
 """
 
 
@@ -890,9 +893,13 @@ class LLMAgent:
             jp_val = re.sub(r'^(?:JP|JEPANG)\s*[:\uff1a]\s*', '', jp_val, flags=re.IGNORECASE).strip()
 
             if is_jp:
-                if not rom_val or any(word in rom_val.lower() for word in ["terjemahan", "arti", "bahasa", "indonesia"]):
-                    rom_val = self.generate_romaji_pykakasi(query)
+                # Force jp to be the original Japanese query to prevent LLM from truncating it
+                jp_val = query
+                # Force romaji to be generated from the full original query
+                rom_val = self.generate_romaji_pykakasi(query)
             else:
+                # Force id to be the original Indonesian/Latin query
+                id_val = query
                 if not rom_val or any(word in rom_val.lower() for word in ["terjemahan", "arti", "bahasa", "indonesia"]):
                     rom_val = self.generate_romaji_pykakasi(jp_val)
 
@@ -1488,6 +1495,8 @@ class LLMAgent:
                     visible = re.sub(r'<think>.*?</think>', '', full_content, flags=re.DOTALL)
                     visible = re.sub(r'<think>.*', '', visible, flags=re.DOTALL)
                     visible = re.sub(r'\|\|\|DATA.*', '', visible, flags=re.DOTALL)
+                    visible = re.sub(r'\[KONTEKS\s*WIKI\s*NEO4J\](?:.*?\n)?', '', visible, flags=re.IGNORECASE)
+                    visible = re.sub(r'\[konteks\s*wiki\s*neo4j\s*\](?:.*?\n)?', '', visible, flags=re.IGNORECASE)
 
                     new_text = visible[len(emitted_text):]
                     if not new_text:
@@ -1568,6 +1577,8 @@ class LLMAgent:
 
             visible_final = re.sub(r'<think>.*?</think>', '', full_content, flags=re.DOTALL).strip()
             visible_final = re.sub(r'\|\|\|DATA.*?DATA\|\|\|', '', visible_final, flags=re.DOTALL).strip()
+            visible_final = re.sub(r'\[KONTEKS\s*WIKI\s*NEO4J\](?:.*?\n)?', '', visible_final, flags=re.IGNORECASE).strip()
+            visible_final = re.sub(r'\[konteks\s*wiki\s*neo4j\s*\](?:.*?\n)?', '', visible_final, flags=re.IGNORECASE).strip()
 
             if student_id != "default_user" and full_content:
                 await SupabaseService.save_chat_log(student_id, "assistant", visible_final, mode)
