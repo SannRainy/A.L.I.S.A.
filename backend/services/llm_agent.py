@@ -199,7 +199,7 @@ async def _stream_hf_cloud(messages: list[dict], max_tokens: int = 512, mode: st
         client = InferenceClient(model=_hf_model_repo, token=_hf_token)
 
         extra_body = None
-        if "qwen3.5-9b" in _hf_model_repo.lower():
+        if "qwen3" in _hf_model_repo.lower():
             extra_body = {"chat_template_kwargs": {"enable_thinking": False}}
 
         def get_stream():
@@ -475,17 +475,6 @@ Jika tidak ada contoh sama sekali di konteks, tulis: "(Contoh kalimat belum ters
 _MODE_SPEAKING = """
 [MODE: SPEAKING PRACTICE — Latihan Percakapan Kasual]
 Kamu adalah Alisa, teman ngobrol ramah bergaya Onee-san yang membantu user berlatih berbicara bahasa Jepang secara kasual.
-Gunakan bahasa Indonesia santai (aku/kamu).
-
-BALAS SELALU dalam format PERSIS berikut ini (jangan ubah urutan, jangan tambah teks lain di luar format):
-JP: [balasan Alisa dalam bahasa Jepang kasual, 1-2 kalimat pendek]
-ROM: [romaji dari JP]
-ID: [terjemahan JP dalam bahasa Indonesia santai/kasual sehari-hari yang alami, luwes, dan tidak kaku. Contoh: gunakan kata 'minum kopi' bukan 'makan kopi', gunakan ungkapan santai seperti 'nih', 'lho', 'ya', dll.]
-
-Aturan tambahan:
-- Selalu kasual dan hangat, seperti teman ngobrol
-- Balasan singkat (1-2 kalimat)
-- Tanpa markdown, tanpa penjelasan materi, tanpa basa-basi
 - Jika user bicara bahasa Indonesia, tetap isi USER_JP dengan terjemahan JP-nya
 - Jika ada [KONTEKS WIKI NEO4J], gunakan kosakata dari situ untuk latihan percakapan
 """
@@ -832,21 +821,28 @@ class LLMAgent:
         self.voice_service = VoiceService()
         _get_kw_model()
 
-    async def translate_and_romaji_user_llm(self, query: str) -> dict:
+    async def translate_and_romaji_user_llm(self, query: str, is_query: bool = True) -> dict:
         import re
         is_jp = bool(re.search(r'[\u3040-\u30ff\u4e00-\u9fff\u3400-\u4dbf]', query))
-        if not is_jp:
-            return await self.voice_service.translate_and_romaji_user(query)
 
-        # Gunakan LLM untuk menerjemahkannya ke bahasa Indonesia kasual yang alami dan romaji
-        prompt = (
-            f"Terjemahkan teks Jepang berikut ke Bahasa Indonesia kasual/santai (sehari-hari) yang alami, "
-            f"dan berikan juga versi romaji-nya.\n"
-            f"Teks: {query}\n\n"
-            f"Format output harus berupa JSON seperti ini:\n"
-            f'{{"jp": "{query}", "rom": "<romaji>", "id": "<terjemahan bahasa indonesia kasual>"}}\n'
-            f"Hanya kembalikan JSON, tanpa penjelasan lain."
-        )
+        if is_jp:
+            prompt = (
+                f"Terjemahkan teks Jepang berikut ke Bahasa Indonesia kasual/santai (sehari-hari) yang alami, "
+                f"dan berikan juga versi romaji-nya.\n"
+                f"Teks: {query}\n\n"
+                f"Format output harus berupa JSON seperti ini:\n"
+                f'{{"jp": "{query}", "rom": "<romaji>", "id": "<terjemahan bahasa indonesia kasual>"}}\n'
+                f"Hanya kembalikan JSON, tanpa penjelasan lain."
+            )
+        else:
+            prompt = (
+                f"Terjemahkan teks Bahasa Indonesia berikut ke Bahasa Jepang kasual/santai, "
+                f"dan berikan juga versi romaji-nya.\n"
+                f"Teks: {query}\n\n"
+                f"Format output harus berupa JSON seperti ini:\n"
+                f'{{"jp": "<terjemahan bahasa jepang kasual>", "rom": "<romaji>", "id": "{query}"}}\n'
+                f"Hanya kembalikan JSON, tanpa penjelasan lain."
+            )
 
         try:
             if _active_provider == "hf_cloud":
@@ -855,7 +851,7 @@ class LLMAgent:
                 messages = [{"role": "user", "content": prompt}]
                 
                 extra_body = None
-                if "qwen3.5-9b" in _hf_model_repo.lower():
+                if "qwen3" in _hf_model_repo.lower():
                     extra_body = {"chat_template_kwargs": {"enable_thinking": False}}
 
                 def run_chat():
@@ -884,26 +880,34 @@ class LLMAgent:
 
             content = content.replace("```json", "").replace("```", "").strip()
             res = json.loads(content)
-            llm_jp = res.get("jp", query).strip()
-            llm_rom = res.get("rom", "").strip()
-            llm_id = res.get("id", "").strip()
+            jp_val = res.get("jp", query).strip()
+            rom_val = res.get("rom", "").strip()
+            id_val = res.get("id", query).strip()
 
             # Clean up potential LLM-generated prefixes in values
-            llm_rom = re.sub(r'^(?:ROM|ROMAJI)\s*[:\uff1a]\s*', '', llm_rom, flags=re.IGNORECASE).strip()
-            llm_id = re.sub(r'^(?:ID|ARTI)\s*[:\uff1a]\s*', '', llm_id, flags=re.IGNORECASE).strip()
+            rom_val = re.sub(r'^(?:ROM|ROMAJI)\s*[:\uff1a]\s*', '', rom_val, flags=re.IGNORECASE).strip()
+            id_val = re.sub(r'^(?:ID|ARTI)\s*[:\uff1a]\s*', '', id_val, flags=re.IGNORECASE).strip()
+            jp_val = re.sub(r'^(?:JP|JEPANG)\s*[:\uff1a]\s*', '', jp_val, flags=re.IGNORECASE).strip()
 
-            # Fallback to pykakasi only if romaji is empty or looks like an Indonesian translation
-            if not llm_rom or any(word in llm_rom.lower() for word in ["terjemahan", "arti", "bahasa", "indonesia"]):
-                llm_rom = self.generate_romaji_pykakasi(llm_jp)
+            if is_jp:
+                if not rom_val or any(word in rom_val.lower() for word in ["terjemahan", "arti", "bahasa", "indonesia"]):
+                    rom_val = self.generate_romaji_pykakasi(query)
+            else:
+                if not rom_val or any(word in rom_val.lower() for word in ["terjemahan", "arti", "bahasa", "indonesia"]):
+                    rom_val = self.generate_romaji_pykakasi(jp_val)
 
             return {
-                "jp": llm_jp,
-                "rom": llm_rom,
-                "id": llm_id
+                "jp": jp_val if jp_val else query,
+                "rom": rom_val,
+                "id": id_val if id_val else query
             }
         except Exception as e:
             logger.warning(f"translate_and_romaji_user_llm failed: {e}. Fallback to Google Translate.")
-            return await self.voice_service.translate_and_romaji_user(query)
+            try:
+                return await self.voice_service.translate_and_romaji_user(query)
+            except Exception as ex:
+                logger.error(f"Fallback translate_and_romaji_user also failed: {ex}")
+                return {"jp": query, "rom": self.generate_romaji_pykakasi(query) if is_jp else "", "id": query}
 
     def generate_romaji_pykakasi(self, jp_text: str) -> str:
         if not jp_text or not jp_text.strip():
@@ -1383,7 +1387,6 @@ class LLMAgent:
             return
 
         if mode == "speaking":
-            # For speaking mode: fetch grammar context from KG so correction can be validated
             if self.graph:
                 try:
                     tokens = await asyncio.to_thread(_tokenize, query)
@@ -1397,30 +1400,15 @@ class LLMAgent:
             else:
                 grammar_data, vocab_data, kanji_data = [], [], []
             kg_context = ""  # Still don't inject KG context into prompt — keep conversation natural
-
-            try:
-                user_trans = await self.translate_and_romaji_user_llm(query)
-            except Exception as e:
-                logger.error(f"[Speaking Manual Translate] failed: {e}")
-                user_trans = {"jp": query, "rom": "", "id": query}
         else:
             kg_context, vocab_data, grammar_data, kanji_data = await self._build_kg_context(
                 query, student_id, history, mode
             )
-            user_trans = None
 
         yield {"type": "status", "content": "Alisa sedang menganalisis materi..."}
         yield {"type": "metadata", "vocab": vocab_data, "grammar": grammar_data, "suggestions": []}
 
-        if user_trans:
-            yield {
-                "type": "user_translation",
-                "jp": user_trans["jp"],
-                "rom": user_trans["rom"],
-                "id": user_trans["id"]
-            }
-
-        query_for_llm = user_trans["jp"] if (mode == "speaking" and user_trans) else query
+        query_for_llm = query
         messages = self._build_messages(kg_context, history, query_for_llm, mode)
 
         # audio_tasks_queue menerima:
@@ -1513,34 +1501,10 @@ class LLMAgent:
                         line_stripped = line.strip()
 
                         if mode in _SPEAKING_MODES:
-                            if _LINE_JP_RE.match(line_stripped):
-                                current_jp_text = _extract_jp_from_line(line_stripped)
-                            
-                            # Mode speaking/voice: skip ROM:/ID: dll, hanya synthesize JP:
-                            if _LINE_SKIP_RE.match(line_stripped):
-                                # Intercept and overwrite Romaji
-                                if line_stripped.upper().startswith(("ROM:", "ROM：", "ROMAJI:", "ROMAJI：")):
-                                    try:
-                                        romaji = self.generate_romaji_pykakasi(current_jp_text)
-                                        line = f"ROM: {romaji}"
-                                    except Exception as e:
-                                        logger.warning(f"Failed to generate pykakasi Romaji for Alisa's reply: {e}")
-
-                                # Baris ROM:/ID:/dll — kirim sebagai dict (no audio) ke queue
-                                # agar ordering terjaga bersama baris JP yang butuh TTS
-                                await audio_tasks_queue.put({
-                                    "type": "sentence",
-                                    "content": line + '\n',
-                                    "audio_b64": None,
-                                })
-                                continue
-
-                            # Baris JP: atau baris bebas — kirim line asli (termasuk prefix JP:) ke TTS worker agar client bisa parse
                             if line.strip():
                                 task = asyncio.create_task(_tts_worker(line + '\n'))
                                 await audio_tasks_queue.put(task)
                             else:
-                                # Kosong setelah strip → kirim sebagai dict (no audio)
                                 await audio_tasks_queue.put({
                                     "type": "sentence",
                                     "content": line + '\n',
@@ -1576,37 +1540,8 @@ class LLMAgent:
 
                 # Flush sisa buffer
                 if sentence_buf and sentence_buf.strip():
-                    if mode in _SPEAKING_MODES:
-                        # Untuk speaking/voice: cek apakah sisa buffer adalah ROM:/ID:/dll
-                        remaining = sentence_buf.strip()
-                        if _LINE_SKIP_RE.match(remaining):
-                            content_to_send = sentence_buf
-                            if remaining.upper().startswith(("ROM:", "ROM：", "ROMAJI:", "ROMAJI：")):
-                                try:
-                                    romaji = self.generate_romaji_pykakasi(current_jp_text)
-                                    content_to_send = f"ROM: {romaji}"
-                                except Exception as e:
-                                    logger.warning(f"Failed to generate pykakasi Romaji for Alisa's reply: {e}")
-                            
-                            # Kirim sebagai dict (no audio) untuk menjaga ordering
-                            await audio_tasks_queue.put({
-                                "type": "sentence",
-                                "content": content_to_send,
-                                "audio_b64": None,
-                            })
-                        else:
-                            if sentence_buf.strip():
-                                task = asyncio.create_task(_tts_worker(sentence_buf))
-                                await audio_tasks_queue.put(task)
-                            else:
-                                await audio_tasks_queue.put({
-                                    "type": "sentence",
-                                    "content": sentence_buf,
-                                    "audio_b64": None,
-                                })
-                    else:
-                        task = asyncio.create_task(_tts_worker(sentence_buf))
-                        await audio_tasks_queue.put(task)
+                    task = asyncio.create_task(_tts_worker(sentence_buf))
+                    await audio_tasks_queue.put(task)
 
             except Exception as e:
                 logger.error(f"[WS] LLM producer error: {e}")
@@ -1631,12 +1566,37 @@ class LLMAgent:
                     self._process_db_updates(student_id, m.group(1).strip())
                 )
 
+            visible_final = re.sub(r'<think>.*?</think>', '', full_content, flags=re.DOTALL).strip()
+            visible_final = re.sub(r'\|\|\|DATA.*?DATA\|\|\|', '', visible_final, flags=re.DOTALL).strip()
+
             if student_id != "default_user" and full_content:
-                visible_final = re.sub(r'<think>.*?</think>', '', full_content, flags=re.DOTALL).strip()
-                visible_final = re.sub(r'\|\|\|DATA.*?DATA\|\|\|', '', visible_final, flags=re.DOTALL).strip()
                 await SupabaseService.save_chat_log(student_id, "assistant", visible_final, mode)
 
             if mode == "speaking":
+                # Translate user query in background now that LLM is idle
+                try:
+                    user_trans = await self.translate_and_romaji_user_llm(query, is_query=True)
+                    yield {
+                        "type": "user_translation",
+                        "jp": user_trans["jp"],
+                        "rom": user_trans["rom"],
+                        "id": user_trans["id"]
+                    }
+                except Exception as e:
+                    logger.error(f"[Background User Translate] failed: {e}")
+
+                # Translate Alisa's reply in background now that LLM is idle
+                try:
+                    alisa_trans = await self.translate_and_romaji_user_llm(visible_final, is_query=False)
+                    yield {
+                        "type": "assistant_translation",
+                        "jp": alisa_trans["jp"],
+                        "rom": alisa_trans["rom"],
+                        "id": alisa_trans["id"]
+                    }
+                except Exception as e:
+                    logger.error(f"[Background Alisa Translate] failed: {e}")
+
                 grammar_check = validate_grammar_correction(full_content, grammar_data, query)
                 yield {"type": "done", "grammar_check": grammar_check}
             else:
@@ -1783,7 +1743,7 @@ class LLMAgent:
                     {"role": "user", "content": prompt}
                 ]
                 extra_body = None
-                if "qwen3.5-9b" in _hf_model_repo.lower():
+                if "qwen3" in _hf_model_repo.lower():
                     extra_body = {"chat_template_kwargs": {"enable_thinking": False}}
 
                 def run_chat():

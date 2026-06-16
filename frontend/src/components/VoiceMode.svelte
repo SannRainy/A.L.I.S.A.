@@ -372,6 +372,7 @@
         if (!userText.trim() || isAiTurn) return;
         isAiTurn = true;
         aiTypingText = "";
+        let assistantTranslation = { rom: "", id: "" };
 
         startThinkingAnimation();
 
@@ -397,10 +398,7 @@
             .slice(-8)
             .map((t) => {
                 if (t.role === "alisa") {
-                    let aiContent = t.jp || "";
-                    if (t.rom) aiContent += `\nROM: ${t.rom}`;
-                    if (t.id) aiContent += `\nID: ${t.id}`;
-                    return { role: "assistant", content: aiContent };
+                    return { role: "assistant", content: t.jp || "" };
                 } else {
                     return { role: "user", content: t.jp || t.raw || "" };
                 }
@@ -443,9 +441,16 @@
                 updateUserTurnJP(userTurnIdx, msg.jp, msg.rom, msg.id);
             }
 
+            if (msg.type === "assistant_translation") {
+                assistantTranslation = { rom: msg.rom, id: msg.id };
+            }
+
             if (msg.type === "done") {
                 ws.removeEventListener("message", handler);
                 const parsed = parseAiResponse(rawAccumulator);
+                if (assistantTranslation.rom) parsed.rom = assistantTranslation.rom;
+                if (assistantTranslation.id) parsed.id = assistantTranslation.id;
+
                 const finalData = {
                     parsed,
                     grammar_check: msg.grammar_check || null,

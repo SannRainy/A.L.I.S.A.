@@ -25,7 +25,7 @@ class Settings(BaseSettings):
 
     # --- HuggingFace Cloud ---
     HF_TOKEN: str = ""
-    HF_MODEL_REPO: str = "Qwen/Qwen2.5-7B-Instruct"
+    HF_MODEL_REPO: str = "Qwen/Qwen3-4B-Instruct-2507"
 
     # --- Whisper STT (local path) ---
     # Jika diisi, model diload dari folder lokal (tidak butuh internet).
