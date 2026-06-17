@@ -284,6 +284,25 @@ async def get_placement_result(user_id: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@router.post("/placement/reset/{user_id}")
+async def reset_placement_test(user_id: str):
+    """Reset user's placement test status and results."""
+    try:
+        # 1. Delete placement results
+        supabase.table("placement_results").delete().eq("user_id", user_id).execute()
+
+        # 2. Update profile status
+        supabase.table("profiles").update({
+            "placement_completed": False
+        }).eq("id", user_id).execute()
+
+        return {"status": "success", "message": "Placement test reset successfully"}
+    except Exception as e:
+        logger.error(f"reset_placement_test error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+
 # ══════════════════════════════════════════════════════════════════════════════
 # STREAK & DAILY GOALS ENDPOINTS
 # ══════════════════════════════════════════════════════════════════════════════

@@ -80,6 +80,7 @@ class SupabaseService:
                     "role": "student",
                     "xp": 0,
                     "level": 1,
+                    "placement_completed": False,
                 }
                 supabase.table("profiles").insert(data).execute()
         except Exception as e:
