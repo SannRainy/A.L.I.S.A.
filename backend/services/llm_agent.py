@@ -19,6 +19,7 @@ from core.config import settings
 from services.voice_service import VoiceService
 from services.supabase_service import SupabaseService
 from logic.db_orchestrator import DBOrchestrator
+from services.romaji_utils import generate_romaji_hybrid
 
 logger = logging.getLogger(__name__)
 
@@ -900,8 +901,7 @@ class LLMAgent:
             else:
                 # Force id to be the original Indonesian/Latin query
                 id_val = query
-                if not rom_val or any(word in rom_val.lower() for word in ["terjemahan", "arti", "bahasa", "indonesia"]):
-                    rom_val = self.generate_romaji_pykakasi(jp_val)
+                rom_val = self.generate_romaji_pykakasi(jp_val)
 
             return {
                 "jp": jp_val if jp_val else query,
@@ -917,22 +917,8 @@ class LLMAgent:
                 return {"jp": query, "rom": self.generate_romaji_pykakasi(query) if is_jp else "", "id": query}
 
     def generate_romaji_pykakasi(self, jp_text: str) -> str:
-        if not jp_text or not jp_text.strip():
-            return ""
-        try:
-            import pykakasi
-            import re
-            kks = pykakasi.kakasi()
-            result = kks.convert(jp_text)
-            romaji_text = " ".join([item['hepburn'] for item in result]).strip()
-            romaji_text = romaji_text.replace("！", "!").replace("？", "?")
-            romaji_text = re.sub(r'\s+([.,!?;:])', r'\1', romaji_text)
-            if romaji_text:
-                romaji_text = romaji_text[0].upper() + romaji_text[1:]
-            return romaji_text
-        except Exception as e:
-            logger.error(f"pykakasi conversion error: {e}")
-            return jp_text
+        """Convert Japanese text to romaji using shared hybrid MeCab + pykakasi engine."""
+        return generate_romaji_hybrid(jp_text)
 
     # Prefix-prefiks yang harus di-skip dari TTS (jangan diucapkan)
     _TTS_SKIP_PREFIXES = (

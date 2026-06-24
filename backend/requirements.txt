@@ -49,6 +49,8 @@ keybert
 sentence-transformers
 deep-translator
 pykakasi
+mecab-python3
+unidic-lite
 
 # =============================================================
 # UTILITIES

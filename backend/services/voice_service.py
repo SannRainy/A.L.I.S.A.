@@ -175,16 +175,13 @@ class VoiceService:
             jp_text = jp_text or query
             id_text = id_text or query
 
-        # Convert JP to Romaji using pykakasi
+        # Convert JP to Romaji using hybrid MeCab + pykakasi engine
         romaji_text = ""
         try:
-            import pykakasi
-            kks = pykakasi.kakasi()
-            result = kks.convert(jp_text)
-            romaji_text = " ".join([item['hepburn'] for item in result]).capitalize().strip()
-            romaji_text = re.sub(r'\s+([.,!?;:])', r'\1', romaji_text)
+            from services.romaji_utils import generate_romaji_hybrid
+            romaji_text = generate_romaji_hybrid(jp_text)
         except Exception as e:
-            logger.error(f"[ManualTranslate] Kakasi romaji conversion failed: {e}")
+            logger.error(f"[ManualTranslate] Hybrid romaji conversion failed: {e}")
             romaji_text = jp_text
 
         return {
