@@ -165,7 +165,7 @@
         <!-- The Snake / Path Grid -->
         <!-- svelte-ignore a11y-click-events-have-key-events -->
         <!-- svelte-ignore a11y-no-static-element-interactions -->
-        <div class="flex-grow overflow-y-auto custom-scroll px-4 pb-12 relative" on:click={closeDrawer} role="presentation">
+        <div class="flex-grow overflow-y-auto custom-scroll px-4 pt-12 pb-12 relative" on:click={closeDrawer} role="presentation">
             <!-- Floating XP Popups -->
             {#each popups as pop (pop.id)}
                 <div class="absolute text-orange-400 font-bold text-2xl drop-shadow-md z-50 pointer-events-none" 
@@ -176,7 +176,7 @@
                 </div>
             {/each}
 
-            <div class="snake-path w-full max-w-md mx-auto relative mt-4">
+            <div class="snake-path w-full max-w-md mx-auto relative mt-8">
                 {#each chunkedNodes as chunk, rowIndex}
                     {@const hasSelectedNodeInRow = chunk.some(n => selectedNode && n.id === selectedNode.id)}
                     <div class="flex justify-between items-center w-full relative {rowIndex % 2 !== 0 ? 'flex-row-reverse' : 'flex-row'} mb-16 {hasSelectedNodeInRow ? 'z-40' : 'z-10'}">
@@ -223,7 +223,7 @@
 
                                 <!-- Hover Tooltip (Desktop) -->
                                 {#if !isMini}
-                                    <div class="absolute -top-12 opacity-0 group-hover:opacity-100 transition-opacity bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-[10px] whitespace-nowrap pointer-events-none z-20 shadow-lg text-white">
+                                    <div class="absolute -top-12 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-[10px] whitespace-nowrap pointer-events-none z-20 shadow-lg text-white">
                                         <span class="font-bold text-indigo-400">Status:</span> {node.status}<br>
                                         <span class="font-bold text-indigo-400">Tipe:</span> {node.type}
                                     </div>
