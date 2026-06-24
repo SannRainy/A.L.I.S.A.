@@ -292,12 +292,14 @@
 
                                                 <!-- Grammar Node details -->
                                                 {:else if selectedNode.type?.toLowerCase() === "grammar"}
-                                                    <div class="bg-slate-800/40 rounded-xl p-3 border border-slate-700/50 space-y-1.5">
-                                                        <span class="text-[8px] font-black text-slate-400 uppercase tracking-widest block mb-0.5">Aturan Pemakaian</span>
-                                                        {#each nodeDetails.rules as rule}
-                                                            <p class="text-[11px] text-slate-300 leading-relaxed italic border-l-2 border-indigo-500 pl-1.5">{rule}</p>
-                                                        {/each}
-                                                    </div>
+                                                    {#if nodeDetails.rules && nodeDetails.rules.filter(r => r && r.trim() !== "").length > 0}
+                                                        <div class="bg-slate-800/40 rounded-xl p-3 border border-slate-700/50 space-y-1.5">
+                                                            <span class="text-[8px] font-black text-slate-400 uppercase tracking-widest block mb-0.5">Aturan Pemakaian</span>
+                                                            {#each nodeDetails.rules.filter(r => r && r.trim() !== "") as rule}
+                                                                <p class="text-[11px] text-slate-300 leading-relaxed italic border-l-2 border-indigo-500 pl-1.5">{rule}</p>
+                                                            {/each}
+                                                        </div>
+                                                    {/if}
                                                 {/if}
 
                                                 <!-- Example Sentence (shared) -->

@@ -286,9 +286,10 @@ class GraphEngine:
                 MATCH (g:Grammar)
                 WITH g,
                      toLower(replace(replace(g.id, '〜', ''), '~', '')) AS norm_id,
-                     toLower(replace(replace(g.name, '〜', ''), '~', '')) AS norm_name
-                WHERE norm_id CONTAINS toLower($word)
-                   OR norm_name CONTAINS toLower($word)
+                     toLower(replace(replace(g.name, '〜', ''), '~', '')) AS norm_name,
+                     toLower(replace(replace($word, '〜', ''), '~', '')) AS norm_word
+                WHERE norm_id CONTAINS norm_word
+                   OR norm_name CONTAINS norm_word
                 OPTIONAL MATCH (g)-[:HAS_RULE]->(r:Rule)
                 OPTIONAL MATCH (g)-[:HAS_COMMON_ERROR]->(e:ErrorPattern)
                 OPTIONAL MATCH (g)<-[:APPLIES_GRAMMAR]-(s:Sentence)
@@ -306,11 +307,12 @@ class GraphEngine:
                            meaning: s.indonesian_translation
                        } else null end)[..2] AS examples,
                        norm_id,
-                       norm_name
+                       norm_name,
+                       norm_word
                 ORDER BY
                   CASE
-                    WHEN norm_id = toLower($word) OR norm_name = toLower($word) THEN 0
-                    WHEN norm_id STARTS WITH toLower($word) OR norm_name STARTS WITH toLower($word) THEN 1
+                    WHEN norm_id = norm_word OR norm_name = norm_word THEN 0
+                    WHEN norm_id STARTS WITH norm_word OR norm_name STARTS WITH norm_word THEN 1
                     ELSE 2
                   END ASC,
                   size(norm_id) ASC

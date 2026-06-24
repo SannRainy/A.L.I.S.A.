@@ -181,7 +181,7 @@ async def get_kg_student_view(user_id: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/kg/shortest-path/{user_id}/{target_node_id}")
+@router.get("/kg/shortest-path/{user_id}/{target_node_id:path}")
 async def get_shortest_path(user_id: str, target_node_id: str):
     """Find shortest learning path from current position to target node."""
     if not graph:

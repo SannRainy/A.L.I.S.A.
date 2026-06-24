@@ -449,7 +449,7 @@ async def get_mastered_nodes(student_id: str):
     
     return {"student_id": student_id, "mastered_nodes": mastered_nodes, "kg_available": graph is not None}
 
-@router.get("/kg/node/{node_id}")
+@router.get("/kg/node/{node_id:path}")
 async def get_kg_node_detail(node_id: str):
     """Ambil data detail dari suatu node kognitif (Vocab/Grammar/Kanji) di Neo4j."""
     if not graph:
