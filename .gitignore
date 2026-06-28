@@ -138,6 +138,8 @@ backend/data_pipeline/*.csv
 backend/data_pipeline/document/
 backend/data_pipeline/backup_before_enrichment/
 
+DOC SKRIPSI/
+
 # TensorRT & Whisper GPU local cache directories
 trt_cache/
 test_trt_cache_dir/

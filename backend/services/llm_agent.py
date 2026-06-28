@@ -382,7 +382,7 @@ def _get_kw_model():
     try:
         from keybert import KeyBERT
         from sentence_transformers import SentenceTransformer
-        return KeyBERT(model=SentenceTransformer("paraphrase-MiniLM-L3-v2"))
+        return KeyBERT(model=SentenceTransformer("paraphrase-MiniLM-L3-v2", device="cpu"))
     except Exception:
         return None
 
@@ -431,7 +431,7 @@ Gunakan bahasa Indonesia santai (aku/kamu), natural, dan to-the-point.
 
 ATURAN:
 1. Jawab dalam bahasa Indonesia. Sisipkan istilah Jepang hanya saat menjelaskan materi.
-2. Gunakan HANYA data dari [KONTEKS WIKI NEO4J]. Jika materi tidak ada di konteks, jawab: "Maaf ya, materi itu belum ada di database-ku 🙏"
+2. Gunakan HANYA data dari [KONTEKS WIKI NEO4J]. Jika user meminta sesuatu di luar pembelajaran Bahasa Jepang N5 (seperti membuat file/kode HTML, coding, matematika, dll) ATAU materi tidak ada di konteks, kamu WAJIB menolak secara to-the-point dan minta maaf: "Maaf ya, aku Alisa khusus fokus membantu kamu belajar Bahasa Jepang N5 saja 🙏 Materi atau permintaan itu tidak ada di database-ku."
 3. Jawab singkat, tanpa basa-basi, jangan lupa emote interaktif.
 4. Untuk Kanji, jelaskan On'yomi dan Kun'yomi jika tersedia di konteks.
 5. Respons harus alami seperti tutor sungguhan, bukan mesin.
@@ -1190,19 +1190,19 @@ class LLMAgent:
             if mode in ("speaking", "voice"):
                 return "[KONTEKS WIKI NEO4J] KOSONG. Gunakan kosakata N5 dasar.", vocab_data, grammar_data, kanji_data
 
-            return "[KONTEKS WIKI NEO4J] Tidak ada data materi spesifik. Jika user hanya menyapa atau ngobrol santai, balas secara natural dan ramah. Jika user bertanya tentang materi Jepang spesifik (kanji/kosakata/grammar), baru sampaikan bahwa materinya belum ada di database.", vocab_data, grammar_data, kanji_data
+            return "[KONTEKS WIKI NEO4J] KOSONG / TIDAK ADA MATERI. Jika user hanya menyapa (halo/hai/konnichiwa), sapa balik secara ramah. Namun jika user meminta hal di luar pembelajaran Bahasa Jepang N5 (seperti membuat kode, HTML, coding, dll) atau bertanya materi yang tidak ada di database, kamu WAJIB menolak secara to-the-point dan minta maaf bahwa kamu khusus fokus pada pembelajaran Bahasa Jepang N5.", vocab_data, grammar_data, kanji_data
 
         except Exception as e:
             logger.warning(f"[RAG] KG lookup gagal: {e}")
             if mode in ("speaking", "voice"):
                 return "[KONTEKS WIKI NEO4J] KOSONG. Gunakan kosakata N5 dasar.", vocab_data, grammar_data, kanji_data
-            return "[KONTEKS WIKI NEO4J] Tidak ada data materi spesifik. Jika user hanya menyapa atau ngobrol santai, balas secara natural dan ramah. Jika user bertanya tentang materi Jepang spesifik (kanji/kosakata/grammar), baru sampaikan bahwa materinya belum ada di database.", vocab_data, grammar_data, kanji_data
+            return "[KONTEKS WIKI NEO4J] KOSONG / TIDAK ADA MATERI. Jika user hanya menyapa (halo/hai/konnichiwa), sapa balik secara ramah. Namun jika user meminta hal di luar pembelajaran Bahasa Jepang N5 (seperti membuat kode, HTML, coding, dll) atau bertanya materi yang tidak ada di database, kamu WAJIB menolak secara to-the-point dan minta maaf bahwa kamu khusus fokus pada pembelajaran Bahasa Jepang N5.", vocab_data, grammar_data, kanji_data
 
     async def _build_kg_context(self, query: str, student_id: str, history: list, mode: str = "discovery") -> tuple[str, list, list, list]:
         if not self.graph:
             if mode in ("speaking", "voice"):
                 return "[KONTEKS NEO4J] KOSONG. Gunakan kosakata N5 dasar.", [], [], []
-            return "[KONTEKS NEO4J] Tidak ada data materi spesifik. Jika user hanya menyapa atau ngobrol santai, balas secara natural dan ramah. Jika user bertanya tentang materi Jepang spesifik (kanji/kosakata/grammar), baru sampaikan bahwa materinya belum ada di database.", [], [], []
+            return "[KONTEKS NEO4J] KOSONG / TIDAK ADA MATERI. Jika user hanya menyapa (halo/hai/konnichiwa), sapa balik secara ramah. Namun jika user meminta hal di luar pembelajaran Bahasa Jepang N5 (seperti membuat kode, HTML, coding, dll) atau bertanya materi yang tidak ada di database, kamu WAJIB menolak secara to-the-point dan minta maaf bahwa kamu khusus fokus pada pembelajaran Bahasa Jepang N5.", [], [], []
 
         listings = _detect_listing_intent(query, history)
         if listings:
