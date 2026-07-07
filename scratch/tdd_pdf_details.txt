@@ -1,0 +1,33 @@
+Total pages: 211
+
+=========================================
+PAGE 36
+=========================================
+34 
+ 
+ 
+  
+praktik kolaboratif seperti Pair Programming  menurut penjabaran 
+Sommerville (2020), untuk keperluan penelitian tunggal ini, praktik tersebut 
+disesuaikan menjadi Self-Review (tinjauan mandiri dan penyempurnaan) guna 
+mengidentifikasi dan menekan tingkat kesalahan secara independen. Praktik 
+teknis ekstrem lainnya tetap diaplikasikan secara relevan, meliputi integrasi 
+kode berkelanjutan yang dikelola secara mandiri (Solo CI) serta pemfaktoran 
+ulang (refactoring). Selain itu, kerangka kerja ini tetap berpegang teguh pada 
+konsep Test-Driven Development  (TDD), di mana skenario pengujian unit 
+harus dirumuskan terlebih dahulu sebelum baris kode fungsional 
+diimplementasikan. Pendekatan sistematis ini secara drastis meminimalisasi 
+kemunculan bug dan memastikan bahwa setiap modul perangkat lunak yang 
+dibangun memiliki stabilitas performa yang tinggi sejak awal, sehingga siap 
+untuk dievaluasi dan ditinjau keselarasan penelitiannya oleh dosen 
+pembimbing. 
+Dalam pelaksanaannya, siklus hidup metode XP dikelola melalui 
+tahapan yang berulang ( iterative) dan berkelanjutan. Pressman dan Maxim 
+(2020) menguraikan bahwa alur kerja XP terdiri dari empat fase utama: 
+Planning (perencanaan), Design (perancangan), Coding (pengodean), dan 
+Testing (pengujian). Siklus ini diawali dengan proses planning berupa 
+pengumpulan user stories (kebutuhan klien yang ditulis dalam bahasa bisnis), 
+dilanjutkan dengan perancangan arsitektur sederhana menggunakan teknik 
+Class Responsibiliti es Collaborator  (CRC). Setelah coding diselesaikan 
+dengan metode berpasangan, sistem langsung diuji secara ketat, dan fitur 
+yang berhasil melewati tahap testing akan segera diintegrasikan untuk dirilis 

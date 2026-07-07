@@ -89,7 +89,8 @@ def _format_word_cell(cell, text: str, bold=False, italic=False, color=None, fon
 def pytest_sessionfinish(session, exitstatus):
     """
     Hook pytest yang dipicu otomatis setelah seluruh pengujian selesai.
-    Merender file 'test_reports/laporan.docx' (Word) & 'test_reports/laporan.md' (Markdown).
+    Merender file 'test_reports/laporan.docx' (Word) & 'test_reports/laporan.md' (Markdown)
+    dengan format per-skenario (5 kasus uji per tabel) dan tema warna gelap (Hitam 50%).
     """
     current_dir = os.path.dirname(os.path.abspath(__file__))        # backend/tests/layers
     tests_dir   = os.path.dirname(current_dir)                     # backend/tests
@@ -101,36 +102,18 @@ def pytest_sessionfinish(session, exitstatus):
     docx_file   = os.path.join(report_dir, "laporan.docx")
     md_file     = os.path.join(report_dir, "laporan.md")
 
-    # Ambil data hasil dari modul-modul layer
-    l1 = _get_module_attr("test_l1_unit", "ALL_RESULTS")
-    l2 = _get_module_attr("test_l2_integration", "ALL_RESULTS")
-    l3 = _get_module_attr("test_l3_system", "ALL_RESULTS")
-    l4 = _get_module_attr("test_l4_acceptance", "ALL_RESULTS")
-    l5 = _get_module_attr("test_l5_whitebox", "ALL_RESULTS")
-    l6 = _get_module_attr("test_l6_graybox", "ALL_RESULTS")
-    l7 = _get_module_attr("test_l7_nonfunctional", "ALL_RESULTS")
-    l8 = _get_module_attr("test_l8_pbt", "ALL_PBT_RESULTS")
-    l9 = _get_module_attr("test_l9_metamorphic", "ALL_MT_RESULTS")
+    if root_dir not in sys.path:
+        sys.path.insert(0, root_dir)
 
-    layers_data = [
-        ("Layer 1", "White-Box Unit Testing", "Structural & Logical Verification", l1, "standard"),
-        ("Layer 2", "Integration Testing", "Cross-Module Data Pipeline", l2, "standard"),
-        ("Layer 3", "System Testing (Black-Box)", "End-to-End Functional Flow", l3, "standard"),
-        ("Layer 4", "Acceptance Testing (UAT)", "Learner Acceptance Scenarios", l4, "standard"),
-        ("Layer 5", "White-Box Logic Testing", "Branch Coverage & Boundaries", l5, "standard"),
-        ("Layer 6", "Gray-Box Testing", "Data Architecture & Schema", l6, "standard"),
-        ("Layer 7", "Non-Functional Testing", "Benchmarking & Performance", l7, "standard"),
-        ("Layer 8", "Property-Based Testing (PBT)", "Automated Fuzzing (Hypothesis)", l8, "pbt"),
-        ("Layer 9", "Metamorphic Testing (MT)", "Algorithmic Invariants (BKT/SM2)", l9, "mt"),
-    ]
+    try:
+        import build_full_test_report
+        now_str = datetime.now().strftime("%d %B %Y - %H:%M:%S WIB")
+        build_full_test_report.generate_docx(docx_file, now_str)
+        build_full_test_report.generate_md(md_file, now_str)
+        return
+    except Exception as err:
+        print(f"\n[WARNING] Gagal memanggil generator build_full_test_report: {err}")
 
-    now_str = datetime.now().strftime("%d %B %Y - %H:%M:%S WIB")
-    status_text = "PASSED (VALID)" if exitstatus == 0 else "FAILED (TERDETEKSI CACAT)"
-
-    # ─────────────────────────────────────────────────────────────────────────
-    # 1. GENERATE WORD DOCUMENT (.docx)
-    # ─────────────────────────────────────────────────────────────────────────
-    doc = docx.Document()
 
     # Page margins
     sections = doc.sections

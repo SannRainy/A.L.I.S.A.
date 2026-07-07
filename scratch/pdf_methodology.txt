@@ -1,0 +1,396 @@
+
+=========================================
+PAGE 41
+=========================================
+39 
+ 
+ 
+  
+ 
+Gambar 2. 5 Kerangka Berpikir
+
+
+=========================================
+PAGE 42
+=========================================
+40 
+ 
+40 
+ 
+BAB III 
+METODE PENELITIAN 
+ 
+A. Tempat dan Waktu Penelitian 
+Penelitian ini dilakukan di Laboratorium Komputer Kampus III 
+Universitas PGRI Madiun, yang beralamat di Jalan Auri No. 14 -16, Kota 
+Madiun, Jawa Timur. Penelitian ini dimulai pada tanggal 01 Maret 202 6, 
+bertepatan dengan terbitnya Surat Keputusan (SK) dosen pembimbing, dan 
+berakhir pada tanggal 01 Juli 2026. Rincian jadwal penelitian dapat dilihat pada 
+Tabel 3.1. 
+Tabel 3. 1 Waktu Penelitian 
+   Tahun 2026    
+No Keterangan Maret April Mei Juni Juli 
+  1 2 3 4 1 2 3 4 1 2 3 4 1 2 3 4 1 2 3 4 
+1 Studi Literatur                     
+2 Pengumpulan 
+Data 
+                    
+3 Analisis 
+Kebutuhan dan 
+Desain Sistem 
+                    
+4 Pengkodean 
+(Coding) 
+                    
+5 Umpan Balik 
+dan Perbaikan 
+                    
+6 Implementasi 
+Sistem 
+                    
+7 Pengujian 
+Sistem 
+                    
+8 Penyusunan 
+Laporan 
+                    
+Keterangan Tabel: 
+ : Ada Kegiatan  : Tidak Ada Kegiatan 
+
+=========================================
+PAGE 43
+=========================================
+41 
+ 
+ 
+ 
+ 
+B. Metode Pengembangan Sistem 
+Dalam penelitian ini, metode pengembangan perangkat lunak yang 
+digunakan adalah Extreme Programming (XP). Metode ini dipilih karena sesuai 
+untuk pengembangan sistem yang dilakukan secara bertahap, fleksibel, dan 
+dapat menyesuaikan perubahan kebutuhan selama proses pengerjaan. 
+Penggunaan XP juga dinilai cocok untuk penelitian yang dikerjakan oleh satu 
+orang programmer karena setiap tahap dapat dilakukan secara iteratif, mulai dari 
+perencanaan kebutuhan, perancangan sistem, pengodean, pengujian, hingga 
+perbaikan sistem. Pada penelitian ini, XP digunakan untuk membangun aplikasi 
+berbasis web dengan arsitekt ur Agentic AI, Knowledge Graph, dan GraphRAG 
+agar sistem dapat memberikan rekomendasi edukatif, mendukung riset obat 
+herbal, serta menyajikan edukasi interaktif.  
+Perancangan sistem dalam penelitian ini menggunakan Unified 
+Modeling Language (UML) untuk memperjelas gambaran sistem sebelum tahap 
+implementasi. UML digunakan karena mampu memvisualisasikan kebutuhan, 
+alur aktivitas, interaksi pengguna, dan struktur sistem secara lebih terarah. 
+Diagram yang digunakan dalam penelitian ini meliputi Use Case Diagram , 
+Activity Diagram, Sequence Diagram, dan Class Diagram. Melalui perancangan 
+tersebut, proses pengembangan sistem diharapkan menjadi lebih jelas, 
+terstruktur, dan mudah dievaluasi pada setiap tahap pengujian. 
+ 
+
+=========================================
+PAGE 44
+=========================================
+42 
+ 
+ 
+ 
+ 
+Gambar 3. 1 Alur Extreme Programming 
+Berikut ini merupakan penjelasan mengenai tahapan -tahapan dari 
+metode Extreme Programming yang digunakan oleh peneliti: 
+1. Studi Literatur 
+Tahap studi literatur dilakukan untuk mengumpulkan teori, konsep, 
+dan penelitian terdahulu yang relevan dengan pengembangan sistem. 
+Literatur yang dikaji meliputi obat herbal, fitofarmakologi, Agentic AI , 
+
+
+=========================================
+PAGE 45
+=========================================
+43 
+ 
+ 
+ 
+Knowledge Graph , GraphRAG, aplikasi berbasis web, metode Extreme 
+Programming, UML, serta metode pengujian sistem. Tahap ini bertujuan agar 
+penelitian memiliki dasar teori yang kuat dan arah pengembangan sistem 
+yang jelas. 
+2. Pengumpulan Data 
+Tahap pengumpulan data dilakukan dengan menghimpun data 
+tanaman obat herbal dari sumber ilmiah, basis data herbal, buku 
+farmakognosi, dan referensi tepercaya lainnya. Data yang dikumpulkan 
+meliputi nama lokal, nama ilmiah, bagian tanaman, senyawa aktif, ma nfaat, 
+aktivitas farmakologis, efek samping, kontraindikasi, interaksi obat, dan 
+referensi ilmiah. Data tersebut digunakan sebagai dasar dalam penyusunan 
+basis pengetahuan sistem. 
+3. Analisis Kebutuhan Sistem dan Desain Sistem 
+Tahap analisis kebutuhan sistem dilakukan untuk menentukan 
+kebutuhan fungsional dan nonfungsional aplikasi. Kebutuhan fungsional 
+mencakup fitur pencarian informasi herbal, tanya jawab interaktif, 
+rekomendasi edukatif, pengelolaan data, dan penelusuran relasi pengetahuan. 
+Sementara itu, kebutuhan nonfungsional mencakup kemudahan penggunaan, 
+kecepatan respons, keamanan data, dan keterlacakan sumber informasi. 
+Setelah kebutuhan ditentukan, dilakukan desain sistem menggunakan UML, 
+seperti Use Case Diagram, Activity Diagram, Sequence Diagram, dan Class 
+Diagram. 
+
+=========================================
+PAGE 46
+=========================================
+44 
+ 
+ 
+ 
+4. Pengkodean (Coding) 
+Tahap pengodean merupakan proses menerjemahkan hasil desain 
+sistem ke dalam bentuk program. Pada tahap ini, aplikasi web mulai 
+dibangun, baik dari sisi antarmuka pengguna, layanan backend, basis data, 
+maupun integrasi Agentic AI, Knowledge Graph, dan GraphRAG. Pengodean 
+dilakukan secara bertahap agar setiap fitur dapat dikembangkan, diperiksa, 
+dan diperbaiki sesuai kebutuhan sistem. 
+5. Umpan Balik dan Perbaikan 
+Tahap umpan balik dan perbaikan dilakukan untuk meninjau hasil 
+pengembangan yang telah dibuat. Pada tahap ini, sistem diperiksa untuk 
+menemukan kekurangan pada fitur, tampilan, alur penggunaan, kualitas 
+jawaban, maupun ketepatan informasi yang ditampilkan.  Hasil evaluasi 
+sementara digunakan sebagai dasar untuk melakukan perbaikan sebelum 
+sistem masuk ke tahap implementasi dan pengujian lebih lanjut. 
+6. Implementasi Sistem 
+Tahap implementasi sistem dilakukan setelah fitur utama selesai 
+dikembangkan dan diperbaiki. Pada tahap ini, sistem diterapkan dalam bentuk 
+aplikasi berbasis web yang dapat digunakan untuk mencari informasi 
+tanaman obat, memperoleh rekomendasi edukatif, da n melakukan tanya 
+jawab interaktif. Implementasi juga mencakup integrasi antara antarmuka 
+pengguna, basis data, Knowledge Graph, GraphRAG, dan model bahasa agar 
+sistem dapat berjalan sesuai rancangan. 
+
+=========================================
+PAGE 47
+=========================================
+45 
+ 
+ 
+ 
+7. Pengujian Sistem 
+Tahap pengujian sistem dilakukan untuk memastikan bahwa aplikasi 
+berjalan sesuai kebutuhan. Pengujian dilakukan menggunakan black-box 
+testing untuk memeriksa kesesuaian fungsi berdasarkan masukan dan 
+keluaran, white-box testing untuk memeriksa alur logika program, serta Skala 
+Likert untuk mengetahui tanggapan pengguna terhadap kemudahan 
+penggunaan, kejelasan informasi, relevansi jawaban, dan manfaat sistem. 
+Hasil pengujian digunakan untuk menilai kelayakan sistem dan menentukan 
+bagian yang masih perlu diperbaiki. 
+8. Pemeliharaan 
+Tahap pemeliharaan dilakukan setelah sistem selesai diuji dan 
+diimplementasikan. Pemeliharaan bertujuan untuk menjaga agar sistem tetap 
+berjalan dengan baik, memperbaiki kesalahan yang ditemukan, memperbarui 
+data herbal, serta menyesuaikan sistem apabila t erdapat kebutuhan baru. 
+Tahap ini penting agar aplikasi tetap relevan, stabil, dan dapat digunakan 
+secara berkelanjutan. 
+C. Rancangan Penelitian 
+Rancangan penelitian ini dijalankan dengan diawali studi literatur, 
+pengumpulan data, analisis kebutuhan sistem dan desain sistem, pengkodean 
+(coding), umpan balik dan perbaikan, implementasi sistem, pengujian sistem, 
+pemeliharaan sistem, serta peny usunan laporan.  Tahapan-tahapan tersebut 
+diimplementasikan secara berurutan sesuai dengan alur metode pengembangan 
+Extreme Programming yang digunakann dalam p enelitian ini. Adapun tahapan 
+rancangan penelitian di atas dapat dilihat pada Gambar 3. berikut. 
+
+=========================================
+PAGE 48
+=========================================
+46 
+ 
+ 
+ 
+ 
+Gambar 3. 2 Alur Rancangan Penelitian 
+
+
+=========================================
+PAGE 49
+=========================================
+47 
+ 
+ 
+ 
+1. Studi Literatur (Literature Study) 
+Tahap studi literatur dilakukan untuk mengumpulkan teori dan 
+penelitian terdahulu yang berkaitan dengan topik penelitian. Literatur yang 
+dikaji mencakup tanaman obat herbal, fitofarmakologi, Agentic AI , 
+Knowledge Graph, GraphRAG, aplikasi berbasis web, UML, metode Extreme 
+Programming, serta teknik pengujian sistem. Tahap ini bertujuan agar 
+pengembangan sistem memiliki dasar ilmiah yang kuat dan sesuai dengan 
+kebutuhan penelitian. 
+2. Pengumpulan Data (Data Collection) 
+Tahap pengumpulan data dilakukan dengan menghimpun data 
+tanaman obat herbal dari jurnal ilmiah, basis data herbal, buku farmakognosi, 
+dan sumber tepercaya lainnya. Data yang dikumpulkan meliputi nama lokal, 
+nama ilmiah, bagian tanaman, senyawa aktif, manfaat, aktivitas farmakologis, 
+efek samping, kontraindikasi, interaksi obat, dan referensi ilmiah. Data 
+tersebut digunakan sebagai dasar dalam membangun basis pengetahuan 
+sistem. 
+3. Analisis Kebutuhan Sistem dan Desain Sistem  (System Requirements 
+Analysis and System Design) 
+Tahap analisis kebutuhan sistem dilakukan untuk menentukan fitur 
+yang dibutuhkan pengguna, seperti pencarian informasi herbal, tanya jawab 
+interaktif, rekomendasi edukatif, dan eksplorasi relasi pengetahuan. Selain 
+itu, dilakukan perancangan sistem menggun akan UML, seperti Use Case 
+Diagram, Activity Diagram, Sequence Diagram, dan Class Diagram. Pada 
+
+=========================================
+PAGE 50
+=========================================
+48 
+ 
+ 
+ 
+tahap ini juga dirancang antarmuka aplikasi, struktur basis data, serta 
+rancangan Knowledge Graph yang akan digunakan dalam sistem. 
+4. Pengodean (Coding) 
+Tahap pengodean merupakan proses menerjemahkan hasil 
+rancangan ke dalam bentuk program. Pada tahap ini, pengembangan 
+dilakukan pada aplikasi web, layanan backend, basis data, Knowledge Graph, 
+alur kerja Agentic AI , proses GraphRAG, dan integrasi model bahasa. 
+Pengodean dilakukan secara bertahap agar setiap fitur dapat diuji dan 
+diperbaiki sesuai kebutuhan sistem. 
+5. Umpan Balik dan Perbaikan (Feedback and Improvement) 
+Tahap umpan balik dan perbaikan dilakukan untuk meninjau hasil 
+pengembangan yang telah dibuat. Pada tahap ini, kekurangan pada fitur, 
+tampilan, alur sistem, hasil pencarian, dan kualitas jawaban diperiksa 
+kembali. Hasil evaluasi sementara digunakan sebagai  dasar perbaikan agar 
+sistem lebih sesuai dengan kebutuhan pengguna dan mampu menyajikan 
+informasi herbal secara lebih tepat. 
+6. Implementasi Sistem (System Implementation) 
+Tahap implementasi sistem dilakukan setelah fitur utama selesai 
+dikembangkan dan diperbaiki. Sistem diterapkan dalam bentuk aplikasi 
+berbasis web yang dapat digunakan untuk mencari informasi tanaman obat, 
+memperoleh rekomendasi edukatif, dan melakukan tany a jawab interaktif. 
+Pada tahap ini, seluruh komponen seperti antarmuka, basis data, Knowledge 
+Graph, GraphRAG, dan model bahasa diintegrasikan agar sistem dapat 
+berjalan sesuai rancangan. 
+
+=========================================
+PAGE 51
+=========================================
+49 
+ 
+ 
+ 
+7. Pengujian Sistem (System Testing) 
+Tahap pengujian sistem dilakukan untuk memastikan bahwa aplikasi 
+berjalan sesuai kebutuhan. Pengujian menggunakan black-box testing untuk 
+memeriksa fungsi sistem berdasarkan masukan dan keluaran, white-box 
+testing untuk memeriksa alur logika program, serta Skala Likert  untuk 
+mengetahui penilaian pengguna terhadap kemudahan penggunaan, kejelasan 
+informasi, relevansi jawaban, dan manfaat sistem. Hasil pengujian digunakan 
+untuk menilai kelayakan sistem dan menentukan bagian yang masih perlu 
+diperbaiki. 
+8. Pemeliharaan (Maintenance) 
+Tahap pemeliharaan dilakukan setelah sistem selesai diuji dan 
+diimplementasikan. Pemeliharaan bertujuan untuk memperbaiki kesalahan 
+yang ditemukan, memperbarui data tanaman herbal, menyempurnakan 
+dokumentasi, serta menyesuaikan sistem apabila terdapat kebu tuhan baru. 
+Tahap ini penting agar aplikasi tetap stabil, relevan, dan dapat digunakan 
+secara berkelanjutan. 
+D. Teknik Pengembangan Sistem 
+Dalam proses Pembangunan implementasi sistem agentic ai  
+farmakognosi ini, peneliti menggunakan beberapa metode pengumpulan data 
+sebagai berikut: 
+1. Studi Pustaka 
+Dalam penelitian ini, studi pustaka dilakukan dengan mengkaji teori 
+dan penelitian terdahulu yang relevan dengan pengembangan sistem 
+rekomendasi, riset obat herbal, dan edukasi interaktif. Referensi yang 
+
+=========================================
+PAGE 52
+=========================================
+50 
+ 
+ 
+ 
+digunakan mencakup jurnal ilmiah, buku, dokumentasi teknologi, serta 
+sumber tepercaya yang membahas tanaman obat herbal, fitofarmakologi, 
+Agentic AI, Knowledge Graph, GraphRAG, model bahasa, aplikasi berbasis 
+web, dan pengujian sistem. Studi pustaka ini digunakan sebagai dasar dalam 
+menentukan konsep sistem, metode pengembangan, struktur data herbal, serta 
+pendekatan kecerdasan buatan yang sesuai dengan kebutuhan penelitian. 
+2. Observasi 
+Observasi dilakukan dengan mengamati ketersediaan informasi obat 
+herbal pada artikel jurnal, basis data herbal, laman resmi, serta beberapa situs 
+kesehatan yang memuat informasi tanaman obat. Hasil observasi 
+menunjukkan bahwa informasi mengenai nama lokal, nama ilmiah, senyawa 
+aktif, manfaat, aktivitas farmakologis, efek samping, kontraindikasi, dan 
+interaksi obat masih tersebar di berbagai sumber dengan format yang berbeda. 
+Kondisi tersebut menjadi dasar perlunya pengembangan sistem yang mampu 
+menyajikan informasi obat herbal secara lebih terstruktur, mudah ditelusuri, 
+dan dapat dipahami oleh pengguna umum maupun akademik. 
+3. Wawancara 
+Wawancara dilakukan untuk memperoleh gambaran kebutuhan 
+pengguna terhadap sistem informasi obat herbal yang akan dikembangkan. 
+Narasumber yang dapat dilibatkan meliputi mahasiswa, pengguna umum, 
+atau pihak yang memiliki pemahaman di bidang farmasi dan kese hatan. 
+Wawancara difokuskan pada kebutuhan fitur, kendala dalam mencari 
+informasi herbal, tingkat pemahaman terhadap istilah fitofarmakologi, serta 
+
+=========================================
+PAGE 53
+=========================================
+51 
+ 
+ 
+ 
+harapan pengguna terhadap sistem asisten virtual berbasis Agentic AI. Hasil 
+wawancara digunakan sebagai acuan dalam menentukan kebutuhan 
+fungsional sistem, rancangan antarmuka, bentuk rekomendasi edukatif, serta 
+cara penyajian informasi agar lebih jelas, relevan, dan tidak menggantikan 
+konsultasi tenaga kesehatan.
+
+=========================================
+PAGE 54
+=========================================
+52 
+ 
+52 
+ 
+BAB IV 
+HASIL DAN PEMBAHASAN 
+ 
+A. Analisis Sistem 
+1. Analisis Sistem Lama 
+Sistem lama dalam proses pencarian dan penyusunan informasi obat 
+herbal masih dilakukan secara manual oleh pengguna. Pada kondisi tersebut, 
+pengguna perlu mencari informasi dari berbagai sumber, seperti artikel jurnal, 
+buku farmakognosi, basis data herbal,  laman resmi, dan situs kesehatan. 
+Setiap sumber biasanya memiliki format, istilah, dan tingkat kelengkapan 
+data yang berbeda, sehingga pengguna harus membandingkan sendiri nama 
+lokal, nama ilmiah, bagian tanaman, senyawa aktif, manfaat, aktivitas 
+farmakologis, efek samping, kontraindikasi, interaksi obat, serta referensi 
+ilmiah. Proses tersebut membutuhkan waktu cukup lama dan berpotensi 
+menimbulkan perbedaan pemahaman, terutama bagi pengguna yang belum 
+terbiasa dengan istilah fitofarmakologi. 
+Pada sistem lama, belum tersedia sistem terintegrasi yang mampu 
+menelusuri hubungan antara tanaman obat, senyawa aktif, penyakit atau 
+kondisi kesehatan, efek samping, dan sumber ilmiah secara otomatis. 
+Pengguna juga masih perlu menyusun ringkasan informasi  secara mandiri, 
+baik untuk kebutuhan edukasi, rekomendasi awal, maupun eksplorasi riset. 
+Apabila pengguna hanya mengandalkan pencarian umum atau model bahasa 
+generatif tanpa dukungan basis pengetahuan terstruktur, jawaban yang 
+diperoleh masih berisiko kurang lengkap, tidak konsisten, atau tidak memiliki 
+
+=========================================
+PAGE 55
+=========================================
+53 
+ 
+ 
+ 
+sumber yang jelas. Kondisi tersebut menjadi dasar perlunya pengembangan 
+sistem Agentic AI berbasis Knowledge Graph dan GraphRAG agar informasi 
+obat herbal dapat disajikan secara lebih terstruktur, relevan, dan dapat 
+ditelusuri. Alur sistem lama sebelum adanya sistem terintegrasi digambarkan 
+pada Gambar 4.1. 
+ 
+Gambar 4. 1 Alur Sistem Lama 
+ 
+

@@ -38,9 +38,12 @@ tests_dir   = os.path.dirname(current_dir)
 backend_dir = os.path.dirname(tests_dir)
 root_dir    = os.path.dirname(backend_dir)
 
-for _p in (backend_dir, root_dir, tests_dir):
+for _p in (current_dir, backend_dir, root_dir, tests_dir):
     if _p not in sys.path:
         sys.path.insert(0, _p)
+
+from _shared import safe_print
+print = safe_print
 
 # ─────────────────────────────────────────────────────────────────────────────
 # HYPOTHESIS IMPORT CHECK

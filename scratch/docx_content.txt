@@ -1,0 +1,16 @@
+Total paragraphs: 14
+
+[0]: BAB III
+[1]: METODE PENELITIAN
+[2]: 
+[3]: Tempat dan Waktu Penelitian
+[4]: Penelitian ini dilakukan di wilayah Kota Madiun. Penelitian ini berlangsung selama 5 bulan, dimulai dari tanggal 1 Maret 2026 hingga 25 Juli 2026. Jadwal penelitian dapat dilihat pada tabel di bawah.
+[5]: 
+[6]: Keterangan Tabel :
+[7]: 
+[8]: Metode Pengembangan Sistem
+[9]: 
+[10]: Rancangan Penelitian
+[11]: Teknik Pengembangan Sistem
+[12]: 
+[13]: 

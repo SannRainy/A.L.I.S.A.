@@ -273,20 +273,20 @@ class AiCorrectionRequest(BaseModel):
 FRONTEND_TO_NEO4J_MAP = {
     # Level 1
     "grammar_wa": "は",
-    "grammar_desu": "Akhiran です、 だ",
-    "grammar_no": "Partikel  の",
+    "grammar_desu": "desu・だ (Kopula)",
+    "grammar_no": "の (Partikel Kepemilikan)",
     "grammar_mo": "も",
     "grammar_ka": "か",
     "grammar_dewa_nai": "じゃない",
-    "grammar_kore_sore_are": "Akhiran です、 だ",
-    "grammar_dare": "Akhiran です、 だ",
-    "grammar_hai_iie": "Akhiran です、 だ",
+    "grammar_kore_sore_are": "desu・だ (Kopula)",
+    "grammar_dare": "desu・だ (Kopula)",
+    "grammar_hai_iie": "desu・だ (Kopula)",
     # Level 2
     "grammar_ga_arimasu": "があります",
     "grammar_ga_imasu": "がいます",
     "grammar_ni_location": "に",
     "grammar_doko": "に",
-    "grammar_kono_sono_ano": "Partikel  の",
+    "grammar_kono_sono_ano": "の (Partikel Kepemilikan)",
     "grammar_ni_e_destination": "に",
     "grammar_de_place": "で",
     "grammar_to": "と",
@@ -311,7 +311,7 @@ FRONTEND_TO_NEO4J_MAP = {
     "grammar_ga_but": "が",
     # Level 5
     "grammar_o_particle": "を",
-    "grammar_shimasu": "Kata Kerja Bentuk Sopan (masu-kei)",
+    "grammar_shimasu": "〜ます形 (Bentuk Sopan)",
     "grammar_ni_iku": "に⾏く 【にいく】",
     "grammar_issho_ni": "⼀緒に「いっしょに」",
     "grammar_masen_ka": "ませんか",
@@ -455,11 +455,22 @@ async def get_kg_node_detail(node_id: str):
     if not graph:
         raise HTTPException(status_code=503, detail="Graph engine tidak tersedia.")
     
-    node_detail = graph.get_exact_node(node_id)
+    # Map legacy IDs to new renamed IDs for backward compatibility
+    LEGACY_TO_NEW_MAP = {
+        "Akhiran です、 だ": "esu・だ (Kopula)",
+        "Partikel subject は、mo、 が": "は・mo・が (Partikel Subjek)",
+        "Partikel object を、ni、へ、 で": "を・に・へ・de (Partikel Objek)",
+        "Partikel と、y、と か": "と・や・tok (Partikel Penghubung)",
+        "Partikel  の": "の (Partikel Kepemilikan)",
+        "Kata Kerja Bentuk Sopan (masu-kei)": "〜ます形 (Bentuk Sopan)",
+    }
+    
+    mapped_id = LEGACY_TO_NEW_MAP.get(node_id, node_id)
+    node_detail = graph.get_exact_node(mapped_id)
     if not node_detail:
         # Fallback: jika node_id tidak langsung ketemu (misal wa, ga, dll), coba map
         # di FRONTEND_TO_NEO4J_MAP
-        neo4j_id = FRONTEND_TO_NEO4J_MAP.get(node_id, node_id)
+        neo4j_id = FRONTEND_TO_NEO4J_MAP.get(mapped_id, mapped_id)
         node_detail = graph.get_exact_node(neo4j_id)
         
     if not node_detail:
