@@ -1688,4 +1688,31 @@
         box-shadow: 0 0 25px rgba(244, 63, 94, 0.6) !important;
         border-color: rgba(255, 255, 255, 0.3) !important;
     }
+    :global(body.light) .voice-bubble-alisa {
+        background: var(--tutor-bubble-bg);
+        border-color: var(--tutor-bubble-border);
+        color: var(--tutor-bubble-text);
+    }
+    :global(body.light) .voice-bubble-user {
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.08));
+        border-color: rgba(99, 102, 241, 0.2);
+        color: #1e1b4b; /* Indigo 950 */
+    }
+    :global(body.light) .voice-ring {
+        border-color: rgba(99, 102, 241, 0.15);
+    }
+    :global(body.light) .voice-btn {
+        box-shadow: 0 12px 32px rgba(99, 102, 241, 0.2);
+    }
+    :global(body.light) .user-thinking-dots span {
+        background: rgba(99, 102, 241, 0.85);
+    }
+    :global(body.light) .voice-cancel-zone {
+        color: #475569; /* slate-600 */
+    }
+    :global(body.light) .cancel-icon-wrap {
+        background: rgba(99, 102, 241, 0.05);
+        border-color: rgba(99, 102, 241, 0.2);
+        color: #4f46e5;
+    }
 </style>

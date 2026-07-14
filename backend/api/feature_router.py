@@ -216,90 +216,25 @@ async def seed_prerequisite_edges():
 @router.get("/placement/questions")
 async def get_placement_test_questions():
     """Get all placement test questions."""
-    questions = get_placement_questions()
-    return {"status": "success", "questions": questions, "total": len(questions)}
+    raise HTTPException(status_code=403, detail="Placement Test is temporarily disabled")
 
 
 @router.post("/placement/submit")
 async def submit_placement_test(req: PlacementSubmitRequest):
     """Submit placement test and calculate level placement."""
-    try:
-        # Calculate result
-        answers_data = [
-            {
-                "question_id": a.question_id,
-                "user_answer": a.user_answer,
-                "is_correct": a.is_correct,
-            }
-            for a in req.answers
-        ]
-        result = calculate_placement_result(answers_data)
-
-        # Save to Supabase
-        placement_data = {
-            "user_id": req.user_id,
-            "total_score": result["total_score"],
-            "total_questions": result["total_questions"],
-            "estimated_level": result["estimated_level"],
-            "category_scores": result["category_scores"],
-            "placed_nodes": result.get("mastered_levels", []),
-        }
-
-        # Upsert (update if exists, insert if not)
-        supabase.table("placement_results").upsert(placement_data).execute()
-
-        # Update profile
-        supabase.table("profiles").update({
-            "placement_completed": True
-        }).eq("id", req.user_id).execute()
-
-        # Auto-mark mastered levels in graph if available
-        if graph and result.get("mastered_levels"):
-            for level_id in result["mastered_levels"]:
-                # Mark quest level nodes as MASTERED
-                # (Implementation depends on quest_data structure)
-                pass
-
-        return {"status": "success", "result": result}
-    except Exception as e:
-        logger.error(f"submit_placement_test error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+    raise HTTPException(status_code=403, detail="Placement Test is temporarily disabled")
 
 
 @router.get("/placement/result/{user_id}")
 async def get_placement_result(user_id: str):
     """Get user's placement test result."""
-    try:
-        resp = supabase.table("placement_results") \
-            .select("*") \
-            .eq("user_id", user_id) \
-            .execute()
-
-        if not resp.data:
-            return {"status": "not_taken", "result": None}
-
-        return {"status": "success", "result": resp.data[0]}
-    except Exception as e:
-        logger.error(f"get_placement_result error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+    raise HTTPException(status_code=403, detail="Placement Test is temporarily disabled")
 
 
 @router.post("/placement/reset/{user_id}")
 async def reset_placement_test(user_id: str):
     """Reset user's placement test status and results."""
-    try:
-        # 1. Delete placement results
-        supabase.table("placement_results").delete().eq("user_id", user_id).execute()
-
-        # 2. Update profile status
-        supabase.table("profiles").update({
-            "placement_completed": False
-        }).eq("id", user_id).execute()
-
-        return {"status": "success", "message": "Placement test reset successfully"}
-    except Exception as e:
-        logger.error(f"reset_placement_test error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+    raise HTTPException(status_code=403, detail="Placement Test is temporarily disabled")
 
 
 
@@ -437,100 +372,25 @@ async def get_grammar_history(user_id: str, limit: int = 10):
 @router.get("/reading/passages")
 async def get_reading_passages_list(level: Optional[str] = None):
     """Get list of reading passages, optionally filtered by level."""
-    try:
-        passages = get_reading_passages(level)
-        # Don't send full text in list view
-        passages_list = [
-            {
-                "id": p["id"],
-                "level": p["level"],
-                "title": p["title"],
-                "translation": p["translation"],
-                "question_count": len(p.get("questions", [])),
-            }
-            for p in passages
-        ]
-        return {"status": "success", "passages": passages_list}
-    except Exception as e:
-        logger.error(f"get_reading_passages_list error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+    raise HTTPException(status_code=403, detail="Reading Comprehension is temporarily disabled")
 
 
 @router.get("/reading/passage/{passage_id}")
 async def get_reading_passage_detail(passage_id: str):
     """Get full reading passage with annotations and questions."""
-    try:
-        passage = get_passage_by_id(passage_id)
-        if not passage:
-            raise HTTPException(status_code=404, detail="Passage not found")
-
-        return {"status": "success", "passage": passage}
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"get_reading_passage_detail error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+    raise HTTPException(status_code=403, detail="Reading Comprehension is temporarily disabled")
 
 
 @router.post("/reading/submit")
 async def submit_reading_session(req: ReadingSubmitRequest):
     """Submit reading comprehension session results."""
-    try:
-        # Calculate comprehension score
-        passage = get_passage_by_id(req.passage_id)
-        if not passage:
-            raise HTTPException(status_code=404, detail="Passage not found")
-
-        total_questions = len(passage.get("questions", []))
-        correct_answers = sum(
-            1 for ans in req.comprehension_answers if ans.get("is_correct")
-        )
-        comprehension_score = (
-            round((correct_answers / total_questions) * 100) if total_questions > 0 else 0
-        )
-
-        # Save to database
-        session_data = {
-            "user_id": req.user_id,
-            "passage_id": req.passage_id,
-            "unknown_words": req.unknown_words,
-            "comprehension_score": comprehension_score,
-        }
-        supabase.table("reading_sessions").insert(session_data).execute()
-
-        # Log activity
-        await StreakService.log_activity(
-            req.user_id, study_minutes=5, xp_earned=comprehension_score // 10
-        )
-
-        return {
-            "status": "success",
-            "comprehension_score": comprehension_score,
-            "correct": correct_answers,
-            "total": total_questions,
-        }
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"submit_reading_session error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+    raise HTTPException(status_code=403, detail="Reading Comprehension is temporarily disabled")
 
 
 @router.get("/reading/history/{user_id}")
 async def get_reading_history(user_id: str, limit: int = 10):
     """Get user's reading session history."""
-    try:
-        resp = supabase.table("reading_sessions") \
-            .select("*") \
-            .eq("user_id", user_id) \
-            .order("created_at", desc=True) \
-            .limit(limit) \
-            .execute()
-
-        return {"status": "success", "history": resp.data or []}
-    except Exception as e:
-        logger.error(f"get_reading_history error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+    raise HTTPException(status_code=403, detail="Reading Comprehension is temporarily disabled")
 
 
 # ══════════════════════════════════════════════════════════════════════════════

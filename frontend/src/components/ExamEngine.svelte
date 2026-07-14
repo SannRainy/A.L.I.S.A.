@@ -951,4 +951,22 @@
             opacity: 0.6;
         }
     }
+    :global(body.light) .exam-info-card {
+        background: rgba(99, 102, 241, 0.05);
+        border-color: rgba(99, 102, 241, 0.12);
+    }
+    :global(body.light) .exam-option {
+        border-color: rgba(99, 102, 241, 0.15);
+        background: rgba(255, 255, 255, 0.85);
+        color: #0f172a;
+    }
+    :global(body.light) .exam-option:hover:not(:disabled) {
+        border-color: rgba(99, 102, 241, 0.5);
+        background: rgba(99, 102, 241, 0.1);
+    }
+    :global(body.light) .review-card {
+        background: rgba(255, 255, 255, 0.75);
+        border-color: rgba(99, 102, 241, 0.15);
+        color: #0f172a;
+    }
 </style>

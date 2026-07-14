@@ -149,3 +149,9 @@
 
     </svg>
 </div>
+
+<style>
+    :global(body.light) svg text[fill="#94a3b8"] {
+        fill: #475569 !important;
+    }
+</style>

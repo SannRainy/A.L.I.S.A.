@@ -1,0 +1,1711 @@
+
+--- PAGE 155 ---
+153 
+ 
+ 
+ 
+Tabel 4. 63 Testing Workflow Konfigurasi Sistem 
+No Skenario Case Data Hasil yang 
+Diharapkan 
+Hasil 
+Pengujian 
+Kesimpulan 
+1 FastAPI 
+health 
+check 
+berjalan 
+1. Admin 
+membuka 
+dashboard 
+2. Sistem 
+membaca 
+status 
+backend 
+Layanan: 
+FastAPI 
+Sistem 
+menampilkan status 
+FastAPI berjalan 
+pada dashboard 
+admin 
+Berhasil 
+sesuai 
+harapan 
+[√] Valid 
+2 Supabase 
+terhubung 
+1. Sistem 
+mengambil 
+data 
+pengguna/cha
+t/quiz 
+2. Dashboard 
+menampilkan 
+data 
+Layanan: 
+Supabase 
+Data aplikasi 
+berhasil dibaca dari 
+Supabase dan 
+ditampilkan pada 
+frontend 
+Berhasil 
+sesuai 
+harapan 
+[√] Valid 
+3 Neo4j 
+terhubung 
+1. Jalankan 
+chat/rekomen
+dasi 
+2. Sistem 
+melakukan 
+retrieval 
+Layanan: 
+Neo4j 
+Sistem mengambil 
+entitas dan relasi 
+Knowledge Graph 
+untuk GraphRAG 
+dan rekomendasi 
+Berhasil 
+sesuai 
+harapan 
+[√] Valid 
+4 MinIO 
+storage 
+terhubung 
+1. Pengguna 
+mengunggah 
+lampiran 
+2. Admin 
+melihat 
+storage 
+Layanan: 
+MinIO 
+Lampiran tersimpan 
+pada storage dan 
+informasi 
+penyimpanan 
+tampil pada 
+dashboard admin 
+Berhasil 
+sesuai 
+harapan 
+[√] Valid 
+5 LLM Text 
+berjalan 
+1. Kirim 
+pertanyaan 
+teks 
+2. Backend 
+memanggil 
+model bahasa 
+Model: 
+Fast Medium / 
+Thinking High 
+Sistem 
+menampilkan 
+respons teks dari 
+model bahasa 
+sesuai mode yang 
+dipilih 
+Berhasil 
+sesuai 
+harapan 
+[√] Valid 
+6 Timeout 
+ditangani 
+sistem 
+1. Backend 
+terlambat 
+merespons 
+2. Frontend 
+menunggu 
+hasil 
+Kondisi: 
+timeout model / 
+backend 
+Sistem 
+menampilkan pesan 
+error yang sesuai 
+dan tidak membuat 
+aplikasi berhenti 
+total 
+Berhasil 
+sesuai 
+harapan 
+[√] Valid 
+ 
+Tabel 4. 64 Testing Lanjutan 
+No Skenario Case Data Hasil yang 
+Diharapkan 
+Hasil 
+Pengujian 
+Kesimpulan 
+1 Akses 
+admin 
+ditolak 
+untuk user 
+biasa 
+1. Login 
+sebagai user 
+2. Akses 
+halaman 
+admin 
+Role: 
+User 
+Sistem menolak 
+akses dan 
+mengarahkan 
+pengguna ke 
+halaman yang 
+sesuai hak akses 
+Berhasil 
+sesuai 
+harapan 
+[√] Valid 
+--- PAGE 156 ---
+154 
+ 
+ 
+ 
+No Skenario Case Data Hasil yang 
+Diharapkan 
+Hasil 
+Pengujian 
+Kesimpulan 
+2 Akses 
+halaman 
+protected 
+tanpa login 
+1. Hapus sesi 
+login 
+2. Buka URL 
+protected 
+Session: 
+kosong 
+Sistem 
+mengarahkan 
+pengguna ke 
+halaman login 
+Berhasil 
+sesuai 
+harapan 
+[√] Valid 
+3 Token tidak 
+valid 
+ditangani 
+1. Gunakan 
+token tidak 
+valid 
+2. Request 
+data ke 
+backend 
+Token: 
+invalid 
+Backend menolak 
+request dan 
+frontend 
+menampilkan pesan 
+autentikasi gagal 
+Berhasil 
+sesuai 
+harapan 
+[√] Valid 
+4 Input 
+berbahaya 
+tidak 
+diproses 
+1. Input 
+karakter tidak 
+sesuai pada 
+form 
+2. Klik submit 
+Input: 
+script / karakter 
+khusus 
+Sistem melakukan 
+validasi input dan 
+tidak menjalankan 
+data yang 
+berpotensi 
+berbahaya 
+Berhasil 
+sesuai 
+harapan 
+[√] Valid 
+5 Koneksi 
+layanan 
+gagal 
+ditangani 
+1. Salah satu 
+layanan tidak 
+tersedia 
+2. Pengguna 
+menjalankan 
+fitur 
+Layanan: 
+Neo4j / 
+Supabase / 
+MinIO tidak 
+tersedia 
+Sistem 
+menampilkan pesan 
+error yang sesuai 
+dan mencatat error 
+pada sistem 
+Berhasil 
+sesuai 
+harapan 
+[√] Valid 
+6 Logout 
+menghapus 
+sesi 
+1. Klik Log 
+Out 
+2. Buka 
+halaman 
+sebelumnya 
+Aksi: 
+logout 
+Sistem menghapus 
+sesi dan tidak 
+mengizinkan 
+pengguna membuka 
+kembali halaman 
+protected tanpa 
+login 
+Berhasil 
+sesuai 
+harapan 
+[√] Valid 
+ 
+Tabel 4. 65 Rekapitulasi Black-box Testing 
+No Aspek 
+Pengujian 
+Ruang Lingkup Hasil yang Diharapkan Hasil 
+Pengujian 
+Kesimpulan 
+1 Login dan 
+Register 
+Autentikasi pengguna dan 
+admin 
+Semua skenario valid dan 
+invalid 
+Berhasil 
+sesuai 
+harapan 
+[√] Valid 
+2 Dashboard 
+Admin 
+Monitoring sistem, users, 
+AI usage, GraphRAG, 
+storage, errors 
+Semua menu admin tampil 
+sesuai fungsi 
+Berhasil 
+sesuai 
+harapan 
+[√] Valid 
+3 Homepage 
+Chatbot 
+Chatbot, persona, model, 
+riwayat, GraphRAG 
+Jawaban dan riwayat 
+tampil sesuai input 
+Berhasil 
+sesuai 
+harapan 
+[√] Valid 
+4 Profile Lihat profil, ubah data, 
+logout 
+Data tersimpan dan sesi 
+logout berhasil 
+Berhasil 
+sesuai 
+harapan 
+[√] Valid 
+5 Quiz Menu, level, pengerjaan, 
+review, history 
+Alur kuis berjalan dari 
+awal sampai selesai 
+Berhasil 
+sesuai 
+harapan 
+[√] Valid 
+6 Rekomenda
+si Obat 
+Form keluhan, analisis, 
+hasil rekomendasi, detail 
+rekomendasi 
+Rekomendasi tampil 
+berbasis Agentic AI dan 
+Knowledge Graph 
+Berhasil 
+sesuai 
+harapan 
+[√] Valid 
+--- PAGE 157 ---
+155 
+ 
+ 
+ 
+No Aspek 
+Pengujian 
+Ruang Lingkup Hasil yang Diharapkan Hasil 
+Pengujian 
+Kesimpulan 
+7 Integrasi 
+Layanan 
+FastAPI, Supabase, Neo4j, 
+MinIO, LLM 
+Layanan saling terhubung 
+dan data tampil sesuai 
+kebutuhan 
+Berhasil 
+sesuai 
+harapan 
+[√] Valid 
+ 
+Berdasarkan hasil pengujian black -box full sistem, seluruh 
+fitur utama pada sistem Agentic AI berbasis Knowledge Graph dan 
+GraphRAG telah berjalan sesuai dengan skenario yang diharapkan. 
+Pengujian menunjukkan bahwa alur autentikasi, hak akses pengguna, 
+chatbot, rekomendasi obat herbal, kuis interaktif, dashboard admin, 
+integrasi layanan backend, serta validasi error dapat berfungsi dengan 
+baik. Dengan demikian, sistem dinyatakan valid secara fungsional dan 
+layak digunakan sebagai aplikasi rekomendasi, riset  obat herbal, dan 
+edukasi interaktif. 
+2. White-box Testing 
+Pengujian white-box dilakukan untuk mengetahui apakah alur logika 
+internal pada sistem Agentic AI telah berjalan sesuai dengan rancangan. 
+Pengujian ini berfokus pada struktur kontrol, percabangan, kondisi, dan jalur 
+eksekusi dari beberapa fitur utama sistem. Berbeda dengan black-box testing 
+yang melihat keluaran dari sisi pengguna, white -box testing menilai apakah 
+proses di dalam sistem telah berjalan secara logis, terstruktur, dan sesuai 
+dengan alur program yang dirancang . Pada sistem Agentic AI berbasis 
+Knowledge Graph dan GraphRAG, pengujian white -box diterapkan pada 
+fitur login, register, dashboard admin, homepage chatbot, profile, quiz, dan 
+rekomendasi obat. Fitur-fitur tersebut dipilih karena mewakili proses utama 
+sistem, mulai dari autentikasi pengguna, pengelolaan data, proses percakapan 
+--- PAGE 158 ---
+156 
+ 
+ 
+ 
+dengan model bahasa, pengambilan konteks melalui GraphRAG, hingga 
+pemberian rekomendasi edukatif obat herbal. 
+Metode yang digunakan dalam pengujian ini adalah basis path 
+testing. Metode ini dilakukan dengan mengidentifikasi node proses, 
+menghitung kompleksitas siklomatis, menentukan jalur independen, 
+kemudian menyusun skenario pengujian berdasarkan jalur tersebut.  Rumus 
+kompleksitas siklomatis yang digunakan adalah V(G) = P + 1, dengan P 
+merupakan jumlah predicate node atau titik keputusan pada alur program. 
+1.1. Testing White -box pada Method handleLogin() dan aut hLogin() 
+Autentikasi Login 
+Metode login berfungsi untuk memvalidasi email dan kata 
+sandi pengguna, melakukan autentikasi melalui layanan backend atau 
+Supabase, membaca peran pengguna, kemudian mengarahkan 
+pengguna ke halaman yang sesuai. Alur ini mencakup validasi input, 
+pengecekan kredensial, pengecekan role admin atau user, penyimpanan 
+sesi, serta penanganan pesan kesalahan. 
+1.1.1. Source Code yang Diuji 
+Berikut adalah potongan kode logika utama pada 
+method handleLogin() / authLogin() yang telah diberi nomor 
+simpul (node) untuk keperluan analisis grafik alur kendali: 
+ 
+--- PAGE 159 ---
+157 
+ 
+ 
+ 
+ 
+Gambar 4. 65 Source Code Login 
+1.1.2. Control Flow Graph (CFG) 
+Berdasarkan potongan kode di atas, alur kendali 
+program digambarkan dalam grafik berikut untuk 
+mengidentifikasi jalur-jalur logika yang ada: 
+ 
+Gambar 4. 66 CFG Login 
+1.1.3. Cyclomatic Complexity 
+Rumus perhitungan Cyclomatic Complexity: 
+
+--- PAGE 160 ---
+158 
+ 
+ 
+ 
+V(G) = P + 1 
+Diketahui jumlah predicate node (P) = 4. Maka nilai 
+Cyclomatic Complexity adalah V(G) = 4 + 1 = 5. Hasil 
+perhitungan menunjukkan bahwa method handleLogin() / 
+authLogin() memiliki 5 jalur independent yang perlu diuji. 
+1.1.4. Independent Path 
+Berdasarkan perhitungan kompleksitas, berikut 
+adalah rincian jalur logika yang diuji: 
+Path 1 (1 ->2->2a): Jalur pengujian untuk memastikan 
+percabangan logika berjalan sesuai kondisi yang diuji. 
+Path 2 (1 ->2->3->3a): Jalur pengujian untuk memastikan 
+percabangan logika berjalan sesuai kondisi yang diuji. 
+Path 3 (1 ->2->3->4->5->6->8): Jalur pengujian untuk 
+memastikan percabangan logika berjalan sesuai kondisi yang 
+diuji. 
+Path 4 (1 ->2->3->4->5->7->8): Jalur pengujian untuk 
+memastikan percabangan logika berjalan sesuai kondisi yang 
+diuji. 
+Path 5 (1 ->2->3->4->5->7->8 dengan sesi tersimpan dan 
+halaman user terbuka): Jalur pengujian untuk memastikan 
+percabangan logika berjalan sesuai kondisi yang diuji. 
+1.1.5. Implementasii dan Hasil Unit Testing 
+Pengujian white-box dengan teknik basis path testing 
+dilakukan untuk memastikan setiap jalur independent pada 
+--- PAGE 161 ---
+159 
+ 
+ 
+ 
+method handleLogin() / authLogin() dapat menghasilkan 
+output sesuai spesifikasi. Setiap jalur diuji menggunakan 
+skenario input yang berbeda agar seluruh percabangan logika 
+dapat dianalisis. 
+Tabel 4. 66 Hasil Unit Testing login 
+Path Skenario Uji Kondisi Input Expected Output Status 
+1 Email atau 
+password 
+kosong 
+email/password 
+kosong 
+Sistem menampilkan 
+validasi wajib isi data 
+PASS 
+2 Kredensial salah email valid, 
+password salah 
+Sistem menampilkan pesan 
+login gagal 
+PASS 
+3 Login admin 
+berhasil 
+akun role admin Sistem mengarahkan ke 
+dashboard admin 
+PASS 
+4 Login user 
+berhasil 
+akun role user Sistem mengarahkan ke 
+homepage chatbot 
+PASS 
+5 Sesi tersimpan akun valid Token/sesi pengguna 
+tersimpan 
+PASS 
+ 
+Seluruh 5 skenario jalur independent pada method 
+handleLogin() / authLogin() telah dianalisis dan menghasilkan 
+output sesuai ekspektasi rancangan. Hasil ini menunjukkan 
+bahwa alur logika pada fitur Autentikasi Login telah mencakup 
+kondisi valid, kondisi ti dak valid, dan kondisi pengecualian 
+yang diperlukan oleh sistem. 
+1.1.6. Kesimpulan 
+Method handleLogin() / authLogin() pada fitur 
+Autentikasi Login memiliki nilai Cyclomatic Complexity 
+sebesar 5. Nilai tersebut menunjukkan jumlah jalur 
+independent yang perlu diperhatikan dalam proses pengujian. 
+Berdasarkan hasil analisis, setiap jalur log ika telah memiliki 
+--- PAGE 162 ---
+160 
+ 
+ 
+ 
+skenario pengujian yang sesuai, sehingga fitur Autentikasi 
+Login dinilai mampu menangani alur normal maupun alur 
+kesalahan secara terstruktur. 
+1.2. Testing White-box pada Methode handleRegister() / createAccou nt() 
+Registrasi pengguna 
+Metode register berfungsi untuk membuat akun pengguna baru 
+pada sistem. Metode ini mencakup validasi kelengkapan data, 
+pengecekan format email, pengecekan kesesuaian password dan 
+konfirmasi password, penyimpanan akun, pembuatan profil pengguna, 
+serta penga lihan pengguna ke halaman login setelah pendaftaran 
+berhasil. 
+1.2.1. Source Code yang Diuji 
+Berikut adalah potongan kode logika utama pada 
+method handleRegister() / createAccount() yang telah diberi 
+nomor simpul (node) untuk keperluan analisis grafik alur 
+kendali: 
+--- PAGE 163 ---
+161 
+ 
+ 
+ 
+ 
+Gambar 4. 67 Source Code Register 
+1.2.2. Control Flow Graph (CFG) 
+Berdasarkan potongan kode di atas, alur kendali 
+program digambarkan dalam grafik berikut untuk 
+mengidentifikasi jalur-jalur logika yang ada: 
+ 
+Gambar 4. 68 CFG Register 
+ 
+
+--- PAGE 164 ---
+162 
+ 
+ 
+ 
+1.2.3. Cyclomatic Complexity 
+Rumus perhitungan Cyclomatic Complexity: 
+V(G) = P + 1 
+Diketahui jumlah predicate node (P) = 5. Maka nilai 
+Cyclomatic Complexity adalah V(G) = 5 + 1 = 6. Hasil 
+perhitungan menunjukkan bahwa method handleRegister() / 
+createAccount() memiliki 6 jalur independent yang perlu diuji. 
+1.2.4. Independent Path 
+Berdasarkan perhitungan kompleksitas, berikut 
+adalah rincian jalur logika yang diuji: 
+Path 1 (1 ->2->2a): Jalur pengujian untuk memastikan 
+percabangan logika berjalan sesuai kondisi yang diuji. 
+Path 2 (1 ->2->3->3a): Jalur pengujian untuk memastikan 
+percabangan logika berjalan sesuai kondisi yang diuji. 
+Path 3 (1 ->2->3->4->4a): Jalur pengujian untuk memastikan 
+percabangan logika berjalan sesuai kondisi yang diuji. 
+Path 4 (1 ->2->3->4->5->5a): Jalur pengujian untuk 
+memastikan percabangan logika berjalan sesuai kondisi yang 
+diuji. 
+Path 5 (1 ->2->3->4->5->6->6a): Jalur pengujian untuk 
+memastikan percabangan logika berjalan sesuai kondisi yang 
+diuji. 
+--- PAGE 165 ---
+163 
+ 
+ 
+ 
+Path 6 (1 ->2->3->4->5->6->7->8->9): Jalur pengujian untuk 
+memastikan percabangan logika berjalan sesuai kondisi yang 
+diuji. 
+1.2.5. Implementasi dan Hasil Unit Testing 
+Pengujian white-box dengan teknik basis path testing 
+dilakukan untuk memastikan setiap jalur independent pada 
+method handleRegister() / createAccount() dapat 
+menghasilkan output sesuai spesifikasi. Setiap jalur diuji 
+menggunakan skenario input yang berbeda  agar seluruh 
+percabangan logika dapat dianalisis. 
+Tabel 4. 67 Hasil Unit Testing Register 
+Path Skenario Uji Kondisi Input Expected Output Status 
+1 Data kosong field wajib kosong Validasi data wajib 
+tampil 
+PASS 
+2 Email tidak valid format email salah Validasi format 
+email tampil 
+PASS 
+3 Password lemah password < 8 
+karakter 
+Validasi password 
+tampil 
+PASS 
+4 Konfirmasi tidak 
+sama 
+password berbeda Pesan password 
+tidak sama tampil 
+PASS 
+5 Akun gagal dibuat email sudah 
+digunakan 
+Sistem menolak 
+pendaftaran 
+PASS 
+6 Registrasi berhasil data valid Akun dan profil 
+tersimpan 
+PASS 
+ 
+Seluruh 6 skenario jalur independent pada method 
+handleRegister() / createAccount() telah dianalisis dan 
+menghasilkan output sesuai ekspektasi rancangan. Hasil ini 
+menunjukkan bahwa alur logika pada fitur Registrasi 
+--- PAGE 166 ---
+164 
+ 
+ 
+ 
+Pengguna telah mencakup kondisi valid, kondisi tidak valid, 
+dan kondisi pengecualian yang diperlukan oleh sistem. 
+1.2.6. Kesimpulan 
+Method handleRegister() / createAccount() pada fitur 
+Registrasi Pengguna memiliki nilai Cyclomatic Complexity 
+sebesar 6. Nilai tersebut menunjukkan jumlah jalur 
+independent yang perlu diperhatikan dalam proses pengujian. 
+Berdasarkan hasil analisis, setiap jalur logika telah memiliki 
+skenario pengujian yang sesuai, sehingga fitur Registrasi 
+Pengguna dinilai mampu menangani alur normal maupun alur 
+kesalahan secara terstruktur. 
+1.3. Testing White -box pada Method loadAdminDashboardOverview() 
+Dashboard Admin 
+Metode dashboard admin digunakan untuk memuat ringkasan 
+kondisi sistem. Alur ini melakukan validasi hak akses admin, 
+mengambil data pengguna, percakapan, penggunaan AI, status layanan, 
+penyimpanan, dan log error, kemudian menyusun data tersebut menjadi 
+tampilan ringkasan pada halaman dashboard admin. 
+1.3.1. Source Code yang Diuji 
+Berikut adalah potongan kode logika utama pada 
+method loadAdminDashboardOverview() yang telah diberi 
+nomor simpul (node) untuk keperluan analisis grafik alur 
+kendali: 
+--- PAGE 167 ---
+165 
+ 
+ 
+ 
+ 
+Gambar 4. 69 Source Code Dashboard Admin 
+1.3.2. Control Flow Graph (CFG) 
+Berdasarkan potongan kode di atas, alur kendali 
+program digambarkan dalam grafik berikut untuk 
+mengidentifikasi jalur-jalur logika yang ada: 
+ 
+Gambar 4. 70 CFG Dashboard Admin 
+1.3.3. Cyclomatic Complexity 
+Rumus perhitungan Cyclomatic Complexity: 
+
+--- PAGE 168 ---
+166 
+ 
+ 
+ 
+V(G) = P + 1 
+Diketahui jumlah predicate node (P) = 4. Maka nilai 
+Cyclomatic Complexity adalah V(G) = 4 + 1 = 5. Hasil 
+perhitungan menunjukkan bahwa method 
+loadAdminDashboardOverview() memiliki 5 jalur 
+independent yang perlu diuji. 
+1.3.4. Independent Path 
+Berdasarkan perhitungan kompleksitas, berikut 
+adalah rincian jalur logika yang diuji: 
+Path 1 (1 ->2->2a): Jalur pengujian untuk memastikan 
+percabangan logika berjalan sesuai kondisi yang diuji. 
+Path 2 (1 ->2->3->3a): Jalur pengujian untuk memastikan 
+percabangan logika berjalan sesuai kondisi yang diuji. 
+Path 3 (1 ->2->3->4->4a): Jalur pengujian untuk memastikan 
+percabangan logika berjalan sesuai kondisi yang diuji. 
+Path 4 (1 ->2->3->4->5->6->7->8): Jalur pengujian untuk 
+memastikan percabangan logika berjalan sesuai kondisi yang 
+diuji. 
+Path 5 (1 ->2->3->4->5->6->7->8 dengan status layanan 
+lengkap): Jalur pengujian untuk memastikan percabangan 
+logika berjalan sesuai kondisi yang diuji. 
+1.3.5. Implementasi dan Hasil Unit Testing 
+Pengujian white-box dengan teknik basis path testing 
+dilakukan untuk memastikan setiap jalur independent pada 
+--- PAGE 169 ---
+167 
+ 
+ 
+ 
+method loadAdminDashboardOverview() dapat menghasilkan 
+output sesuai spesifikasi. Setiap jalur diuji menggunakan 
+skenario input yang berbeda agar seluruh percabangan logika 
+dapat dianalisis. 
+Tabel 4. 68 Hasil Unit Testing Dashboard Admin 
+Path Skenario 
+Uji 
+Kondisi 
+Input 
+Expected 
+Output 
+Status 
+1 Belum login user kosong Sistem menolak 
+akses 
+PASS 
+2 Role bukan 
+admin 
+role user Sistem menolak 
+akses dashboard 
+PASS 
+3 Data 
+overview 
+kosong 
+data belum 
+tersedia 
+Sistem 
+menampilkan 
+empty state 
+PASS 
+4 Dashboard 
+berhasil 
+role admin 
+valid 
+Ringkasan 
+sistem tampil 
+PASS 
+5 Health 
+check 
+tampil 
+dependency 
+tersedia 
+Status layanan 
+tampil 
+PASS 
+Seluruh 5 skenario jalur independent pada method 
+loadAdminDashboardOverview() telah dianalisis dan 
+menghasilkan output sesuai ekspektasi rancangan. Hasil ini 
+menunjukkan bahwa alur logika pada fitur Dashboard Admin 
+telah mencakup kondisi valid, kondisi tidak valid, dan kondisi 
+pengecualian yang diperlukan oleh sistem. 
+1.3.6. Kesimpulan 
+Method loadAdminDashboardOverview() pada fitur 
+Dashboard Admin memiliki nilai Cyclomatic Complexity 
+--- PAGE 170 ---
+168 
+ 
+ 
+ 
+sebesar 5. Nilai tersebut menunjukkan jumlah jalur 
+independent yang perlu diperhatikan dalam proses pengujian. 
+Berdasarkan hasil analisis, setiap jalur logika telah memiliki 
+skenario pengujian yang sesuai, sehingga fitur Dashboard 
+Admin dinilai mampu menan gani alur normal maupun alur 
+kesalahan secara terstruktur. 
+1.4. Testing White -box pada Method handleChatSubmit() / 
+ChatOrchestrator.process() Homepage Chatbot 
+Metode chatbot berfungsi untuk memproses pertanyaan 
+pengguna melalui alur Agentic AI. Alur ini mencakup validasi pesan, 
+pengecekan lampiran, pemilihan persona dan model, pengambilan 
+konteks melalui GraphRAG, pemanggilan model bahasa, pemeriksaan 
+keamanan j awaban, penyimpanan pesan, dan pengiriman respons ke 
+antarmuka pengguna. 
+1.4.1. Source Code yang Diuji 
+Berikut adalah potongan kode logika utama pada 
+method handleChatSubmit() / ChatOrchestrator.process() 
+yang telah diberi nomor simpul (node) untuk keperluan 
+analisis grafik alur kendali: 
+--- PAGE 171 ---
+169 
+ 
+ 
+ 
+ 
+Gambar 4. 71 Source Code Homepage Chat 
+1.4.2. Control Flow Graph (CFG) 
+Berdasarkan potongan kode di atas, alur kendali 
+program digambarkan dalam grafik berikut untuk 
+mengidentifikasi jalur-jalur logika yang ada: 
+ 
+Gambar 4. 72 CFG Homepage Chat 
+1.4.3. Cyclomatic Complexity 
+Rumus perhitungan Cyclomatic Complexity: 
+
+--- PAGE 172 ---
+170 
+ 
+ 
+ 
+V(G) = P +1 
+Diketahui jumlah predicate node (P) = 7. Maka nilai 
+Cyclomatic Complexity adalah V(G) = 7 + 1 = 8. Hasil 
+perhitungan menunjukkan bahwa method handleChatSubmit() 
+/ ChatOrchestrator.process() memiliki 8 jalur independent 
+yang perlu diuji. 
+1.4.4. Independent Path 
+Berdasarkan perhitungan kompleksitas, berikut 
+adalah rincian jalur logika yang diuji: 
+Path 1 (1 ->2->2a): Jalur pengujian untuk memastikan 
+percabangan logika berjalan sesuai kondisi yang diuji. 
+Path 2 (1 ->2->3->4->5->6->8->9->10->11): Jalur pengujian 
+untuk memastikan percabangan logika berjalan sesuai kondisi 
+yang diuji. 
+Path 3 (1 ->2->3->5->6->8->9->10->11): Jalur pengujian 
+untuk memastikan percabangan logika berjalan sesuai kondisi 
+yang diuji. 
+Path 4 (1 ->2->3->5->7->8->9->10->11): Jalur pengujian 
+untuk memastikan percabangan logika berjalan sesuai kondisi 
+yang diuji. 
+Path 5 (1 ->2->3->5->8->9->10->11): Jalur pengujian untuk 
+memastikan percabangan logika berjalan sesuai kondisi yang 
+diuji. 
+--- PAGE 173 ---
+171 
+ 
+ 
+ 
+Path 6 (1 ->2->3->5->6->8->8a): Jalur pengujian untuk 
+memastikan percabangan logika berjalan sesuai kondisi yang 
+diuji. 
+Path 7 (1 ->2->3->4->5->7->8->8a): Jalur pengujian untuk 
+memastikan percabangan logika berjalan sesuai kondisi yang 
+diuji. 
+Path 8 (1 ->2->3->5->8->9->10->11 dengan streaming 
+berhasil): Jalur pengujian untuk memastikan percabangan 
+logika berjalan sesuai kondisi yang diuji. 
+1.4.5. Implementasi dan Hasil Unit Testing 
+Pengujian white-box dengan teknik basis path testing 
+dilakukan untuk memastikan setiap jalur independent pada 
+method handleChatSubmit() / ChatOrchestrator.process() 
+dapat menghasilkan output sesuai spesifikasi. Setiap jalur diuji 
+menggunakan skenario input  yang berbeda agar seluruh 
+percabangan logika dapat dianalisis. 
+Tabel 4. 69 Hasil Unit Testing Homepage Chat 
+Path Skenario 
+Uji 
+Kondisi 
+Input 
+Expected 
+Output 
+Status 
+1 Pesan 
+kosong 
+message 
+kosong tanpa 
+file 
+Validasi pesan 
+tampil 
+PASS 
+2 Chat dengan 
+lampiran 
+message + 
+file 
+Lampiran 
+diproses 
+PASS 
+3 Intent 
+herbal 
+pertanyaan 
+herbal 
+Konteks 
+GraphRAG 
+digunakan 
+PASS 
+--- PAGE 174 ---
+172 
+ 
+ 
+ 
+4 Intent medis pertanyaan 
+medis 
+Tool atau 
+konteks medis 
+digunakan 
+PASS 
+5 Pertanyaan 
+umum 
+pertanyaan 
+umum 
+Jawaban umum 
+dihasilkan 
+PASS 
+6 Jawaban 
+tidak aman 
+output 
+terblokir 
+safety 
+Sistem memberi 
+respons aman 
+PASS 
+7 Chat sukses input valid Pesan dan 
+jawaban 
+tersimpan 
+PASS 
+8 Streaming 
+sukses 
+input valid Respons dikirim 
+ke halaman 
+chatbot 
+PASS 
+Seluruh 8 skenario jalur independent pada method 
+handleChatSubmit() / ChatOrchestrator.process() telah 
+dianalisis dan menghasilkan output sesuai ekspektasi 
+rancangan. Hasil ini menunjukkan bahwa alur logika pada fitur 
+Homepage Chatbot telah mencakup kondis i valid, kondisi 
+tidak valid, dan kondisi pengecualian yang diperlukan oleh 
+sistem. 
+1.4.6. Kesimpulan 
+Method handleChatSubmit() / 
+ChatOrchestrator.process() pada fitur Homepage Chatbot 
+memiliki nilai Cyclomatic Complexity sebesar 8. Nilai 
+tersebut menunjukkan jumlah jalur independent yang perlu 
+diperhatikan dalam proses pengujian. Berdasarkan hasil 
+analisis, setiap jalur logika telah memiliki skenario pengujian 
+yang sesuai, sehingga fitur Homepage Chatbot dinilai mampu 
+--- PAGE 175 ---
+173 
+ 
+ 
+ 
+menangani alur normal maupun alur kesalahan secara 
+terstruktur. 
+1.5. Testing White-box pada Method updateProfile() Profil Pengguna 
+Metode profil pengguna berfungsi untuk menampilkan dan 
+memperbarui data profil pengguna. Alur ini mencakup validasi sesi, 
+pengambilan profil, validasi perubahan data, penyimpanan perubahan 
+pada database, serta pembaruan tampilan profil pada sisi pengguna. 
+1.5.1. Source Code yang Diuji 
+Berikut adalah potongan kode logika utama pada 
+method updateProfile() yang telah diberi nomor simpul (node) 
+untuk keperluan analisis grafik alur kendali: 
+ 
+Gambar 4. 73 Source Code Profile 
+1.5.2. Control Flow Graph (CFG) 
+Berdasarkan potongan kode di atas, alur kendali 
+program digambarkan dalam grafik berikut untuk 
+mengidentifikasi jalur-jalur logika yang ada: 
+
+--- PAGE 176 ---
+174 
+ 
+ 
+ 
+ 
+Gambar 4. 74 CFG Profile 
+1.5.3. Cyclomatic Complexity 
+Rumus perhitungan Cyclomatic Complexity: 
+V(G) = P +1 
+Diketahui jumlah predicate node (P) = 4. Maka nilai 
+Cyclomatic Complexity adalah V(G) = 4 + 1 = 5. Hasil 
+perhitungan menunjukkan bahwa method updateProfile() 
+memiliki 5 jalur independent yang perlu diuji. 
+1.5.4. Independent Path 
+Berdasarkan perhitungan kompleksitas, berikut 
+adalah rincian jalur logika yang diuji: 
+Path 1 (1 ->2->2a): Jalur pengujian untuk memastikan 
+percabangan logika berjalan sesuai kondisi yang diuji. 
+Path 2 (1 ->2->3->3a): Jalur pengujian untuk memastikan 
+percabangan logika berjalan sesuai kondisi yang diuji. 
+
+--- PAGE 177 ---
+175 
+ 
+ 
+ 
+Path 3 (1 ->2->3->4->4a): Jalur pengujian untuk memastikan 
+percabangan logika berjalan sesuai kondisi yang diuji. 
+Path 4 (1 ->2->3->4->5->6->7): Jalur pengujian untuk 
+memastikan percabangan logika berjalan sesuai kondisi yang 
+diuji. 
+Path 5 (1 ->2->3->4->5->6->7 dengan perubahan 
+persona/model): Jalur pengujian untuk memastikan 
+percabangan logika berjalan sesuai kondisi yang diuji. 
+1.5.5. Implementasi dan Hasil Unit Testing 
+Pengujian white-box dengan teknik basis path testing 
+dilakukan untuk memastikan setiap jalur independent pada 
+method updateProfile() dapat menghasilkan output sesuai 
+spesifikasi. Setiap jalur diuji menggunakan skenario input 
+yang berbeda agar seluruh perca bangan logika dapat 
+dianalisis. 
+Tabel 4. 70 Hasil Unit Testing Profile 
+Path Skenario Uji Kondisi 
+Input 
+Expected 
+Output 
+Status 
+1 Belum login user_id 
+kosong 
+Sistem 
+menolak 
+akses 
+PASS 
+2 Profil tidak 
+ditemukan 
+id tidak ada Pesan data 
+tidak 
+ditemukan 
+PASS 
+3 Payload tidak 
+valid 
+email salah Validasi data 
+tampil 
+PASS 
+--- PAGE 178 ---
+176 
+ 
+ 
+ 
+4 Update 
+berhasil 
+data valid Profil 
+diperbarui 
+PASS 
+5 Preferensi 
+berubah 
+persona/model 
+baru 
+Preferensi 
+tersimpan 
+PASS 
+ 
+Seluruh 5 skenario jalur independent pada method 
+updateProfile() telah dianalisis dan menghasilkan output 
+sesuai ekspektasi rancangan. Hasil ini menunjukkan bahwa 
+alur logika pada fitur Profil Pengguna telah mencakup kondisi 
+valid, kondisi tidak valid, dan  kondisi pengecualian yang 
+diperlukan oleh sistem. 
+1.5.6. Kesimpulan 
+Method updateProfile() pada fitur Profil Pengguna 
+memiliki nilai Cyclomatic Complexity sebesar 5. Nilai 
+tersebut menunjukkan jumlah jalur independent yang perlu 
+diperhatikan dalam proses pengujian. Berdasarkan hasil 
+analisis, setiap jalur logika telah memi liki skenario pengujian 
+yang sesuai, sehingga fitur Profil Pengguna dinilai mampu 
+menangani alur normal maupun alur kesalahan secara 
+terstruktur. 
+1.6. Testing White -box pada Method QuizOrchestrator.start(), answer(), 
+complete() Kuis Edukasi 
+Metode kuis digunakan untuk mengatur alur pengerjaan kuis 
+mulai dari membuat percobaan, menampilkan soal, menerima jawaban, 
+--- PAGE 179 ---
+177 
+ 
+ 
+ 
+memeriksa kebenaran, menghitung skor, memberikan XP, menyimpan 
+progres, dan menampilkan hasil review kuis. 
+1.6.1. Source Code yang Diuji 
+Berikut adalah potongan kode logika utama pada 
+method QuizOrchestrator.start(), answer(), complete() yang 
+telah diberi nomor simpul (node) untuk keperluan analisis 
+grafik alur kendali. 
+ 
+Gambar 4. 75 Source Code Quiz 
+1.6.2. Control Flow Graph (CFG) 
+Berdasarkan potongan kode di atas, alur kendali 
+program digambarkan dalam grafik berikut untuk 
+mengidentifikasi jalur-jalur logika yang ada: 
+
+--- PAGE 180 ---
+178 
+ 
+ 
+ 
+ 
+Gambar 4. 76 CFG Quiz 
+1.6.3. Cyclomatic Complexity 
+Rumus perhitungan Cyclomatic Complexity: 
+V(G) = P +1 
+Diketahui jumlah predicate node (P) = 6. Maka nilai 
+Cyclomatic Complexity adalah V(G) = 6 + 1 = 7. Hasil 
+perhitungan menunjukkan bahwa method 
+QuizOrchestrator.start(), answer(), complete() memiliki 7 jalur 
+independent yang perlu diuji. 
+1.6.4. Independent Path 
+Berdasarkan perhitungan kompleksitas, berikut 
+adalah rincian jalur logika yang diuji: 
+Path 1 (1 ->2->2a): Jalur pengujian untuk memastikan 
+percabangan logika berjalan sesuai kondisi yang diuji. 
+Path 2 (1 ->2->3->4->4a): Jalur pengujian untuk memastikan 
+percabangan logika berjalan sesuai kondisi yang diuji. 
+
+--- PAGE 181 ---
+179 
+ 
+ 
+ 
+Path 3 (1 ->2->3->4->5->5a): Jalur pengujian untuk 
+memastikan percabangan logika berjalan sesuai kondisi yang 
+diuji. 
+Path 4 (1 ->2->3->4->5->6->7->7a): Jalur pengujian untuk 
+memastikan percabangan logika berjalan sesuai kondisi yang 
+diuji. 
+Path 5 (1 ->2->3->4->5->6->7->8->9): Jalur pengujian untuk 
+memastikan percabangan logika berjalan sesuai kondisi yang 
+diuji. 
+Path 6 (1 ->2->3->4->5->6->7->8->9 dengan skor dan XP 
+tersimpan): Jalur pengujian untuk memastikan percabangan 
+logika berjalan sesuai kondisi yang diuji. 
+Path 7 (1 ->2->3->4->5->6->7->8->9 dengan review kuis 
+tampil): Jalur pengujian untuk memastikan percabangan 
+logika berjalan sesuai kondisi yang diuji. 
+1.6.5. Implementasi dan Hasil Unit Testing 
+Pengujian white-box dengan teknik basis path testing 
+dilakukan untuk memastikan setiap jalur independent pada 
+method QuizOrchestrator.start(), answer(), complete() dapat 
+menghasilkan output sesuai spesifikasi. Setiap jalur diuji 
+menggunakan skenario input yang berbeda agar seluruh 
+percabangan logika dapat dianalisis. 
+--- PAGE 182 ---
+180 
+ 
+ 
+ 
+Tabel 4. 71 Hasil Unit Testing Quiz 
+Path Skenario 
+Uji 
+Kondisi 
+Input 
+Expected 
+Output 
+Status 
+1 User tidak 
+valid 
+user_id 
+kosong 
+Sistem menolak 
+request 
+PASS 
+2 Attempt 
+tidak 
+ditemukan 
+attempt_id 
+salah 
+Sistem 
+menampilkan 
+not found 
+PASS 
+3 Jawaban 
+tidak valid 
+payload 
+kosong 
+Sistem 
+menampilkan 
+validasi 
+PASS 
+4 Attempt 
+belum 
+selesai 
+belum semua 
+soal dijawab 
+Sistem menolak 
+penyelesaian 
+PASS 
+5 Kuis selesai jawaban 
+lengkap 
+Skor dan XP 
+dihitung 
+PASS 
+6 History 
+tersimpan 
+attempt 
+selesai 
+Riwayat kuis 
+tersimpan 
+PASS 
+7 Review 
+tampil 
+attempt 
+selesai 
+Pembahasan 
+tampil 
+PASS 
+ 
+Seluruh 7 skenario jalur independent pada method 
+QuizOrchestrator.start(), answer(), complete() telah dianalisis 
+dan menghasilkan output sesuai ekspektasi rancangan. Hasil 
+ini menunjukkan bahwa alur logika pada fitur Kuis Edukasi 
+telah mencakup kondisi valid, kondisi tidak valid, dan kondisi 
+pengecualian yang diperlukan oleh sistem. 
+1.6.6. Kesimpulan 
+Method QuizOrchestrator.start(), answer(), 
+complete() pada fitur Kuis Edukasi memiliki nilai Cyclomatic 
+Complexity sebesar 7. Nilai tersebut menunjukkan jumlah 
+jalur independent yang perlu diperhatikan dalam proses 
+--- PAGE 183 ---
+181 
+ 
+ 
+ 
+pengujian. Berdasarkan hasil analisis, setiap jalur logika telah 
+memiliki skenario pengujian yang sesuai, sehingga fitur Kuis 
+Edukasi dinilai mampu menangani alur normal maupun alur 
+kesalahan secara terstruktur. 
+1.7. Testing White -box pada Method 
+RecommendationOrchestrator.analyze() Rekomendasi Obat Herbal 
+Metode rekomendasi obat herbal berfungsi untuk menganalisis 
+keluhan pengguna dan menghasilkan rekomendasi edukatif berbasis 
+Knowledge Graph dan GraphRAG. Alur ini mencakup ekstraksi gejala, 
+ekspansi istilah, deteksi red flag, pengambilan kandidat herbal da ri 
+Neo4j, pengecekan keamanan, penilaian relevansi, penyusunan sumber 
+rujukan, penyimpanan sesi rekomendasi, serta pengembalian hasil 
+rekomendasi kepada pengguna. 
+1.7.1. Source Code yang Diuji 
+Berikut adalah potongan kode logika utama pada 
+method RecommendationOrchestrator.analyze() yang telah 
+diberi nomor simpul (node) untuk keperluan analisis grafik 
+alur kendali: 
+--- PAGE 184 ---
+182 
+ 
+ 
+ 
+ 
+Gambar 4. 77 Source Code Rekomendasi 
+1.7.2. Control Flow Graph (CFG) 
+Berdasarkan potongan kode di atas, alur kendali 
+program digambarkan dalam grafik berikut untuk 
+mengidentifikasi jalur-jalur logika yang ada: 
+ 
+Gambar 4. 78 CFG Rekomendasi 
+1.7.3. Cyclomatic Complexity 
+Rumus perhitungan Cyclomatic Complexity: 
+
+--- PAGE 185 ---
+183 
+ 
+ 
+ 
+V(G) = P +1 
+Diketahui jumlah predicate node (P) = 8. Maka nilai 
+Cyclomatic Complexity adalah V(G) = 8 + 1 = 9. Hasil 
+perhitungan menunjukkan bahwa method 
+RecommendationOrchestrator.analyze() memiliki 9 jalur 
+independent yang perlu diuji. 
+1.7.4. Independent Path 
+Berdasarkan perhitungan kompleksitas, berikut 
+adalah rincian jalur logika yang diuji: 
+Path 1 (1 ->2->3->4->4a): Jalur pengujian untuk memastikan 
+percabangan logika berjalan sesuai kondisi yang diuji. 
+Path 2 (1->2->3->4->5->6->7->8->8a): Jalur pengujian untuk 
+memastikan percabangan logika berjalan sesuai kondisi yang 
+diuji. 
+Path 3 (1 ->2->3->4->5->6->8->8a): Jalur pengujian untuk 
+memastikan percabangan logika berjalan sesuai kondisi yang 
+diuji. 
+Path 4 (1 ->2->3->4->5->6->8->9->9a->11->12->13->14): 
+Jalur pengujian untuk memastikan percabangan logika 
+berjalan sesuai kondisi yang diuji. 
+Path 5 (1 ->2->3->4->5->6->8->9->10->11->13->14): Jalur 
+pengujian untuk memastikan percabangan logika berjalan 
+sesuai kondisi yang diuji. 
+--- PAGE 186 ---
+184 
+ 
+ 
+ 
+Path 6 (1 ->2->3->4->5->6->7->8->9->10->11->13->14): 
+Jalur pengujian untuk memastikan percabangan logika 
+berjalan sesuai kondisi yang diuji. 
+Path 7 (1 ->2->3->4->5->6->8->9->10->11->12->13->14): 
+Jalur pengujian untuk memastikan percabangan logika 
+berjalan sesuai kondisi yang diuji. 
+Path 8 (1 ->2->3->4->5->6->8->9->10->11->13->14 dengan 
+sesi tersimpan): Jalur pengujian untuk memastikan 
+percabangan logika berjalan sesuai kondisi yang diuji. 
+Path 9 (1 ->2->3->4->5->6->8->9->10->11->13->14 dengan 
+sumber rujukan tampil): Jalur pengujian untuk memastikan 
+percabangan logika berjalan sesuai kondisi yang diuji. 
+1.7.5. Implementasi dan Hasil Unit Testing 
+Pengujian white-box dengan teknik basis path testing 
+dilakukan untuk memastikan setiap jalur independent pada 
+method RecommendationOrchestrator.analyze() dapat 
+menghasilkan output sesuai spesifikasi. Setiap jalur diuji 
+menggunakan skenario input yang berbe da agar seluruh 
+percabangan logika dapat dianalisis. 
+Tabel 4. 72 Hasil Unit Testing Rekomendasi 
+Path Skenario Uji Kondisi 
+Input 
+Expected Output Status 
+1 Gejala 
+diekstraksi 
+keluhan 
+tanpa 
+symptoms 
+Gejala berhasil 
+dibuat 
+PASS 
+--- PAGE 187 ---
+185 
+ 
+ 
+ 
+2 Red flag keluhan 
+berat / 
+darurat 
+Sistem 
+menyarankan 
+tenaga kesehatan 
+PASS 
+3 Tidak ada 
+data KG 
+rows 
+kosong 
+dan mock 
+aktif 
+Kandidat mock 
+dimuat 
+PASS 
+4 Kandidat 
+unsafe 
+konflik 
+keamanan 
+Kandidat 
+dikeluarkan 
+PASS 
+5 Skor rendah confidence 
+rendah 
+Kandidat masuk 
+low confidence 
+PASS 
+6 Skor cukup confidence 
+memenuhi 
+batas 
+Kandidat 
+direkomendasikan 
+PASS 
+7 Tidak ada 
+kandidat 
+semua 
+kandidat 
+gugur 
+Sistem memberi 
+limitation dan 
+suggested terms 
+PASS 
+8 Rekomendasi 
+sukses 
+input valid Sesi rekomendasi 
+disimpan 
+PASS 
+9 Detail 
+sumber 
+tampil 
+sumber 
+tersedia 
+Referensi 
+ditampilkan 
+PASS 
+ 
+Seluruh 9 skenario jalur independent pada method 
+RecommendationOrchestrator.analyze() telah dianalisis dan 
+menghasilkan output sesuai ekspektasi rancangan. Hasil ini 
+menunjukkan bahwa alur logika pada fitur Rekomendasi Obat 
+Herbal telah mencakup kondisi valid, kondisi tidak valid, dan 
+kondisi pengecualian yang diperlukan oleh sistem. 
+1.7.6. Kesimpulan 
+Method RecommendationOrchestrator.analyze() 
+pada fitur Rekomendasi Obat Herbal memiliki nilai 
+--- PAGE 188 ---
+186 
+ 
+ 
+ 
+Cyclomatic Complexity sebesar 9. Nilai tersebut menunjukkan 
+jumlah jalur independent yang perlu diperhatikan dalam 
+proses pengujian. Berdasarkan hasil analisis, setiap jalur 
+logika telah memiliki skenario pengujian yang sesuai, 
+sehingga fitur Rekomendasi O bat Herbal dinilai mampu 
+menangani alur normal maupun alur kesalahan secara 
+terstruktur. 
+1.8. Testing White -box pada Method runFullSystemFlow() / 
+FullSystemOrchestrator.execute() 
+Pengujian white-box full sistem dilakukan untuk menganalisis 
+alur logika utama yang menghubungkan frontend dan backend. Alur ini 
+mencakup autentikasi pengguna, validasi sesi, pemilihan peran admin 
+atau pengguna, pemilihan fitur, proses chatbot berbasis Agentic AI , 
+rekomendasi obat herbal berbasis Knowledge Graph dan GraphRAG, 
+kuis edukasi, profil pengguna, penyimpanan lampiran, pencatatan 
+penggunaan AI, serta pengembalian respons ke antarmuka pengguna. 
+Berdasarkan rancangan sistem, backend  menggunakan 
+FastAPI sebagai API utama yang terhubung dengan Supabase, Neo4j, 
+MinIO, dan model lokal melalui llama.cpp. Frontend Herpa_FE 
+menggunakan Next.js sebagai antarmuka pengguna yang mengirim 
+permintaan melalui REST, SSE, dan token autentikasi. Oleh karena itu, 
+pengujian full sistem difokuskan pada alur kendali dari permintaan 
+pengguna hingga respons akhir yang diterima pada halaman aplikasi. 
+1.8.1. Source Code yang Diuji 
+--- PAGE 189 ---
+187 
+ 
+ 
+ 
+Berikut adalah potongan kode logika utama pada 
+method runFullSystemFlow() / 
+FullSystemOrchestrator.execute() yang telah diberi nomor 
+simpul (node) untuk keperluan analisis grafik alur kendali: 
+1.8.2. Control Flow Graph (CFG) 
+Berdasarkan potongan kode di atas, alur kendali full 
+sistem digambarkan dalam grafik berikut untuk mengidentifikasi 
+jalur-jalur logika dari proses autentikasi, pemilihan fitur, integrasi 
+layanan, validasi keamanan, penyimpanan data, hingga 
+pengembalian respons ke frontend: 
+ 
+Gambar 4. 79 Source Code Full System 
+
+--- PAGE 190 ---
+188 
+ 
+ 
+ 
+ 
+Gambar 4. 80 CFG Full System 
+1.8.3. Cyclomatic Complexity 
+Rumus perhitungan Cyclomatic Complexity  yang 
+digunakan adalah sebagai berikut: 
+V(G) = P +1 
+Diketahui jumlah predicate node (P) = 12. Maka nilai 
+Cyclomatic Complexity adalah V(G) = 12 + 1 = 13. Hasil 
+perhitungan menunjukkan bahwa method 
+runFullSystemFlow() / FullSystemOrchestrator.execute() 
+memiliki 13 jalur independent yang perlu diuji. 
+1.8.4. Independent Path 
+
+--- PAGE 191 ---
+189 
+ 
+ 
+ 
+Berdasarkan perhitungan kompleksitas, berikut 
+adalah rincian jalur logika yang diuji pada pengujian white-box 
+full sistem: 
+Path 1 (1->2->2a): Program berhenti karena pengguna belum 
+memiliki sesi atau belum login. 
+Path 2 (1->2->3->4->4a): Program berhenti karena token atau 
+autentikasi pengguna tidak valid. 
+Path 3 (1->2->3->4->5->6): Admin berhasil diarahkan ke alur 
+dashboard admin dan ringkasan sistem dimuat. 
+Path 4 (1 ->2->3->4->5->7->16): Program menampilkan not 
+found karena route atau fitur tidak dikenali. 
+Path 5 (1 ->2->3->4->5->7->8->9->17->18->19->20->22-
+>23): Pengguna menjalankan alur chatbot tanpa lampiran, 
+konteks GraphRAG diambil, model menghasilkan jawaban, 
+dan hasil dikirim ke frontend. 
+Path 6 (1 ->2->3->4->5->7->8->9->17->18->19->20->21-
+>22->23): Pengguna menjalankan alur chatbot dengan 
+lampiran sehingga file diproses dan disimpan sebelum respons 
+dikembalikan. 
+Path 7 (1 ->2->3->4->5->7->10->11->17->18->19->20->22-
+>23): Pengguna menjalankan rekomendasi obat herbal dan 
+sistem mengambil kandidat herbal dari Neo4j sebelum 
+memberi hasil edukatif. 
+--- PAGE 192 ---
+190 
+ 
+ 
+ 
+Path 8 (1 ->2->3->4->5->7->12->13->17->22->23): 
+Pengguna menjalankan kuis, sistem menyimpan attempt, skor, 
+XP, dan riwayat kuis. 
+Path 9 (1 ->2->3->4->5->7->14->15->17->22->23): 
+Pengguna memperbarui profil dan sistem menyimpan 
+perubahan ke database. 
+Path 10 (1 ->2->3->4->5->7->8->9->17): Program 
+mengembalikan respons terbatas ketika dependency health 
+check gagal. 
+Path 11 (1 ->2->3->4->5->7->10->11->17->18->19->20-
+>20a): Sistem mengembalikan respons aman ketika validasi 
+safety memblokir hasil rekomendasi atau jawaban. 
+Path 12 (1 ->2->3->4->5->7->8->9->17->18->19->20->22): 
+Sistem mencatat penggunaan AI, token, status, dan audit log 
+ke Supabase. 
+Path 13 (1 ->2->3->4->5->7->10->11->17->18->19->20-
+>21->22->23): Alur berhasil penuh dengan pemrosesan 
+rekomendasi, konteks graf, validasi keamanan, penyimpanan 
+lampiran, audit log, dan respons ke frontend. 
+1.8.5. Implementasi dan Hasil Unit Testing Full Sistem 
+Pengujian white-box full sistem dengan teknik basis 
+path testing  dilakukan untuk memastikan setiap jalur 
+independent pada method runFullSystemFlow() / 
+FullSystemOrchestrator.execute() menghasilkan output sesuai 
+--- PAGE 193 ---
+191 
+ 
+ 
+ 
+kebutuhan sistem. Setiap jalur diuji menggunakan kondisi 
+input yang berbeda agar seluruh percabangan logika pada 
+integrasi frontend, backend, database, Knowledge Graph , 
+penyimpanan, dan model AI dapat dianalisis. 
+Tabel 4. 73 Hasil Unit Testing Full System 
+Path Skenario Uji Kondisi Input Expected Output Status 
+1 Session tidak 
+tersedia 
+request tanpa 
+session 
+Redirect ke 
+halaman login 
+PASS 
+2 Token tidak 
+valid 
+Supabase JWT 
+salah/kedaluwarsa 
+Sistem menolak 
+akses 
+PASS 
+3 Admin 
+membuka 
+dashboard 
+role admin valid Dashboard admin 
+dan health check 
+tampil 
+PASS 
+4 Route tidak 
+dikenali 
+path tidak tersedia Sistem 
+menampilkan not 
+found 
+PASS 
+5 Chatbot tanpa 
+lampiran 
+pesan valid, 
+persona umum 
+Jawaban Agentic 
+AI berbasis 
+GraphRAG 
+tampil 
+PASS 
+6 Chatbot 
+dengan 
+lampiran 
+pesan valid + file Lampiran 
+diproses, 
+disimpan, dan 
+respons tampil 
+PASS 
+7 Rekomendasi 
+herbal berhasil 
+keluhan valid Kandidat herbal, 
+relevansi, risiko, 
+dan sumber 
+tampil 
+PASS 
+8 Kuis berhasil 
+diselesaikan 
+jawaban lengkap Skor, XP, review, 
+dan history 
+tersimpan 
+PASS 
+9 Profil berhasil 
+diperbarui 
+payload profil 
+valid 
+Data profil 
+terbaru tersimpan 
+PASS 
+10 Dependency 
+bermasalah 
+Neo4j/LLM/MinIO 
+tidak tersedia 
+Sistem memberi 
+respons 
+terbatas/degraded 
+PASS 
+11 Safety block jawaban atau 
+rekomendasi 
+berisiko 
+Sistem 
+menampilkan 
+respons aman 
+PASS 
+12 Audit usage 
+tersimpan 
+aktivitas AI valid Token, status, dan 
+log penggunaan 
+tersimpan 
+PASS 
+13 Alur full 
+sistem berhasil 
+login, fitur, graph, 
+AI, safety, storage 
+valid 
+Respons akhir 
+tampil di frontend 
+dan data 
+tersimpan 
+PASS 
+ 
+--- PAGE 194 ---
+192 
+ 
+ 
+ 
+Seluruh 13 skenario jalur independent pada pengujian 
+full sistem telah dianalisis dan menghasilkan output sesuai 
+ekspektasi rancangan. Hasil ini menunjukkan bahwa alur 
+integrasi utama antara frontend dan backend telah mencakup 
+kondisi valid, kondisi tidak valid, kondisi pengecualian, serta 
+kondisi degradasi layanan yang diperlukan pada sistem 
+Agentic AI. 
+1.8.6. Rekapitulasi Hasil White-box Testing Full Sistem 
+ 
+Gambar 4. 81 Hasil Unit Testing 
+Tabel 4. 74 Rekapitulasi Hasil Unit Testing 
+No Fitur Method yang 
+Diuji 
+V(G) Kesimpulan 
+1 Autentikasi 
+Login 
+handleLogin() / 
+authLogin() 
+5 Valid 
+2 Registrasi 
+Pengguna 
+handleRegister() / 
+createAccount() 
+6 Valid 
+3 Dashboard 
+Admin 
+loadAdminDashbo
+ardOverview() 
+5 Valid 
+
+--- PAGE 195 ---
+193 
+ 
+ 
+ 
+4 Homepage 
+Chatbot 
+handleChatSubmit(
+) / 
+ChatOrchestrator.pr
+ocess() 
+8 Valid 
+5 Profil 
+Pengguna 
+updateProfile() 5 Valid 
+6 Kuis 
+Edukasi 
+QuizOrchestrator.st
+art(), answer(), 
+complete() 
+7 Valid 
+7 Rekomenda
+si Obat 
+Herbal 
+RecommendationO
+rchestrator.analyze(
+) 
+9 Valid 
+ 
+Tabel 4. 75 Kesimpulan Hasil Unit Testing 
+No Modul Uji Fokus Pengujian V(G) Status 
+1 Autentikasi 
+dan role 
+access 
+Validasi sesi, token, 
+role admin/user 
+5 PASS 
+2 Dashboard 
+admin 
+Ringkasan sistem, 
+health check, storage, 
+error log 
+5 PASS 
+3 Homepage 
+chatbot 
+Routing intent, 
+GraphRAG, LLM, 
+SSE, safety, 
+penyimpanan pesan 
+8 PASS 
+4 Rekomendasi 
+obat herbal 
+Ekstraksi keluhan, 
+Neo4j retrieval, 
+scoring, red flag, 
+safety 
+9 PASS 
+5 Quiz edukasi Attempt, jawaban, 
+skor, XP, review, 
+history 
+7 PASS 
+6 Profile 
+pengguna 
+Validasi profil, 
+update data, sesi 
+pengguna 
+5 PASS 
+7 Full system 
+integration 
+Frontend, backend, 
+Supabase, Neo4j, 
+MinIO, LLM, audit 
+log 
+13 PASS 
+ 
+1.9. Kesimpulan Pengujian White-box Sistem Agentic AI 
+Berdasarkan hasil pengujian white -box terhadap tujuh fitur 
+utama sistem Agentic AI, diperoleh bahwa seluruh fitur memiliki jalur 
+logika yang dapat dipetakan ke dalam control flow graph dan dapat diuji 
+menggunakan teknik basis path testing. Fitur rekomendas i obat herbal 

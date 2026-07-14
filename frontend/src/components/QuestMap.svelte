@@ -418,7 +418,7 @@
     </div>
 
     <!-- ── PLACEMENT TEST BANNER ── -->
-    {#if $profile && !$profile.placement_completed}
+    {#if false && $profile && !$profile.placement_completed}
         <div
             class="w-full max-w-md mx-auto mb-6 relative rounded-[1.5rem] p-[1.5px] overflow-hidden shadow-xl shrink-0"
             style="background: linear-gradient(135deg, rgba(99,102,241,0.6), rgba(217,70,239,0.5), rgba(99,102,241,0.3)); min-height: 120px; flex-shrink: 0;"
@@ -452,7 +452,7 @@
     {/if}
 
     <!-- Tombol Reset Placement Test -->
-    {#if $profile && $profile.placement_completed === true}
+    {#if false && $profile && $profile.placement_completed === true}
         <button
             on:click={handleResetPlacementTest}
             class="w-full max-w-md mx-auto mb-6 text-xs font-black text-white/50 hover:text-white uppercase tracking-wider transition cursor-pointer"
