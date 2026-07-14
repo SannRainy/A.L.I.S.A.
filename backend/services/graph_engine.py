@@ -629,7 +629,7 @@ class GraphEngine:
                 MATCH (s:Student {id: $student_id})
                 OPTIONAL MATCH (s)-[:LEARNED]->(t:Topic)
                 OPTIONAL MATCH (s)-[:MASTERED]->(m)
-                RETURN s.last_topic_id AS last_topic,
+                RETURN (CASE WHEN 'last_topic_id' IN keys(s) THEN s.last_topic_id ELSE null END) AS last_topic,
                        collect(DISTINCT t.id) AS learned_topics,
                        count(DISTINCT m) AS mastered_count
             """, student_id=student_id)

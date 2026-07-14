@@ -1349,6 +1349,24 @@ class LLMAgent:
             visible_final = re.sub(r'\|\|\|DATA.*?DATA\|\|\|', '', visible_final, flags=re.DOTALL).strip()
             await SupabaseService.save_chat_log(student_id, "assistant", visible_final, mode)
 
+        # RAG post-retrieval based on LLM response to prevent "Data Tidak Tersedia" for proactive teaching
+        if self.graph and full_content:
+            try:
+                resp_tokens = await asyncio.to_thread(_tokenize, full_content)
+                if resp_tokens:
+                    post_ctx = await self.graph.get_full_context(resp_tokens, student_id)
+                    for g in post_ctx.get("grammar", []):
+                        if not any(x.get("id") == g.get("id") for x in grammar_data):
+                            grammar_data.append(g)
+                    for v in post_ctx.get("vocab", []):
+                        if not any(x.get("id") == v.get("id") for x in vocab_data):
+                            vocab_data.append(v)
+                    for k in post_ctx.get("kanji", []):
+                        if not any(x.get("id") == k.get("id") for x in kanji_data):
+                            kanji_data.append(k)
+            except Exception as e:
+                logger.warning(f"Post-retrieval RAG lookup failed: {e}")
+
         accuracy = validate_response(full_content, vocab_data, grammar_data, query, kanji_data)
         yield f"data: {json.dumps({'type': 'done', 'accuracy': accuracy})}\n\n"
 
@@ -1597,6 +1615,24 @@ class LLMAgent:
                 grammar_check = validate_grammar_correction(full_content, grammar_data, query)
                 yield {"type": "done", "grammar_check": grammar_check}
             else:
+                # RAG post-retrieval based on LLM response to prevent "Data Tidak Tersedia" for proactive teaching
+                if self.graph and full_content:
+                    try:
+                        resp_tokens = await asyncio.to_thread(_tokenize, full_content)
+                        if resp_tokens:
+                            post_ctx = await self.graph.get_full_context(resp_tokens, student_id)
+                            for g in post_ctx.get("grammar", []):
+                                if not any(x.get("id") == g.get("id") for x in grammar_data):
+                                    grammar_data.append(g)
+                            for v in post_ctx.get("vocab", []):
+                                if not any(x.get("id") == v.get("id") for x in vocab_data):
+                                    vocab_data.append(v)
+                            for k in post_ctx.get("kanji", []):
+                                if not any(x.get("id") == k.get("id") for x in kanji_data):
+                                    kanji_data.append(k)
+                    except Exception as e:
+                        logger.warning(f"Post-retrieval RAG lookup failed: {e}")
+
                 accuracy = validate_response(full_content, vocab_data, grammar_data, query, kanji_data)
                 yield {"type": "done", "accuracy": accuracy}
         finally:
