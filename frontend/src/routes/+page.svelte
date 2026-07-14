@@ -25,7 +25,7 @@
     import DiscoveryMode from "../components/DiscoveryMode.svelte";
     import QuestMode from "../components/QuestMode.svelte";
     import VoiceMode from "../components/VoiceMode.svelte";
-    import ReadingMode from "../components/ReadingMode.svelte";
+    // import ReadingMode from "../components/ReadingMode.svelte";
 
     let mainTab = "study"; // 'study' | 'profile' | 'achievement'
     if (browser) {
@@ -43,7 +43,7 @@
     let mode = "discovery"; // 'discovery' | 'quest' | 'voice'
     if (browser) {
         const savedMode = localStorage.getItem("tvjp_mode");
-        const validModes = ["discovery", "quest", "voice", "reading"];
+        const validModes = ["discovery", "quest", "voice"];
         mode = validModes.includes(savedMode) ? savedMode : "discovery";
     }
 
@@ -173,9 +173,13 @@
             audioPlayer.onloadedmetadata = () => {
                 const duration = audioPlayer.duration;
                 if (duration && duration > 0) {
-                    const calculatedSpeed = (duration * 1000) / textToType.length;
+                    const calculatedSpeed =
+                        (duration * 1000) / textToType.length;
                     // Batasi kecepatan antara 10ms (sangat cepat) dan 120ms (lambat) agar tetap natural
-                    const speedMs = Math.max(10, Math.min(120, calculatedSpeed));
+                    const speedMs = Math.max(
+                        10,
+                        Math.min(120, calculatedSpeed),
+                    );
                     startTyping(speedMs);
                 }
             };
@@ -1308,14 +1312,6 @@
             badge: "bg-violet-500/20 text-violet-300 border-violet-400/30",
             placeholder: "",
         },
-        reading: {
-            label: "Reading",
-            icon: "📖",
-            color: "from-teal-500 to-emerald-600",
-            ring: "ring-teal-400/40",
-            badge: "bg-teal-500/20 text-teal-300 border-teal-400/30",
-            placeholder: "",
-        },
     };
     $: cfg = modeConfig[mode] || modeConfig["discovery"];
 
@@ -1372,7 +1368,10 @@
 ══════════════════════════════════════════ -->
 {#if !$user && !isDemoMode}
     <div class="login-overlay">
-        <div class="login-card animate-slide-up">
+        <div
+            class="login-card animate-slide-up"
+            class:is-registering={isRegistering}
+        >
             <!-- Card glow accent -->
             <div class="login-glow"></div>
 
@@ -1391,164 +1390,205 @@
             </p>
 
             <div class="login-form">
-                <div class="input-group">
-                    <label for="login-email" class="input-label">Email</label>
-                    <input
-                        id="login-email"
-                        type="email"
-                        bind:value={email}
-                        on:keypress={(e) =>
-                            e.key === "Enter" &&
-                            (isRegistering ? handleRegister() : handleLogin())}
-                        class="login-input"
-                        placeholder="nama@email.com"
-                    />
-                </div>
-                <div class="input-group">
-                    <label for="login-password" class="input-label"
-                        >Password</label
-                    >
-                    <input
-                        id="login-password"
-                        type="password"
-                        bind:value={password}
-                        on:keypress={(e) =>
-                            e.key === "Enter" &&
-                            (isRegistering ? handleRegister() : handleLogin())}
-                        class="login-input"
-                        placeholder="••••••••"
-                    />
-                </div>
-
                 {#if isRegistering}
-                    <div class="register-demographics">
-                        <div class="input-group">
-                            <label for="reg-fullname" class="input-label"
-                                >Nama Lengkap</label
-                            >
-                            <input
-                                id="reg-fullname"
-                                type="text"
-                                bind:value={regFullName}
-                                class="login-input"
-                                placeholder="Nama lengkap"
-                            />
-                        </div>
-                        <div class="demo-row">
-                            <div class="input-group" style="flex:1">
-                                <label for="reg-age" class="input-label"
-                                    >Umur</label
+                    <div class="register-grid animate-slide-up">
+                        <!-- Column 1: Akun -->
+                        <div class="grid-col">
+                            <div class="input-group">
+                                <label for="reg-email" class="input-label"
+                                    >Email</label
                                 >
                                 <input
-                                    id="reg-age"
-                                    type="number"
-                                    bind:value={regAge}
+                                    id="reg-email"
+                                    type="email"
+                                    bind:value={email}
+                                    on:keypress={(e) =>
+                                        e.key === "Enter" && handleRegister()}
                                     class="login-input"
-                                    placeholder="22"
-                                    min="10"
-                                    max="99"
+                                    placeholder="nama@email.com"
                                 />
                             </div>
-                            <div class="input-group" style="flex:1">
-                                <label for="reg-gender" class="input-label"
-                                    >Gender</label
+                            <div class="input-group">
+                                <label for="reg-password" class="input-label"
+                                    >Password</label
+                                >
+                                <input
+                                    id="reg-password"
+                                    type="password"
+                                    bind:value={password}
+                                    on:keypress={(e) =>
+                                        e.key === "Enter" && handleRegister()}
+                                    class="login-input"
+                                    placeholder="••••••••"
+                                />
+                            </div>
+                            <div class="input-group">
+                                <label for="reg-fullname" class="input-label"
+                                    >Nama Lengkap</label
+                                >
+                                <input
+                                    id="reg-fullname"
+                                    type="text"
+                                    bind:value={regFullName}
+                                    class="login-input"
+                                    placeholder="Nama lengkap"
+                                />
+                            </div>
+                            <div class="input-group">
+                                <label for="reg-level" class="input-label"
+                                    >Level Bahasa Jepang</label
                                 >
                                 <select
-                                    id="reg-gender"
-                                    bind:value={regGender}
+                                    id="reg-level"
+                                    bind:value={regLevel}
                                     class="login-input"
                                 >
-                                    <option value="male">Laki-laki</option>
-                                    <option value="female">Perempuan</option>
-                                    <option value="prefer_not_to_say"
-                                        >Lainnya</option
+                                    <option value="beginner"
+                                        >Pemula (belum bisa)</option
+                                    >
+                                    <option value="basic"
+                                        >Dasar (tahu sedikit)</option
+                                    >
+                                    <option value="intermediate"
+                                        >Menengah (bisa percakapan dasar)</option
                                     >
                                 </select>
                             </div>
                         </div>
-                        <div class="input-group" style="position: relative;">
-                            <label for="reg-country" class="input-label"
-                                >Asal Negara</label
-                            >
-                            <input
-                                id="reg-country"
-                                type="text"
-                                bind:value={countrySearchQuery}
-                                on:focus={() => (showCountryDropdown = true)}
-                                on:blur={() =>
-                                    setTimeout(
-                                        () => (showCountryDropdown = false),
-                                        200,
-                                    )}
-                                class="login-input"
-                                placeholder="Cari asal negara..."
-                            />
-                            {#if showCountryDropdown}
-                                <div
-                                    class="absolute z-[100] left-0 right-0 mt-1 max-h-48 overflow-y-auto bg-[#1e1b4b] border border-white/10 rounded-xl shadow-2xl custom-scroll"
-                                >
-                                    {#each filteredCountries as c}
-                                        <button
-                                            type="button"
-                                            on:click={() => {
-                                                countrySearchQuery = c;
-                                                showCountryDropdown = false;
-                                            }}
-                                            class="w-full text-left px-4 py-2.5 text-sm text-slate-200 hover:bg-indigo-600 hover:text-white transition bg-transparent border-none cursor-pointer"
-                                        >
-                                            {c}
-                                        </button>
-                                    {/each}
-                                    {#if filteredCountries.length === 0}
-                                        <div
-                                            class="px-4 py-2.5 text-sm text-slate-400"
-                                        >
-                                            Negara tidak ditemukan
-                                        </div>
-                                    {/if}
+
+                        <!-- Column 2: Profil & Demografi -->
+                        <div class="grid-col">
+                            <div class="demo-row">
+                                <div class="input-group" style="flex:1">
+                                    <label for="reg-age" class="input-label"
+                                        >Umur</label
+                                    >
+                                    <input
+                                        id="reg-age"
+                                        type="number"
+                                        bind:value={regAge}
+                                        class="login-input"
+                                        placeholder="22"
+                                        min="10"
+                                        max="99"
+                                    />
                                 </div>
-                            {/if}
+                                <div class="input-group" style="flex:1">
+                                    <label for="reg-gender" class="input-label"
+                                        >Gender</label
+                                    >
+                                    <select
+                                        id="reg-gender"
+                                        bind:value={regGender}
+                                        class="login-input"
+                                    >
+                                        <option value="male">Laki-laki</option>
+                                        <option value="female">Perempuan</option
+                                        >
+                                    </select>
+                                </div>
+                            </div>
+                            <div
+                                class="input-group"
+                                style="position: relative;"
+                            >
+                                <label for="reg-country" class="input-label"
+                                    >Asal Negara</label
+                                >
+                                <input
+                                    id="reg-country"
+                                    type="text"
+                                    bind:value={countrySearchQuery}
+                                    on:focus={() =>
+                                        (showCountryDropdown = true)}
+                                    on:blur={() =>
+                                        setTimeout(
+                                            () => (showCountryDropdown = false),
+                                            200,
+                                        )}
+                                    class="login-input"
+                                    placeholder="Cari asal negara..."
+                                />
+                                {#if showCountryDropdown}
+                                    <div
+                                        class="absolute z-[100] left-0 right-0 mt-1 max-h-48 overflow-y-auto bg-[#1e1b4b] border border-white/10 rounded-xl shadow-2xl custom-scroll"
+                                    >
+                                        {#each filteredCountries as c}
+                                            <button
+                                                type="button"
+                                                on:click={() => {
+                                                    countrySearchQuery = c;
+                                                    showCountryDropdown = false;
+                                                }}
+                                                class="w-full text-left px-4 py-2.5 text-sm text-slate-200 hover:bg-indigo-600 hover:text-white transition bg-transparent border-none cursor-pointer"
+                                            >
+                                                {c}
+                                            </button>
+                                        {/each}
+                                        {#if filteredCountries.length === 0}
+                                            <div
+                                                class="px-4 py-2.5 text-sm text-slate-400"
+                                            >
+                                                Negara tidak ditemukan
+                                            </div>
+                                        {/if}
+                                    </div>
+                                {/if}
+                            </div>
+                            <div class="input-group">
+                                <label for="reg-purpose" class="input-label"
+                                    >Tujuan Belajar</label
+                                >
+                                <select
+                                    id="reg-purpose"
+                                    bind:value={regPurpose}
+                                    class="login-input"
+                                >
+                                    <option value="">-- Pilih --</option>
+                                    <option value="akademik"
+                                        >Akademik / Sekolah</option
+                                    >
+                                    <option value="kerja"
+                                        >Bekerja di Jepang</option
+                                    >
+                                    <option value="hobi"
+                                        >Hobi / Anime / Manga</option
+                                    >
+                                    <option value="wisata"
+                                        >Wisata ke Jepang</option
+                                    >
+                                </select>
+                            </div>
                         </div>
-                        <div class="input-group">
-                            <label for="reg-purpose" class="input-label"
-                                >Tujuan Belajar</label
-                            >
-                            <select
-                                id="reg-purpose"
-                                bind:value={regPurpose}
-                                class="login-input"
-                            >
-                                <option value="">-- Pilih --</option>
-                                <option value="akademik"
-                                    >Akademik / Sekolah</option
-                                >
-                                <option value="kerja">Bekerja di Jepang</option>
-                                <option value="hobi"
-                                    >Hobi / Anime / Manga</option
-                                >
-                                <option value="wisata">Wisata ke Jepang</option>
-                            </select>
-                        </div>
-                        <div class="input-group">
-                            <label for="reg-level" class="input-label"
-                                >Level Bahasa Jepang</label
-                            >
-                            <select
-                                id="reg-level"
-                                bind:value={regLevel}
-                                class="login-input"
-                            >
-                                <option value="beginner"
-                                    >Pemula (belum bisa)</option
-                                >
-                                <option value="basic"
-                                    >Dasar (tahu sedikit)</option
-                                >
-                                <option value="intermediate"
-                                    >Menengah (bisa percakapan dasar)</option
-                                >
-                            </select>
-                        </div>
+                    </div>
+                {:else}
+                    <div class="input-group animate-slide-up">
+                        <label for="login-email" class="input-label"
+                            >Email</label
+                        >
+                        <input
+                            id="login-email"
+                            type="email"
+                            bind:value={email}
+                            on:keypress={(e) =>
+                                e.key === "Enter" && handleLogin()}
+                            class="login-input"
+                            placeholder="nama@email.com"
+                        />
+                    </div>
+                    <div class="input-group animate-slide-up">
+                        <label for="login-password" class="input-label"
+                            >Password</label
+                        >
+                        <input
+                            id="login-password"
+                            type="password"
+                            bind:value={password}
+                            on:keypress={(e) =>
+                                e.key === "Enter" && handleLogin()}
+                            class="login-input"
+                            placeholder="••••••••"
+                        />
                     </div>
                 {/if}
 
@@ -1867,13 +1907,6 @@
                             {liveTranscript}
                             {vrmController}
                         />
-                    </div>
-
-                    <div
-                        class="flex-1 min-h-0 flex flex-col"
-                        style="display: {mode === 'reading' ? 'flex' : 'none'}"
-                    >
-                        <ReadingMode {vrmController} />
                     </div>
 
                     <div
@@ -2229,6 +2262,33 @@
             0 0 0 1px rgba(255, 255, 255, 0.05) inset;
         text-align: center;
         overflow: hidden;
+        transition: max-width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .login-card.is-registering {
+        max-width: 760px;
+    }
+    .register-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        text-align: left;
+    }
+    .register-grid .grid-col {
+        display: flex;
+        flex-direction: column;
+    }
+    .register-grid .grid-col .input-group {
+        margin-bottom: 16px;
+    }
+    @media (max-width: 640px) {
+        .login-card.is-registering {
+            max-width: 420px;
+            padding: 32px 20px 20px;
+        }
+        .register-grid {
+            grid-template-columns: 1fr;
+            gap: 0px;
+        }
     }
     .login-glow {
         position: absolute;
@@ -2335,35 +2395,11 @@
         background: rgba(99, 102, 241, 0.08);
         box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
     }
-    .register-demographics {
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-        padding: 14px 0 4px;
-        border-top: 1px solid rgba(255, 255, 255, 0.06);
-        margin-top: 4px;
-        animation: demo-slide 0.35s ease-out;
-    }
-    @keyframes demo-slide {
-        from {
-            opacity: 0;
-            max-height: 0;
-            transform: translateY(-8px);
-        }
-        to {
-            opacity: 1;
-            max-height: 600px;
-            transform: translateY(0);
-        }
-    }
     .demo-row {
         display: flex;
         gap: 10px;
     }
-    .register-demographics .input-group {
-        margin-bottom: 0;
-    }
-    .register-demographics select.login-input {
+    select.login-input {
         appearance: none;
         -webkit-appearance: none;
         cursor: pointer;
@@ -2372,7 +2408,7 @@
         background-position: right 14px center;
         padding-right: 36px;
     }
-    .register-demographics select.login-input option {
+    select.login-input option {
         background: #1e1b4b;
         color: #fff;
     }
@@ -3371,5 +3407,286 @@
         background: rgba(99, 102, 241, 0.15);
         font-weight: 600;
         color: #c7d2fe;
+    }
+    /* ═══════════════════════════════════════════
+       LIGHT MODE SCOPED OVERRIDES
+    ═══════════════════════════════════════════ */
+    :global(body.light) .chat-shell {
+        background: var(--chat-bg);
+        border: 1px solid var(--chat-border);
+        box-shadow: 0 24px 64px rgba(0, 0, 0, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+    }
+    :global(body.light) .chat-header {
+        border-bottom: 1px solid var(--chat-header-border);
+        background: var(--chat-header-bg);
+    }
+    :global(body.light) .chat-title {
+        color: var(--text-primary);
+    }
+    :global(body.light) .chat-subtitle {
+        color: var(--text-secondary);
+    }
+    :global(body.light) .btn-logout {
+        background: rgba(99, 102, 241, 0.05);
+        border-color: rgba(99, 102, 241, 0.15);
+        color: #4f46e5;
+    }
+    :global(body.light) .btn-logout:hover {
+        background: rgba(239, 68, 68, 0.1);
+        color: #ef4444;
+        border-color: rgba(239, 68, 68, 0.2);
+    }
+    :global(body.light) .mode-tabs {
+        background: #e2e8f0 !important;
+        border-bottom: 1px solid rgba(99, 102, 241, 0.15) !important;
+        border-radius: 16px;
+        margin: 10px 16px;
+        padding: 6px;
+    }
+    :global(body.light) .mode-tab {
+        color: #475569 !important;
+        font-weight: 700 !important;
+    }
+    :global(body.light) .mode-tab:hover:not(.mode-tab-active) {
+        color: #1e1b4b !important;
+        background: rgba(255, 255, 255, 0.5) !important;
+    }
+    :global(body.light) .mode-tab-active {
+        color: #ffffff !important;
+        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25) !important;
+    }
+    :global(body.light) .mode-tab-active[id="tab-discovery"] {
+        background: linear-gradient(135deg, #0ea5e9, #2563eb) !important;
+    }
+    :global(body.light) .mode-tab-active[id="tab-quest"] {
+        background: linear-gradient(135deg, #10b981, #059669) !important;
+    }
+    :global(body.light) .mode-tab-active[id="tab-voice"] {
+        background: linear-gradient(135deg, #8b5cf6, #7c3aed) !important;
+    }
+    :global(body.light) .bubble-tutor {
+        background: var(--tutor-bubble-bg);
+        border: 1px solid var(--tutor-bubble-border);
+        color: var(--tutor-bubble-text);
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+    }
+    :global(body.light) .suggestion-chip {
+        background: var(--suggestion-chip-bg);
+        border: 1px solid var(--suggestion-chip-border);
+        color: var(--suggestion-chip-text);
+    }
+    :global(body.light) .suggestion-chip:hover {
+        background: rgba(99, 102, 241, 0.15);
+        border-color: rgba(99, 102, 241, 0.3);
+        color: #4338ca;
+    }
+    :global(body.light) .input-area {
+        background: var(--input-area-bg);
+        border-top: 1px solid var(--chat-header-border);
+    }
+    :global(body.light) .accuracy-popup {
+        background: rgba(255, 255, 255, 0.98) !important;
+        border-color: rgba(99, 102, 241, 0.2) !important;
+        box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.1), 0 8px 10px -6px rgba(99, 102, 241, 0.05) !important;
+    }
+    :global(body.light) .popup-header {
+        background: rgba(99, 102, 241, 0.05) !important;
+        border-bottom: 1px solid rgba(99, 102, 241, 0.1) !important;
+    }
+    :global(body.light) .popup-title {
+        color: #0f172a !important;
+    }
+    :global(body.light) .popup-close {
+        color: #64748b !important;
+    }
+    :global(body.light) .popup-close:hover {
+        color: #0f172a !important;
+    }
+    :global(body.light) .fact-row {
+        background: rgba(248, 250, 252, 0.8) !important;
+    }
+    :global(body.light) .fact-row.fact-success {
+        border-color: rgba(34, 197, 94, 0.3) !important;
+        background: rgba(34, 197, 94, 0.06) !important;
+    }
+    :global(body.light) .fact-row.fact-fail {
+        border-color: rgba(239, 68, 68, 0.3) !important;
+        background: rgba(239, 68, 68, 0.06) !important;
+    }
+    :global(body.light) .fact-subject {
+        color: #0f172a !important;
+        font-weight: 700 !important;
+    }
+    :global(body.light) .fact-details-text {
+        color: #475569 !important;
+    }
+    :global(body.light) .fact-details-text .text-success {
+        color: #166534 !important;
+    }
+    :global(body.light) .fact-details-text .text-fail {
+        color: #b91c1c !important;
+    }
+    :global(body.light) .fact-props-list {
+        color: #475569 !important;
+        font-weight: 500 !important;
+    }
+    :global(body.light) .fact-type-badge.type-vocab {
+        background: #eef2ff !important;
+        color: #4338ca !important;
+    }
+    :global(body.light) .fact-type-badge.type-grammar {
+        background: #fdf2f8 !important;
+        color: #be185d !important;
+    }
+    :global(body.light) .fact-type-badge.type-kanji {
+        background: #f0fdfa !important;
+        color: #0f766e !important;
+    }
+    :global(body.light) .fact-type-badge.type-example {
+        background: #fff7ed !important;
+        color: #c2410c !important;
+    }
+
+    /* Accuracy Badges in Discovery Mode (Light Mode) */
+    :global(body.light) .accuracy-badge {
+        border-width: 1px !important;
+        border-style: solid !important;
+    }
+    :global(body.light) .accuracy-grounded {
+        background: rgba(34, 197, 94, 0.12) !important;
+        border-color: rgba(34, 197, 94, 0.3) !important;
+        color: #166534 !important;
+    }
+    :global(body.light) .accuracy-casual {
+        background: #f1f5f9 !important;
+        border-color: #cbd5e1 !important;
+        color: #475569 !important;
+    }
+    :global(body.light) .accuracy-no_data {
+        background: rgba(251, 191, 36, 0.12) !important;
+        border-color: rgba(251, 191, 36, 0.3) !important;
+        color: #92400e !important;
+    }
+    :global(body.light) .accuracy-teaching {
+        background: rgba(167, 139, 250, 0.12) !important;
+        border-color: rgba(167, 139, 250, 0.3) !important;
+        color: #5b21b6 !important;
+    }
+    :global(body.light) .accuracy-pct-high {
+        background: rgba(34, 197, 94, 0.12) !important;
+        border-color: rgba(34, 197, 94, 0.3) !important;
+        color: #166534 !important;
+    }
+    :global(body.light) .accuracy-pct-med {
+        background: rgba(234, 179, 8, 0.12) !important;
+        border-color: rgba(234, 179, 8, 0.3) !important;
+        color: #854d0e !important;
+    }
+    :global(body.light) .accuracy-pct-low {
+        background: rgba(249, 115, 22, 0.12) !important;
+        border-color: rgba(249, 115, 22, 0.3) !important;
+        color: #c2410c !important;
+    }
+    :global(body.light) .accuracy-pct-critical {
+        background: rgba(239, 68, 68, 0.12) !important;
+        border-color: rgba(239, 68, 68, 0.3) !important;
+        color: #991b1b !important;
+    }
+    :global(body.light) .login-overlay {
+        background: linear-gradient(135deg, rgba(241, 245, 249, 0.92), rgba(226, 232, 240, 0.95));
+    }
+    :global(body.light) .login-card {
+        background: rgba(255, 255, 255, 0.85);
+        border-color: rgba(99, 102, 241, 0.15);
+        box-shadow: 0 32px 64px rgba(99, 102, 241, 0.08);
+    }
+    :global(body.light) .login-title {
+        color: #0f172a;
+    }
+    :global(body.light) .login-sub {
+        color: #475569;
+    }
+    :global(body.light) .login-input {
+        background: rgba(241, 245, 249, 0.8);
+        border-color: rgba(99, 102, 241, 0.15);
+        color: #0f172a;
+    }
+    :global(body.light) .login-input::placeholder {
+        color: #94a3b8;
+    }
+    :global(body.light) .login-input:focus {
+        border-color: rgba(99, 102, 241, 0.6);
+        background: rgba(255, 255, 255, 0.95);
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+    }
+    :global(body.light) .login-avatar {
+        box-shadow: 0 8px 24px rgba(99, 102, 241, 0.25), 0 0 0 4px rgba(99, 102, 241, 0.15);
+    }
+    :global(body.light) .login-avatar-badge {
+        border-color: #f8fafc;
+    }
+    :global(body.light) .login-jp {
+        color: #4f46e5;
+    }
+    :global(body.light) .input-label {
+        color: #64748b;
+    }
+    :global(body.light) .bg-scene {
+        filter: brightness(1.05) saturate(1.1) contrast(1.0);
+    }
+    :global(body.light) .vrm-status-card {
+        background: rgba(255, 255, 255, 0.8) !important;
+        border-color: rgba(99, 102, 241, 0.15) !important;
+        box-shadow: 0 4px 24px rgba(99, 102, 241, 0.06) !important;
+    }
+    :global(body.light) .vrm-status-name {
+        color: #0f172a;
+    }
+    :global(body.light) .vrm-status-sub {
+        color: #475569;
+    }
+    :global(body.light .markdown-content strong) {
+        color: var(--rt-color) !important;
+    }
+    :global(body.light .markdown-content em) {
+        color: var(--text-secondary) !important;
+    }
+    :global(body.light .markdown-content h1),
+    :global(body.light .markdown-content h2),
+    :global(body.light .markdown-content h3) {
+        color: var(--text-primary) !important;
+    }
+    :global(body.light .markdown-content code:not(pre code)) {
+        background: rgba(99, 102, 241, 0.08) !important;
+        color: var(--rt-color) !important;
+    }
+    :global(body.light .markdown-content pre) {
+        background: rgba(241, 245, 249, 0.8) !important;
+        border-color: rgba(99, 102, 241, 0.15) !important;
+    }
+    :global(body.light .markdown-content blockquote) {
+        color: var(--text-secondary) !important;
+    }
+    :global(body.light .markdown-content th) {
+        background: rgba(99, 102, 241, 0.08) !important;
+        color: var(--rt-color) !important;
+    }
+    :global(body.light .markdown-content th),
+    :global(body.light .markdown-content td) {
+        border-color: rgba(99, 102, 241, 0.15) !important;
+    }
+    :global(body.light .markdown-content td) {
+        color: var(--text-secondary) !important;
+    }
+    :global(body.light) .thinking-dots {
+        background: rgba(99, 102, 241, 0.05);
+        border-color: rgba(99, 102, 241, 0.15);
+    }
+    :global(body.light) .thinking-dots span {
+        background: rgba(99, 102, 241, 0.7);
+    }
+    :global(body.light) .thinking-bubble {
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.05), rgba(139, 92, 246, 0.08)) !important;
+        border-color: rgba(139, 92, 246, 0.18) !important;
     }
 </style>

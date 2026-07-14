@@ -7,7 +7,7 @@
     import AnalyticsTab from "./AnalyticsTab.svelte";
     import UsersTab from "./UsersTab.svelte";
     import DataPipelineTab from "./DataPipelineTab.svelte";
-    import AiModelsTab from "./AiModelsTab.svelte";
+    // import AiModelsTab from "./AiModelsTab.svelte";
 
     let isAdmin = false;
     let loading = true;
@@ -89,7 +89,7 @@
 
         <!-- Tab Nav -->
         <nav class="admin-nav">
-            {#each [{ id: "analytics", icon: "📊", label: "Analisis & Grafik" }, { id: "users", icon: "👥", label: "Users" }, { id: "data", icon: "📚", label: "Data Pipeline" }, { id: "models", icon: "🤖", label: "AI Models" }] as tab}
+            {#each [{ id: "analytics", icon: "📊", label: "Analisis & Grafik" }, { id: "users", icon: "👥", label: "Users" }, { id: "data", icon: "📚", label: "Data Pipeline" }] as tab}
                 <button
                     class="nav-tab"
                     class:active={activeTab === tab.id}
@@ -109,8 +109,6 @@
                 <UsersTab user={$user} {API} />
             {:else if activeTab === "data"}
                 <DataPipelineTab user={$user} {API} />
-             {:else if activeTab === "models"}
-                <AiModelsTab user={$user} {API} />
             {/if}
         </main>
     </div>
@@ -120,6 +118,9 @@
     :global(body) {
         margin: 0;
         background: #0c0a1d;
+    }
+    :global(body.light) {
+        background: #f8fafc !important;
     }
     * {
         box-sizing: border-box;
@@ -134,6 +135,9 @@
         color: rgba(255, 255, 255, 0.5);
         font-family: "Inter", sans-serif;
         gap: 16px;
+    }
+    :global(body.light) .admin-loading {
+        color: #475569 !important;
     }
     .admin-spinner {
         width: 36px;
