@@ -273,14 +273,14 @@ class AiCorrectionRequest(BaseModel):
 FRONTEND_TO_NEO4J_MAP = {
     # Level 1
     "grammar_wa": "は",
-    "grammar_desu": "desu・だ (Kopula)",
+    "grammar_desu": "です・だ (Kopula)",
     "grammar_no": "の (Partikel Kepemilikan)",
     "grammar_mo": "も",
     "grammar_ka": "か",
     "grammar_dewa_nai": "じゃない",
-    "grammar_kore_sore_are": "desu・だ (Kopula)",
-    "grammar_dare": "desu・だ (Kopula)",
-    "grammar_hai_iie": "desu・だ (Kopula)",
+    "grammar_kore_sore_are": "です・だ (Kopula)",
+    "grammar_dare": "です・だ (Kopula)",
+    "grammar_hai_iie": "です・だ (Kopula)",
     # Level 2
     "grammar_ga_arimasu": "があります",
     "grammar_ga_imasu": "がいます",
@@ -457,9 +457,13 @@ async def get_kg_node_detail(node_id: str):
     
     # Map legacy IDs to new renamed IDs for backward compatibility
     LEGACY_TO_NEW_MAP = {
-        "Akhiran です、 だ": "esu・だ (Kopula)",
+        "Akhiran です、 だ": "です・だ (Kopula)",
+        "desu・だ (Kopula)": "です・だ (Kopula)",
+        "esu・だ (Kopula)": "です・だ (Kopula)",
         "Partikel subject は、mo、 が": "は・mo・が (Partikel Subjek)",
         "Partikel object を、ni、へ、 で": "を・に・へ・de (Partikel Objek)",
+        "Partikel object を、ni、へ、で": "を・に・へ・de (Partikel Objek)",
+        "Partikel と、y、tot か": "と・や・tok (Partikel Penghubung)",
         "Partikel と、y、と か": "と・や・tok (Partikel Penghubung)",
         "Partikel  の": "の (Partikel Kepemilikan)",
         "Kata Kerja Bentuk Sopan (masu-kei)": "〜ます形 (Bentuk Sopan)",
