@@ -433,7 +433,34 @@ class PureChatRequest(BaseModel):
 async def get_models(admin_id: str):
     """Daftar model .gguf di folder models/ dan model HF Cloud, serta kembalikan model yang sedang aktif."""
     await verify_admin(admin_id)
-    raise HTTPException(status_code=403, detail="Feature temporarily disabled")
+    
+    # Folder models berada di root backend
+    models_dir = os.path.join(BACKEND_DIR, "models")
+    available_models = []
+    
+    if os.path.exists(models_dir):
+        for f in os.listdir(models_dir):
+            if f.endswith(".gguf"):
+                available_models.append(f)
+                
+    # Dapatkan path model aktif
+    from services.llm_agent import get_active_model_path, HF_CLOUD_MODEL_ID
+    active_path = await get_active_model_path()
+    if active_path.startswith("hf_cloud:"):
+        active_model = active_path
+    else:
+        active_model = os.path.basename(active_path)
+        
+    # Tambahkan HF Cloud model ke daftar model tersedia
+    available_models.append(HF_CLOUD_MODEL_ID)
+    qwen3_id = "hf_cloud:Qwen/Qwen3-4B-Instruct-2507"
+    if qwen3_id not in available_models:
+        available_models.append(qwen3_id)
+    
+    return {
+        "available_models": sorted(list(set(available_models))),
+        "active_model": active_model
+    }
 
 class TestHfRequest(BaseModel):
     admin_id: str
@@ -442,19 +469,43 @@ class TestHfRequest(BaseModel):
 async def test_hf_connection(request: TestHfRequest):
     """Mengetes koneksi ke HuggingFace Cloud Inference API."""
     await verify_admin(request.admin_id)
-    raise HTTPException(status_code=403, detail="Feature temporarily disabled")
+    from services.llm_agent import test_hf_cloud_connection
+    res = await test_hf_cloud_connection()
+    return res
 
 @router.post("/models/select")
 async def select_model(request: ModelSelectRequest):
     """Ganti model aktif ke model .gguf baru dan load ke memori."""
     await verify_admin(request.admin_id)
-    raise HTTPException(status_code=403, detail="Feature temporarily disabled")
+    
+    from services.llm_agent import switch_model_async
+    try:
+        await switch_model_async(request.model_name)
+        return {
+            "status": "success",
+            "message": f"Model berhasil diganti ke {request.model_name} dan dimuat ke VRAM/RAM."
+        }
+    except Exception as e:
+        logger.error(f"Error switching model to {request.model_name}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/models/chat")
 async def pure_chat(request: PureChatRequest):
     """Playground chat (CCP Mode) - Streaming langsung ke model tanpa RAG/DB log/TTS."""
     await verify_admin(request.admin_id)
-    raise HTTPException(status_code=403, detail="Feature temporarily disabled")
+    
+    from api.chat_router import llm_agent
+    from fastapi.responses import StreamingResponse
+    
+    history_data = request.history or []
+    
+    return StreamingResponse(
+        llm_agent.stream_pure_response(
+            query=request.query,
+            history=[{"role": m.get("role"), "content": m.get("content")} for m in history_data]
+        ),
+        media_type="text/event-stream"
+    )
 
 
 # ═══════════════════════════════════════════════════════════════════════

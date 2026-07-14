@@ -879,7 +879,4 @@
             transform: rotate(calc(var(--rot) + 4deg));
         }
     }
-    :global(body.light) .thinking-label {
-        color: var(--text-primary);
-    }
 </style>

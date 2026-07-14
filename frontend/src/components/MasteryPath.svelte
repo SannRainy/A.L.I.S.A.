@@ -443,10 +443,4 @@
         99% { transform: translate(-2px, 0); }
         100% { transform: translate(0, 0); }
     }
-    :global(body.light) .snake-path .bg-slate-800 {
-        background-color: #cbd5e1 !important; /* slate-300 */
-    }
-    :global(body.light) .node-circle {
-        box-shadow: 0 4px 10px rgba(99, 102, 241, 0.08) !important;
-    }
 </style>

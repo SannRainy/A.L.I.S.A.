@@ -153,22 +153,4 @@
         cursor: not-allowed;
         transform: none;
     }
-    :global(body.light) .input-field {
-        background: rgba(255, 255, 255, 0.95);
-        border-color: rgba(99, 102, 241, 0.2);
-        color: #0f172a;
-    }
-    :global(body.light) .input-field::placeholder {
-        color: #94a3b8;
-    }
-    :global(body.light) .input-field:focus {
-        background: #ffffff;
-        border-color: rgba(99, 102, 241, 0.6);
-        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
-    }
-    :global(body.light) .clear-btn {
-        background: rgba(239, 68, 68, 0.05);
-        border-color: rgba(239, 68, 68, 0.15);
-        color: #ef4444;
-    }
 </style>

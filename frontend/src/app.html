@@ -13,12 +13,6 @@
 		%sveltekit.head%
 	</head>
 	<body data-sveltekit-preload-data="hover" style="font-family: 'Inter', 'Noto Sans JP', sans-serif;">
-		<script>
-			(function() {
-				var savedTheme = localStorage.getItem('tvjp_theme') || 'dark';
-				document.body.classList.add(savedTheme);
-			})();
-		</script>
 		<div style="display: contents">%sveltekit.body%</div>
 	</body>
 </html>
