@@ -886,3 +886,22 @@ body.light .admin-shell .btn-activate:hover {
   background-color: rgba(99, 102, 241, 0.08) !important;
   color: #4f46e5 !important;
 }
+
+/* Global Light Mode Loading & Utility overrides */
+body.light .text-slate-300 {
+  color: #475569 !important;
+}
+body.light .text-slate-400 {
+  color: #334155 !important;
+}
+body.light .text-slate-500 {
+  color: #1e293b !important;
+}
+
+body.light .admin-shell .users-loading,
+body.light .admin-shell .csv-loading,
+body.light .admin-shell .analytics-loading,
+body.light .admin-shell .model-loading-overlay {
+  color: #475569 !important;
+}
+

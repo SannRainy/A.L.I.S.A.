@@ -3679,14 +3679,31 @@
         color: var(--text-secondary) !important;
     }
     :global(body.light) .thinking-dots {
-        background: rgba(99, 102, 241, 0.05);
-        border-color: rgba(99, 102, 241, 0.15);
+        background: rgba(99, 102, 241, 0.05) !important;
+        border-color: rgba(99, 102, 241, 0.15) !important;
     }
     :global(body.light) .thinking-dots span {
-        background: rgba(99, 102, 241, 0.7);
+        background: rgba(99, 102, 241, 0.7) !important;
     }
     :global(body.light) .thinking-bubble {
-        background: linear-gradient(135deg, rgba(99, 102, 241, 0.05), rgba(139, 92, 246, 0.08)) !important;
-        border-color: rgba(139, 92, 246, 0.18) !important;
+        background: #f5f3ff !important;
+        border-color: rgba(139, 92, 246, 0.35) !important;
+    }
+    :global(body.light) .thinking-dots-premium span {
+        background: linear-gradient(135deg, #6366f1, #4f46e5) !important;
+        box-shadow: 0 0 6px rgba(99, 102, 241, 0.4) !important;
+    }
+    :global(body.light) .thinking-label {
+        color: #4f46e5 !important;
+    }
+    :global(body.light) .thinking-shimmer {
+        background: linear-gradient(
+            90deg,
+            transparent 0%,
+            rgba(99, 102, 241, 0.04) 40%,
+            rgba(99, 102, 241, 0.08) 50%,
+            rgba(99, 102, 241, 0.04) 60%,
+            transparent 100%
+        ) !important;
     }
 </style>
