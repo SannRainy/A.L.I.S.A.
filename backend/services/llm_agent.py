@@ -1,5 +1,4 @@
 import os
-# Force disable HuggingFace Hub offline mode for Cloud Inference API
 os.environ.pop("HF_HUB_OFFLINE", None)
 os.environ.pop("TRANSFORMERS_OFFLINE", None)
 os.environ.pop("HF_DATASETS_OFFLINE", None)
@@ -23,14 +22,13 @@ from services.romaji_utils import generate_romaji_hybrid
 
 logger = logging.getLogger(__name__)
 
-# ── Local (Llama.cpp) state ───────────────────────────────────────────
+# Local (Llama.cpp) state
 _llama_model: Llama | None = None
 _active_model_path: str = settings.UNSLOTH_MODEL_PATH
 _model_lock = asyncio.Lock()
 _init_lock = asyncio.Lock()
 
-# ── Cloud (HuggingFace) state ─────────────────────────────────────────
-# Provider: "local" | "hf_cloud"
+# Cloud (HuggingFace) state — provider: "local" | "hf_cloud"
 _active_provider: str = "local"
 _hf_token: str = settings.HF_TOKEN
 _hf_model_repo: str = settings.HF_MODEL_REPO
@@ -64,7 +62,6 @@ async def switch_model_async(model_filename: str) -> None:
     """Ganti model aktif. Jika model_filename == HF_CLOUD_MODEL_ID atau starts dengan hf_cloud:, switch ke HF Cloud."""
     global _llama_model, _active_model_path, _active_provider, _hf_model_repo
 
-    # ── Switch ke HuggingFace Cloud ──────────────────────────────────
     if model_filename == HF_CLOUD_MODEL_ID or model_filename.startswith("hf_cloud:"):
         async with _init_lock:
             async with _model_lock:
@@ -78,18 +75,17 @@ async def switch_model_async(model_filename: str) -> None:
                     del _llama_model
                     _llama_model = None
                     import gc; gc.collect()
-                
-                # Update _hf_model_repo jika ada repository spesifik yang dikirim
+
                 if model_filename.startswith("hf_cloud:"):
                     target_repo = model_filename.split("hf_cloud:", 1)[1]
                     if target_repo:
                         _hf_model_repo = target_repo
-                        
+
                 _active_provider = "hf_cloud"
                 logger.info(f"Provider beralih ke HF Cloud: {_hf_model_repo}")
         return
 
-    # ── Switch ke model lokal (.gguf) ────────────────────────────────
+    # Switch ke model lokal (.gguf)
     base_name = os.path.basename(model_filename)
     backend_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     candidate_path = os.path.join(backend_dir, "models", base_name)
@@ -157,7 +153,6 @@ async def test_hf_cloud_connection() -> dict:
     try:
         t0 = time.monotonic()
         client = InferenceClient(model=_hf_model_repo, token=_hf_token)
-        # Kirim pesan minimal untuk test latency
         response = await asyncio.to_thread(
             client.chat_completion,
             messages=[{"role": "user", "content": "Hi"}],
@@ -186,9 +181,6 @@ async def _stream_hf_cloud(messages: list[dict], max_tokens: int = 512, mode: st
         yield "[ERROR] huggingface_hub tidak ter-install."
         return
 
-    # Temperature disesuaikan per mode:
-    # - voice/speaking: ketat (0.3) agar format JP/ROM/ID terjaga
-    # - discovery/quest: sedang (0.5) agar lebih konsisten dari sebelumnya (0.7)
     if mode in ("voice", "speaking"):
         temperature = 0.3
         top_p = 0.85
@@ -258,7 +250,7 @@ _LISTING_PATTERNS = [
     (re.compile(r"^(tata\s*bahasa|grammar|bunpou)$", re.I), "list_grammar"),
 ]
 
-# ── Guard: Deteksi intent "minta soal/kuis/test" di Discovery mode ─────────
+# Guard: Deteksi intent "minta soal/kuis/test" di Discovery mode
 _QUIZ_REQUEST_RE = re.compile(
     r"\b("
     r"soal|kuis|quiz|ujian|test|latihan\s*soal|pertanyaan\s*ujian|pertanyaan\s*kuis|"
@@ -392,7 +384,6 @@ def _tokenize(text: str) -> list[str]:
         tok = _JP_PUNCT_RE.sub("", m.group()).strip()
         if tok:
             jp_tokens.append(tok)
-            # Ekstrak karakter Kanji tunggal secara individual untuk fallback search
             kanjis = re.findall(r'[\u4e00-\u9fff]', tok)
             for k in kanjis:
                 if k not in jp_tokens:
@@ -490,18 +481,14 @@ def _truncate(text: str, max_chars: int) -> str:
     return text[:max_chars] + "\n...[dipotong]"
 
 
-# ──────────────────────────────────────────────────────────────────────────
-# KG Accuracy Validation (Hybrid Structured — Method 3 v2)
-# ──────────────────────────────────────────────────────────────────────────
+# KG Accuracy Validation (Hybrid Structured)
 _JP_CHAR_RE = re.compile(r'[\u3040-\u9FFF]+')
 _GREETING_RE = re.compile(
     r'^\s*(halo|hallo|helo|hai|hello|hi|hey|konnichiwa|ohayou|konbanwa|'
     r'selamat\s*(pagi|siang|sore|malam)|apa\s*kabar|genki)',
     re.IGNORECASE
 )
-# Regex untuk mengekstrak pola Jepang (termasuk tilde) dari nama grammar yang verbose
 _GRAMMAR_PATTERN_RE = re.compile(r'[\u3040-\u9FFF\uff00-\uffef\u3000-\u303f\u31f0-\u31ff\u4e00-\u9fff][\u3040-\u9FFF\uff00-\uffef\u3000-\u303f\u31f0-\u31ff\u4e00-\u9fff\u309b\u309c\u30fb\u30fc]*[\u3040-\u9FFF\uff00-\uffef\u3000-\u303f\u31f0-\u31ff\u4e00-\u9fff]?')
-# Regex untuk normalisasi teks Jepang (hapus tanda baca) sebelum matching kalimat
 
 
 def _extract_grammar_keywords(name: str) -> list:
@@ -578,11 +565,9 @@ def validate_response(ai_text: str, vocab_data: list, grammar_data: list, query:
     """
     kanji_data = kanji_data or []
 
-    # ── Edge case: casual greeting / chit-chat ──
     if _GREETING_RE.search(query) and not vocab_data and not grammar_data and not kanji_data:
         return {"pct": -1, "label": "💬 Casual Chat", "verified": 0, "total": 0, "category": "casual", "facts_detail": []}
 
-    # ── Edge case: no KG data retrieved ──
     if not vocab_data and not grammar_data and not kanji_data:
         return {"pct": -1, "label": "📭 Data Tidak Tersedia", "verified": 0, "total": 0, "category": "no_data", "facts_detail": []}
 
@@ -601,44 +586,36 @@ def validate_response(ai_text: str, vocab_data: list, grammar_data: list, query:
         seen_facts.add(key)
         facts.append((ftype, display_subj, keywords, props))
 
-    # ── Extract facts dari vocab ──
     for v in vocab_data:
         vid = v.get("id", "")
         romaji  = v.get("romaji", "")
         meaning = v.get("indonesian_meaning", "")
         if vid and not meaning.startswith("kanji "):
             add_fact("vocab", vid, [vid], [romaji, meaning])
-        # Kanji sub-facts dari vocab
         for k in v.get("kanji", []):
             kid = k.get("id", "")
             if kid:
                 add_fact("kanji", kid, [kid], [k.get("onyomi", ""), k.get("kunyomi", ""), k.get("arti", "")])
-        # Contoh kalimat dari vocab
         for ex in v.get("examples", []):
             jp = (ex.get("text") or "").strip()
             if jp and len(jp) > 3:
                 add_fact("example", jp, [jp, _normalize_jp_text(jp)], [ex.get("meaning", "")])
 
-    # ── Extract facts dari grammar ──
     for g in grammar_data:
         gname = g.get("name", g.get("id", ""))
         if gname:
             rules = [r for r in g.get("rules", []) if r]
-            # Ekstrak keyword JP untuk matching fleksibel
             g_keywords = _extract_grammar_keywords(gname)
             add_fact("grammar", gname, g_keywords, rules[:2])
-        # Contoh kalimat dari grammar
         for ex in g.get("examples", []):
             jp = (ex.get("text") or "").strip()
             if jp and len(jp) > 3:
                 add_fact("example", jp, [jp, _normalize_jp_text(jp)], [ex.get("meaning", "")])
 
-    # ── Extract facts dari kanji_data (listing mode) ──
     for k in kanji_data:
         kid = k.get("id", "")
         if kid:
             add_fact("kanji", kid, [kid], [k.get("onyomi", ""), k.get("kunyomi", ""), k.get("arti", "")])
-        # Contoh kalimat dari kanji listing
         for ex in k.get("examples", []):
             jp = (ex.get("text") or "").strip()
             if jp and len(jp) > 3:
@@ -657,14 +634,12 @@ def validate_response(ai_text: str, vocab_data: list, grammar_data: list, query:
         keywords     = fact[2]  # list of search terms
         props_list   = fact[3]  # list of property strings
 
-        # ── Cek apakah subjek/keyword ada dalam respons ──
         subject_found = False
         matched_keyword = None
         for kw in keywords:
             if not kw:
                 continue
             if ftype == "example":
-                # Untuk kalimat: coba matching dengan/tanpa normalisasi tanda baca
                 norm_kw = _normalize_jp_text(kw)
                 if (norm_kw and norm_kw in ai_text_stripped) or kw in ai_text_norm:
                     subject_found = True
@@ -682,7 +657,6 @@ def validate_response(ai_text: str, vocab_data: list, grammar_data: list, query:
         mentioned += 1
         raw_props = [p for p in props_list if p and str(p).strip()]
 
-        # Flatten props
         readable_props: list = []
         for prop in raw_props:
             for sp in (prop.split("|") if "|" in prop else [prop]):
@@ -691,7 +665,6 @@ def validate_response(ai_text: str, vocab_data: list, grammar_data: list, query:
                     readable_props.append(sp)
 
         if not readable_props:
-            # Subjek disebut, tidak ada properti → anggap benar
             verified += 1
             facts_detail.append({
                 "type": ftype, "subject": display_subj,
@@ -700,7 +673,6 @@ def validate_response(ai_text: str, vocab_data: list, grammar_data: list, query:
             })
             continue
 
-        # Cek konsistensi properti — cari properti pertama yang cocok
         matched_prop = None
         for prop in raw_props:
             sub_props = prop.split("|") if "|" in prop else [prop]
@@ -709,7 +681,6 @@ def validate_response(ai_text: str, vocab_data: list, grammar_data: list, query:
                 if not sp:
                     continue
                 if ftype == "example":
-                    # Gunakan pencocokan lenient untuk kalimat terjemahan
                     if _is_translation_lenient_match(sp, ai_text_norm):
                         matched_prop = sp
                         break
@@ -733,10 +704,7 @@ def validate_response(ai_text: str, vocab_data: list, grammar_data: list, query:
             "match":           is_match,
         })
 
-    # ── Hitung akurasi ──
     if mentioned == 0:
-        # Jika ada grammar/kanji data tapi tidak ada yang match:
-        # kemungkinan AI mengajarkan tapi dengan framing berbeda (bukan casual chat)
         if grammar_data or kanji_data:
             return {
                 "pct": -1,
@@ -888,18 +856,14 @@ class LLMAgent:
             rom_val = res.get("rom", "").strip()
             id_val = res.get("id", query).strip()
 
-            # Clean up potential LLM-generated prefixes in values
             rom_val = re.sub(r'^(?:ROM|ROMAJI)\s*[:\uff1a]\s*', '', rom_val, flags=re.IGNORECASE).strip()
             id_val = re.sub(r'^(?:ID|ARTI)\s*[:\uff1a]\s*', '', id_val, flags=re.IGNORECASE).strip()
             jp_val = re.sub(r'^(?:JP|JEPANG)\s*[:\uff1a]\s*', '', jp_val, flags=re.IGNORECASE).strip()
 
             if is_jp:
-                # Force jp to be the original Japanese query to prevent LLM from truncating it
                 jp_val = query
-                # Force romaji to be generated from the full original query
                 rom_val = self.generate_romaji_pykakasi(query)
             else:
-                # Force id to be the original Indonesian/Latin query
                 id_val = query
                 rom_val = self.generate_romaji_pykakasi(jp_val)
 
@@ -920,12 +884,10 @@ class LLMAgent:
         """Convert Japanese text to romaji using shared hybrid MeCab + pykakasi engine."""
         return generate_romaji_hybrid(jp_text)
 
-    # Prefix-prefiks yang harus di-skip dari TTS (jangan diucapkan)
     _TTS_SKIP_PREFIXES = (
         "KOREKSI:", "KOREKSI：",
         "USER_JP:", "USER_ROM:", "USER_ID:",
     )
-    # Regex untuk strip prefix di awal teks
     _JP_PREFIX_RE = re.compile(r'^(?:JP:|JP：)\s*', re.IGNORECASE)
     _ROM_PREFIX_RE = re.compile(r'^(?:ROM:|ROM：|ROMAJI:|ROMAJI：)\s*', re.IGNORECASE)
     _ID_PREFIX_RE = re.compile(r'^(?:ID:|ID：|ARTI:|ARTI：)\s*', re.IGNORECASE)
@@ -1219,13 +1181,11 @@ class LLMAgent:
         else:
             system_content = _SYSTEM_BASE + _MODE_DISCOVERY
 
-        # Gabungkan kg_context (GraphRAG) ke dalam satu system message utama untuk menghindari API validation error
         if kg_context:
             system_content = system_content + "\n\n" + kg_context
 
         messages: list[dict] = [{"role": "system", "content": system_content}]
 
-        # Speaking mode needs more history for conversational context (6 turns)
         hist_limit = 6 if mode == "speaking" else 3
         for h in history[-hist_limit:]:
             role = "assistant" if h.get("role") in ("tutor", "assistant") else "user"
@@ -1278,9 +1238,7 @@ class LLMAgent:
         if student_id != "default_user":
             asyncio.create_task(SupabaseService.save_chat_log(student_id, "user", query, mode))
 
-        # ── Guard: Tolak permintaan soal/kuis di Discovery & Speaking mode ──
         if mode in ("discovery", "speaking") and _is_quiz_request(query):
-            # Coba serve static pre-generated WAV jika sudah ada
             _static_wav = _get_static_audio("quiz_redirect")
             yield f"data: {json.dumps({'type': 'status', 'content': 'Mengarahkan ke Mode Quest...'})}\n\n"
             yield f"data: {json.dumps({'type': 'metadata', 'vocab': [], 'grammar': [], 'suggestions': []})}\n\n"
@@ -1349,7 +1307,7 @@ class LLMAgent:
             visible_final = re.sub(r'\|\|\|DATA.*?DATA\|\|\|', '', visible_final, flags=re.DOTALL).strip()
             await SupabaseService.save_chat_log(student_id, "assistant", visible_final, mode)
 
-        # RAG post-retrieval based on LLM response to prevent "Data Tidak Tersedia" for proactive teaching
+        # Post-retrieval RAG: enrich data berdasarkan konten respons LLM
         if self.graph and full_content:
             try:
                 resp_tokens = await asyncio.to_thread(_tokenize, full_content)
@@ -1387,9 +1345,7 @@ class LLMAgent:
                 SupabaseService.save_chat_log(student_id, "user", query, mode)
             )
 
-        # ── Guard: Tolak permintaan soal/kuis di Discovery & Speaking mode ──
         if mode in ("discovery", "speaking") and _is_quiz_request(query):
-            # Coba serve static pre-generated WAV (base64) jika sudah ada
             _static_b64 = _get_static_audio_b64("quiz_redirect")
             yield {"type": "status", "content": "Mengarahkan ke Mode Quest..."}
             yield {"type": "metadata", "vocab": [], "grammar": [], "suggestions": []}
@@ -1410,7 +1366,7 @@ class LLMAgent:
                     grammar_data, vocab_data, kanji_data = [], [], []
             else:
                 grammar_data, vocab_data, kanji_data = [], [], []
-            kg_context = ""  # Still don't inject KG context into prompt — keep conversation natural
+            kg_context = ""  # Speaking mode: tidak inject KG context agar percakapan tetap natural
         else:
             kg_context, vocab_data, grammar_data, kanji_data = await self._build_kg_context(
                 query, student_id, history, mode
@@ -1422,10 +1378,6 @@ class LLMAgent:
         query_for_llm = query
         messages = self._build_messages(kg_context, history, query_for_llm, mode)
 
-        # audio_tasks_queue menerima:
-        #   - asyncio.Task  → baris yang butuh TTS (await task untuk dapat hasilnya)
-        #   - dict          → baris tanpa TTS (ROM:/ID:/dll), langsung forward ke output
-        #   - None          → sinyal selesai
         audio_tasks_queue: asyncio.Queue = asyncio.Queue(maxsize=30)
         output_queue: asyncio.Queue[dict | None] = asyncio.Queue()
 
@@ -1445,22 +1397,15 @@ class LLMAgent:
             while True:
                 item = await audio_tasks_queue.get()
                 if item is None:
-                    # Sinyal selesai
                     await output_queue.put(None)
                     break
                 if isinstance(item, dict):
-                    # Baris tanpa TTS (ROM:/ID:/dll) — langsung forward
                     await output_queue.put(item)
                 else:
-                    # asyncio.Task — await untuk mendapatkan hasil TTS
                     result = await item
                     await output_queue.put(result)
 
-        # ──────────────────────────────────────────────────────────────────
-        # Helper: apakah baris ini harus dikirim ke TTS?
-        # Untuk mode speaking/voice, hanya baris JP: yang di-synthesize.
-        # Baris ROM:, ID:, KOREKSI:, USER_* di-skip sepenuhnya.
-        # ──────────────────────────────────────────────────────────────────
+        # Helper: tentukan apakah baris perlu di-synthesize ke TTS.
         _SPEAKING_MODES = ("speaking", "voice")
         _LINE_SKIP_RE = re.compile(
             r'^\s*(?:ROM|ROM：|ID|ID：|KOREKSI|KOREKSI：|USER_JP|USER_ROM|USER_ID)\s*[:\uff1a]',
@@ -1474,10 +1419,7 @@ class LLMAgent:
             if not stripped:
                 return False
             if _LINE_SKIP_RE.match(stripped):
-                # ROM:, ID:, KOREKSI:, USER_* → jangan di-synthesize
                 return False
-            # Untuk speaking/voice mode: hanya izinkan baris yang dimulai JP:
-            # ATAU baris bebas yang tidak termasuk format terstruktur di atas
             return True
 
         def _extract_jp_from_line(line: str) -> str:
@@ -1524,11 +1466,10 @@ class LLMAgent:
                                     "audio_b64": None,
                                 })
                         else:
-                            # Mode lain (discovery, quest): kirim semua ke TTS worker biasa
                             task = asyncio.create_task(_tts_worker(line + '\n'))
                             await audio_tasks_queue.put(task)
 
-                    # Flush buffer tanpa newline (hanya untuk mode non-speaking)
+                    # Flush buffer tanpa newline (mode non-speaking)
                     if mode not in _SPEAKING_MODES:
                         stripped = sentence_buf.strip()
                         should_flush = (
@@ -1536,7 +1477,6 @@ class LLMAgent:
                             or (len(stripped) >= 60 and ' ' in stripped)
                         )
                         if should_flush:
-                            # Potong di batas kata terakhir agar tidak terpotong di tengah kata
                             if len(stripped) >= 60 and ' ' in stripped and not _PHRASE_END.search(sentence_buf):
                                 last_space = sentence_buf.rfind(' ')
                                 if last_space > 0:
@@ -1551,7 +1491,6 @@ class LLMAgent:
                             task = asyncio.create_task(_tts_worker(to_flush))
                             await audio_tasks_queue.put(task)
 
-                # Flush sisa buffer
                 if sentence_buf and sentence_buf.strip():
                     task = asyncio.create_task(_tts_worker(sentence_buf))
                     await audio_tasks_queue.put(task)
@@ -1588,7 +1527,6 @@ class LLMAgent:
                 await SupabaseService.save_chat_log(student_id, "assistant", visible_final, mode)
 
             if mode == "speaking":
-                # Translate user query in background now that LLM is idle
                 try:
                     user_trans = await self.translate_and_romaji_user_llm(query, is_query=True)
                     yield {
@@ -1600,7 +1538,6 @@ class LLMAgent:
                 except Exception as e:
                     logger.error(f"[Background User Translate] failed: {e}")
 
-                # Translate Alisa's reply in background now that LLM is idle
                 try:
                     alisa_trans = await self.translate_and_romaji_user_llm(visible_final, is_query=False)
                     yield {
@@ -1615,7 +1552,7 @@ class LLMAgent:
                 grammar_check = validate_grammar_correction(full_content, grammar_data, query)
                 yield {"type": "done", "grammar_check": grammar_check}
             else:
-                # RAG post-retrieval based on LLM response to prevent "Data Tidak Tersedia" for proactive teaching
+                # Post-retrieval RAG: enrich data berdasarkan konten respons LLM
                 if self.graph and full_content:
                     try:
                         resp_tokens = await asyncio.to_thread(_tokenize, full_content)
@@ -1711,17 +1648,14 @@ class LLMAgent:
 
             lines = [f"Grammar: {data['name']} [{data.get('level', 'N5')}]"]
 
-            # Rules
             rules = [r for r in data.get("rules", []) if r]
             if rules:
                 lines.append(f"Aturan: {' | '.join(rules)}")
 
-            # Common Errors
             errors = [e for e in data.get("common_errors", []) if e]
             if errors:
                 lines.append(f"Kesalahan Umum: {' | '.join(errors)}")
 
-            # Example Sentences (max 2)
             examples = [e for e in data.get("examples", []) if e.get("text")]
             for ex in examples[:2]:
                 lines.append(
@@ -1767,7 +1701,6 @@ class LLMAgent:
         prompt = "\n".join(lines)
 
         try:
-            # ── HuggingFace Cloud provider ────────────────────────────────
             if _active_provider == "hf_cloud":
                 from huggingface_hub import InferenceClient
                 client = InferenceClient(model=_hf_model_repo, token=_hf_token)
@@ -1792,7 +1725,6 @@ class LLMAgent:
                 audio_filename = await self._tts(feedback)
                 return {"feedback": feedback, "audio_url": audio_filename}
 
-            # ── Local Llama.cpp provider ──────────────────────────────────
             model = await get_llama_model_async()
             async with _model_lock:
                 resp = await asyncio.to_thread(

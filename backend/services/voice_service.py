@@ -20,11 +20,8 @@ _TEMP_MAX_AGE_SECONDS = 3600  # 1 jam
 
 class VoiceService:
     def __init__(self):
-        # FIX: OpenMP duplicate runtime initialization on Windows
         os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
-        # FIX: Whisper membutuhkan ffmpeg di system PATH. 
-        # Kita inject executable dari imageio_ffmpeg ke system PATH secara dinamis.
         try:
             import imageio_ffmpeg
             ffmpeg_dir = os.path.dirname(imageio_ffmpeg.get_ffmpeg_exe())
@@ -35,12 +32,10 @@ class VoiceService:
             logger.warning("imageio-ffmpeg tidak ada. Jika gagal jalan, pastikan ffmpeg terinstall di OS.")
 
         self.whisper_model = None
-        # Lazy load whisper behavior can be implemented if it takes too much memory during startup
         self.temp_dir = Path(os.getcwd()) / "backend" / "temp"
         self.temp_dir.mkdir(parents=True, exist_ok=True)
-        self.tts_url = "http://127.0.0.1:5050/voice" # Diperbarui ke 5050 sesuai config.yml Style-Bert-VITS2
+        self.tts_url = "http://127.0.0.1:5050/voice"
 
-        # Bersihkan sisa file temp lama dari session sebelumnya saat startup
         self._cleanup_stale_files()
 
     def _cleanup_stale_files(self):
@@ -50,7 +45,6 @@ class VoiceService:
         cleaned = 0
         try:
             for f in self.temp_dir.glob("response_*.wav"):
-                # Skip static pre-generated files
                 if f.name.startswith("static_"):
                     continue
                 if (now - f.stat().st_mtime) > _TEMP_MAX_AGE_SECONDS:
@@ -67,8 +61,6 @@ class VoiceService:
             from core.config import settings
             import os
 
-            # ── Prioritaskan path lokal agar tidak butuh internet saat startup ──
-            # Path lokal relatif terhadap direktori backend/
             backend_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
             local_path = os.path.join(backend_dir, settings.WHISPER_MODEL_PATH)
 
@@ -76,7 +68,6 @@ class VoiceService:
                 model_source = local_path
                 logger.info(f"🔊 Loading Kotoba-Whisper dari path LOKAL: {local_path}")
             else:
-                # Fallback ke HuggingFace Hub (butuh internet / HF cache)
                 model_source = "kotoba-tech/kotoba-whisper-v1.0-faster"
                 logger.warning(
                     f"⚠️ Model lokal tidak ditemukan di '{local_path}'. "

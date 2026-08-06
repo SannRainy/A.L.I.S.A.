@@ -24,14 +24,9 @@ router = APIRouter(tags=["chat"])
 # ---------------------------------------------------------------------------
 # Try to initialize GraphEngine; if Neo4j is unavailable run without it
 # ---------------------------------------------------------------------------
-graph = None
-try:
-    from services.graph_engine import GraphEngine
-    graph = GraphEngine()
-    logger.info("✅ GraphEngine (Neo4j) initialized successfully.")
-except Exception as e:
-    logger.warning(f"⚠️ GraphEngine not available, running without Knowledge Graph: {e}")
+from services.graph_engine import GraphEngine, get_graph_engine
 
+graph = get_graph_engine()
 llm_agent = LLMAgent(graph=graph)
 voice_service = VoiceService()
 
@@ -45,7 +40,7 @@ class ChatMessage(BaseModel):
 class ChatRequest(BaseModel):
     query: str
     student_id: Optional[str] = "default"
-    history: Optional[List[ChatMessage]] = None  # Fixed: mutable default → None
+    history: Optional[List[ChatMessage]] = None
     mode: Optional[str] = "discovery"
 
 class RegisterRequest(BaseModel):
@@ -113,7 +108,6 @@ async def chat_with_tutor(request: ChatRequest):
     if not request.query.strip():
         raise HTTPException(status_code=400, detail="Query tidak boleh kosong.")
 
-    # Handle None history (fixed mutable default)
     history_data = request.history or []
 
     return StreamingResponse(
@@ -238,7 +232,6 @@ async def generate_quest(request: ChatRequest):
 @router.get("/quest/levels")
 async def get_quest_levels():
     """Ambil daftar level quest yang tersedia."""
-    # Sembunyikan data questions di level list agar tidak berat
     levels_summary = []
     for lvl in QUEST_LEVELS:
         levels_summary.append({
@@ -301,12 +294,12 @@ FRONTEND_TO_NEO4J_MAP = {
     "grammar_itsu": "時 【とき】",
     # Level 4
     "grammar_i_adj": "い-adjectives",
-    "grammar_na_adj": "な-adjectives",  # Fixed: was ASCII 'na', now Hiragana 'な'
+    "grammar_na_adj": "な-adjectives",
     "grammar_i_adj_neg": "い-adjectives",
     "grammar_totemo": "とても",
     "grammar_amari_neg": "い-adjectives",
     "grammar_donna": "どんな",
-    "grammar_na_adj_noun": "な-adjectives",  # Fixed: was ASCII 'na', now Hiragana 'な'
+    "grammar_na_adj_noun": "な-adjectives",
     "grammar_ii_yoku": "い-adjectives",
     "grammar_ga_but": "が",
     # Level 5
@@ -351,7 +344,7 @@ FRONTEND_TO_NEO4J_MAP = {
     "grammar_naku_temo_ii": "なくてもいい",
     "grammar_node": "ので",
     "grammar_shikashi": "Namun",
-    "grammar_ne_yo": "ね",  # Added: was missing, used in Level 9 q_9_9 (Neo4j has ね and よ as separate nodes)
+    "grammar_ne_yo": "ね",
 }
 
 @router.post("/quest/submit")
@@ -362,11 +355,10 @@ async def submit_quest(request: QuestSubmitRequest):
         score=request.score,
         level_id=request.level_id
     )
-    # Log activity for streak and daily goals
     try:
         await StreakService.log_activity(
             user_id=request.user_id,
-            study_minutes=15,       # Quest levels take approx 15 minutes
+            study_minutes=15,
             quests_completed=1,
             xp_earned=request.score
         )
@@ -377,7 +369,6 @@ async def submit_quest(request: QuestSubmitRequest):
 @router.post("/quest/ai-correction")
 async def ai_correction(request: AiCorrectionRequest):
     """Meminta AI untuk mengoreksi jawaban yang salah dan update node ke STRUGGLING."""
-    # 1. Update status Neo4j ke STRUGGLING
     if graph and request.node_id and request.student_id != "default":
         try:
             neo4j_node_id = FRONTEND_TO_NEO4J_MAP.get(request.node_id, request.node_id)
@@ -386,7 +377,6 @@ async def ai_correction(request: AiCorrectionRequest):
         except Exception as e:
             logger.error(f"Failed to update Neo4j status: {e}")
 
-    # 2. Minta feedback dari LLM (Qwen) - Versi Cepat (Non-streaming)
     try:
         data = await llm_agent.get_correction_feedback(
             question=request.question,
@@ -412,7 +402,6 @@ class NodeStatusRequest(BaseModel):
     node_id: str
     status: str # LEARNED, MASTERED, STRUGGLING
 
-# KanjiMasteryRequest sudah didefinisikan di atas (baris 66-71), tidak perlu duplikasi.
 
 class QuestSessionStatsRequest(BaseModel):
     student_id: str
@@ -427,16 +416,16 @@ async def get_mastered_nodes(student_id: str):
     """
     logger.info(f"get_mastered_nodes called for: {student_id}")
     mastered_nodes = []
-    if graph:
+    g = get_graph_engine()
+    if g:
         try:
-            path = graph.get_student_mastery_path(student_id)
+            path = g.get_student_mastery_path(student_id)
             logger.info(f"Raw mastery path from Neo4j for {student_id}: {path}")
             for node in path:
                 if node.get("status") in ("MASTERED", "LEARNED"):
                     node_id = node.get("id")
                     node_type = str(node.get("type", "")).lower()
                     if node_type == "grammar":
-                        # Map back to frontend IDs
                         for frontend_id, neo4j_id in FRONTEND_TO_NEO4J_MAP.items():
                             if neo4j_id == node_id and frontend_id not in mastered_nodes:
                                 mastered_nodes.append(frontend_id)
@@ -447,36 +436,43 @@ async def get_mastered_nodes(student_id: str):
         except Exception as e:
             logger.error(f"Failed to fetch mastery from Neo4j: {e}")
     
-    return {"student_id": student_id, "mastered_nodes": mastered_nodes, "kg_available": graph is not None}
+    return {"student_id": student_id, "mastered_nodes": mastered_nodes, "kg_available": g is not None}
 
 @router.get("/kg/node/{node_id:path}")
 async def get_kg_node_detail(node_id: str):
     """Ambil data detail dari suatu node kognitif (Vocab/Grammar/Kanji) di Neo4j."""
-    if not graph:
+    g = get_graph_engine()
+    if not g:
         raise HTTPException(status_code=503, detail="Graph engine tidak tersedia.")
     
     # Map legacy IDs to new renamed IDs for backward compatibility
     LEGACY_TO_NEW_MAP = {
         "Akhiran です、 だ": "です・だ (Kopula)",
         "desu・だ (Kopula)": "です・だ (Kopula)",
+        "desu・た (Kopula)": "です・だ (Kopula)",
         "esu・だ (Kopula)": "です・だ (Kopula)",
+        "desu/da": "です・だ (Kopula)",
+        "Partikel subject は、も、 が": "は・も・が (Partikel Subjek)",
         "Partikel subject は、mo、 が": "は・mo・が (Partikel Subjek)",
-        "Partikel object を、ni、へ、 で": "を・に・へ・de (Partikel Objek)",
-        "Partikel object を、ni、へ、で": "を・に・へ・de (Partikel Objek)",
-        "Partikel と、y、tot か": "と・や・tok (Partikel Penghubung)",
-        "Partikel と、y、と か": "と・や・tok (Partikel Penghubung)",
+        "Partikel object を、に、へ、 で": "を・に・へ・で (Partikel Objek)",
+        "Partikel object を、ni、へ、 で": "を・に・へ・で (Partikel Objek)",
+        "Partikel object を、ni、へ、de": "を・に・へ・で (Partikel Objek)",
+        "Partikel と、や、と か": "と・や・とか (Partikel Penghubung)",
+        "Partikel と、y、tot か": "と・や・とか (Partikel Penghubung)",
         "Partikel  の": "の (Partikel Kepemilikan)",
         "Kata Kerja Bentuk Sopan (masu-kei)": "〜ます形 (Bentuk Sopan)",
     }
     
     mapped_id = LEGACY_TO_NEW_MAP.get(node_id, node_id)
-    node_detail = graph.get_exact_node(mapped_id)
+    node_detail = g.get_exact_node(mapped_id)
     if not node_detail:
-        # Fallback: jika node_id tidak langsung ketemu (misal wa, ga, dll), coba map
-        # di FRONTEND_TO_NEO4J_MAP
         neo4j_id = FRONTEND_TO_NEO4J_MAP.get(mapped_id, mapped_id)
-        node_detail = graph.get_exact_node(neo4j_id)
+        node_detail = g.get_exact_node(neo4j_id)
         
+    if not node_detail and "desu" in mapped_id.lower():
+        fallback_id = mapped_id.lower().replace("desu", "です")
+        node_detail = g.get_exact_node(fallback_id)
+
     if not node_detail:
         raise HTTPException(status_code=404, detail=f"Node '{node_id}' tidak ditemukan.")
         
@@ -511,15 +507,12 @@ async def log_quest_session_stats(request: QuestSessionStatsRequest):
             if correct == 0 and wrong == 0:
                 continue
                 
-            # Tentukan tipe node untuk parameter BKT
             node_type = "grammar"
-            # Cek jika id adalah karakter kanji tunggal
             if len(neo4j_node_id) == 1 and ord(neo4j_node_id[0]) >= 0x4e00:
                 node_type = "kanji"
                 
             bkt_params = BKTEngine.get_params(node_type)
             
-            # Ambil belief awal dari Neo4j, default ke p_l0
             current_p_l = graph.get_node_belief(request.student_id, neo4j_node_id)
             if current_p_l is None:
                 current_p_l = bkt_params["p_l0"]
@@ -530,8 +523,7 @@ async def log_quest_session_stats(request: QuestSessionStatsRequest):
             for obs in observations:
                 p_l = BKTEngine.update_belief(p_l, obs, bkt_params)
                 
-            # Tentukan status kognitif kognitif baru berdasarkan p_l
-            if p_l >= 0.85: # MASTERY_THRESHOLD
+            if p_l >= 0.85:  # MASTERY_THRESHOLD
                 status = "MASTERED"
             elif p_l >= 0.40:
                 status = "LEARNED"
@@ -540,7 +532,6 @@ async def log_quest_session_stats(request: QuestSessionStatsRequest):
                 
             graph.update_node_status(request.student_id, neo4j_node_id, status, p_mastered=p_l)
             
-            # Tambahkan ke SRS jika berhasil dipelajari/dikuasai agar user bisa mereviewnya nanti
             if status in ("LEARNED", "MASTERED") and request.student_id != "default":
                 try:
                     await SRSService.get_or_create_item(request.student_id, neo4j_node_id, node_type)
@@ -583,19 +574,16 @@ async def log_kanji_mastery(request: KanjiMasteryRequest):
         return {"status": "error", "message": "Graph engine tidak tersedia."}
 
     try:
-        # Pastikan tiap node Kanji ada di Neo4j terlebih dahulu, lalu tandai MASTERED
         graph.ensure_and_master_kanji(request.student_id, request.kanji_ids)
 
-        # Award XP: 10 XP per kanji yang dijawab benar
         xp_gain = request.score * 10
         await SupabaseService.update_user_stats(request.student_id, "KANJI_DOJO_COMPLETED", custom_xp=xp_gain)
-        
-        # Log activity for streak and daily goals
+
         try:
             await StreakService.log_activity(
                 user_id=request.student_id,
-                study_minutes=5,            # Kanji Dojo sessions take approx 5 minutes
-                items_reviewed=request.score, # Each correct kanji counts as a reviewed item
+                study_minutes=5,
+                items_reviewed=request.score,
                 xp_earned=xp_gain
             )
         except Exception as e:
@@ -692,7 +680,6 @@ async def register_user(request: RegisterRequest):
             logger.error(f"Supabase Response JSON structure unknown: {data}")
             raise Exception("Registrasi berhasil tapi User ID tidak ditemukan.")
 
-        # Fallback: langsung buat profile dengan demographics jika trigger belum jalan
         try:
             await SupabaseService.ensure_profile_exists(
                 user_id,
@@ -718,7 +705,6 @@ async def get_profile(user_id: str):
     """Ambil data profil user (XP, Level, etc) dan statistik Neo4j."""
     profile = await SupabaseService.get_user_profile(user_id)
     if not profile:
-        # OTOMATIS BUAT JIKA TIDAK ADA (Lazy Initialization)
         logger.info(f"Lazy profile initialization for {user_id}")
         await SupabaseService.ensure_profile_exists(user_id)
         profile = await SupabaseService.get_user_profile(user_id)
@@ -734,7 +720,6 @@ async def get_profile(user_id: str):
     }
     mastery_path = []
     if graph:
-        # Kita bisa menghitung dari get_student_mastery_path
         mastery_path = graph.get_student_mastery_path(user_id)
         kanji_c = sum(1 for n in mastery_path if str(n.get("type", "")).lower() == "kanji")
         vocab_c = sum(1 for n in mastery_path if str(n.get("type", "")).lower() == "vocab")
@@ -787,8 +772,6 @@ async def get_achievements(user_id: str):
     achievements = await SupabaseService.get_user_achievements(user_id)
     return {"user_id": user_id, "completed_quests": achievements}
 
-# Route /kanji/mastery sudah didefinisikan di atas (satu route saja).
-# Duplikat ini dihapus untuk mencegah FastAPI mengabaikannya secara diam-diam.
 
 
 @router.get("/speaking/topic")
@@ -814,7 +797,6 @@ def _cleanup_temp_file(path: str):
         try:
             if os.path.exists(path):
                 os.remove(path)
-                logger.debug(f"Cleaned up temp file: {path}")
         except Exception as e:
             logger.warning(f"Failed to clean up temp file {path}: {e}")
     return BackgroundTask(_do_cleanup)

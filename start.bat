@@ -10,4 +10,4 @@ set PYTHONUTF8=1
 :: set TRANSFORMERS_OFFLINE=1
 :: set HF_DATASETS_OFFLINE=1
 
-npx --yes concurrently -k -n "Backend,Frontend,TTS" -c "cyan.bold,magenta.bold,yellow.bold" "call venv-backend\Scripts\activate.bat && cd backend && python -m uvicorn main:app --host 127.0.0.1 --port 8000" "cd frontend && npm run dev" "call style-bert-vits2\venv-tts\Scripts\activate.bat && cd Style-Bert-VITS2 && python server_fastapi.py"
+npx --yes concurrently -k -n "Backend,Frontend,TTS" -c "cyan.bold,magenta.bold,yellow.bold" "call venv-backend\Scripts\activate.bat && cd backend && python -m uvicorn main:app --host 127.0.0.1 --port 8000 --reload" "cd frontend && npm run dev" "call style-bert-vits2\venv-tts\Scripts\activate.bat && cd Style-Bert-VITS2 && python server_fastapi.py"

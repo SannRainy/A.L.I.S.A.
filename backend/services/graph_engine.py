@@ -1041,3 +1041,27 @@ class GraphEngine:
             """, student_id=student_id, target_id=target_node_id)
             rec = result.single()
             return rec["path_nodes"] if rec else []
+
+
+_graph_engine_singleton = None
+
+def get_graph_engine() -> GraphEngine | None:
+    """
+    Singleton / Lazy getter for GraphEngine instance.
+    Automatically reconnects if the instance was None or if the connection dropped.
+    """
+    global _graph_engine_singleton
+    if _graph_engine_singleton is not None:
+        try:
+            _graph_engine_singleton.driver.verify_connectivity()
+            return _graph_engine_singleton
+        except Exception:
+            _graph_engine_singleton = None
+
+    try:
+        _graph_engine_singleton = GraphEngine()
+        log.info("✅ GraphEngine connected successfully via get_graph_engine().")
+        return _graph_engine_singleton
+    except Exception as e:
+        log.warning(f"⚠️ GraphEngine connection failed: {e}")
+        return None

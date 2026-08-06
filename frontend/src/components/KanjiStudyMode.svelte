@@ -4,9 +4,81 @@
     import { user } from "../stores/auth_store";
     import { profile, fetchFullProfile } from "../stores/profile_store";
     import { kanjiSets, totalKanjiCount } from "../lib/data/kanji_n5_dataset.js";
+    import { themeStore } from "../stores/theme_store.js";
     import KanjiFlashcard from "./KanjiFlashcard.svelte";
 
+    export let vrmController = null;
     export let onBack; // callback kembali ke QuestMap
+
+    // ALISA Sticker state
+    let activeStickers = [];
+
+    function triggerSticker(type) {
+        const config = {
+            benar: [
+                {
+                    img: "/img/stickers/Yatta Benar.png",
+                    audio: "/audio/stickers/Yatta Benar.wav",
+                },
+                {
+                    img: "/img/stickers/Ganbare.png",
+                    audio: "/audio/stickers/Ganbare.wav",
+                },
+            ],
+            salah: {
+                img: "/img/stickers/Masih Salah Nih.png",
+                audio: "/audio/stickers/Masih Salah Nih.wav",
+            },
+            partially: {
+                img: "/img/stickers/Dikit Lagi Nih.png",
+                audio: "/audio/stickers/Dikit Lagi Nih.wav",
+            },
+        };
+
+        let target;
+        if (type === "benar") {
+            const list = config.benar;
+            target = list[Math.floor(Math.random() * list.length)];
+        } else {
+            target = config[type];
+        }
+
+        if (!target) return;
+
+        const audio = new Audio(target.audio);
+        audio.volume = 0.85;
+
+        if (vrmController) vrmController.setSpeaking(true);
+        audio.play().catch((e) => {
+            console.warn("Audio play blocked:", e);
+            if (vrmController) vrmController.setSpeaking(false);
+        });
+        audio.onended = () => {
+            if (vrmController) vrmController.setSpeaking(false);
+        };
+
+        const isLeft = Math.random() < 0.5;
+        const randomY = Math.random() * 70 + 10;
+        const baseRot = isLeft ? 50 : -50;
+        const randomRot = baseRot + (Math.random() - 0.5) * 10;
+        const positionX = isLeft ? 75 : -75;
+
+        const stickerId = `sticker_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
+        const newSticker = {
+            id: stickerId,
+            img: target.img,
+            side: isLeft ? "left" : "right",
+            y: randomY,
+            x: positionX,
+            rotation: randomRot,
+        };
+
+        activeStickers = [...activeStickers, newSticker];
+
+        setTimeout(() => {
+            activeStickers = activeStickers.filter((s) => s.id !== stickerId);
+        }, 2500);
+    }
 
     // ── State ──────────────────────────────────────────────────────────────
     let view = "dojo_map"; // 'dojo_map' | 'study' | 'quiz' | 'set_result'
@@ -95,7 +167,12 @@
 
         quizFeedback = isCorrect ? 'correct' : 'wrong';
         quizAnswerText = currentQuizKanji.arti;
-        if (isCorrect) quizScore++;
+        if (isCorrect) {
+            quizScore++;
+            triggerSticker("benar");
+        } else {
+            triggerSticker("salah");
+        }
     }
 
     function nextQuiz() {
@@ -125,6 +202,8 @@
             pct,
             passed
         };
+        view = "set_result";
+        triggerSticker(passed ? "benar" : "salah");
 
         // Tandai set sebagai MASTERED jika lulus
         if (passed && !masteredSets.includes(activeSetData.id)) {
@@ -195,29 +274,29 @@
             <!-- Header -->
             <div class="flex items-center gap-4 mb-8">
                 <button on:click={onBack}
-                    class="w-10 h-10 rounded-xl bg-white/20 hover:bg-slate-200/40 text-slate-500 hover:text-slate-800 transition flex items-center justify-center shrink-0">
+                    class="w-10 h-10 rounded-xl transition flex items-center justify-center shrink-0 {$themeStore === 'light' ? 'bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300' : 'bg-white/20 hover:bg-slate-200/40 text-slate-500 hover:text-slate-800'}">
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
                     </svg>
                 </button>
                 <div>
-                    <h2 class="text-2xl font-black text-white tracking-tight">漢字 Dojo</h2>
-                    <p class="text-xs text-slate-300 font-medium mt-0.5">{totalKanjiCount} kanji N5 dalam 13 set terstruktur</p>
+                    <h2 class="text-2xl font-black tracking-tight {$themeStore === 'light' ? 'text-slate-900' : 'text-white'}">漢字 Dojo</h2>
+                    <p class="text-xs font-medium mt-0.5 {$themeStore === 'light' ? 'text-slate-600' : 'text-slate-300'}">{totalKanjiCount} kanji N5 dalam 13 set terstruktur</p>
                 </div>
                 <!-- Overall progress -->
                 <div class="ml-auto flex flex-col items-end shrink-0">
-                    <span class="text-xs font-bold text-slate-300 uppercase tracking-widest">Progress</span>
-                    <span class="text-xl font-black text-amber-400">{masteredSets.length}<span class="text-slate-300 font-bold text-sm"> / 13</span></span>
+                    <span class="text-xs font-bold uppercase tracking-widest {$themeStore === 'light' ? 'text-slate-500' : 'text-slate-300'}">Progress</span>
+                    <span class="text-xl font-black text-amber-500">{masteredSets.length}<span class="font-bold text-sm {$themeStore === 'light' ? 'text-slate-500' : 'text-slate-300'}"> / 13</span></span>
                 </div>
             </div>
 
             <!-- Master progress bar -->
             <div class="mb-8">
-                <div class="w-full bg-slate-200/60 rounded-full h-3 overflow-hidden border border-white/50 shadow-inner">
+                <div class="w-full rounded-full h-3 overflow-hidden border shadow-inner {$themeStore === 'light' ? 'bg-slate-200 border-slate-300' : 'bg-slate-200/60 border-white/50'}">
                     <div class="bg-gradient-to-r from-amber-400 to-orange-500 h-full rounded-full transition-all duration-1000"
                          style="width: {(masteredSets.length / 13) * 100}%"></div>
                 </div>
-                <p class="text-[10px] text-slate-400 font-semibold mt-1.5 text-center">
+                <p class="text-[10px] font-semibold mt-1.5 text-center {$themeStore === 'light' ? 'text-slate-500' : 'text-slate-400'}">
                     {masteredSets.length === 0
                         ? 'Mulai dari Set 1 untuk membangun fondasi!'
                         : masteredSets.length < 13
@@ -246,7 +325,7 @@
                                 {isLocked ? '🔒' : set.icon}
                             </div>
                             <div class="flex flex-col items-end">
-                                <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Set {i + 1}</span>
+                                <span class="text-[9px] font-black uppercase tracking-widest {$themeStore === 'light' ? 'text-slate-500' : 'text-slate-400'}">Set {i + 1}</span>
                                 {#if isMastered}
                                     <span class="text-[9px] font-black text-emerald-500 uppercase">✅ Mastered</span>
                                 {:else if isLocked}
@@ -258,18 +337,18 @@
                         </div>
 
                         <!-- Info set -->
-                        <h4 class="font-black text-white text-sm mb-1">{set.title}</h4>
-                        <p class="text-[11px] text-slate-300 leading-relaxed line-clamp-2">{set.theme}</p>
+                        <h4 class="font-black text-sm mb-1 {$themeStore === 'light' ? 'text-slate-900' : 'text-white'}">{set.title}</h4>
+                        <p class="text-[11px] leading-relaxed line-clamp-2 {$themeStore === 'light' ? 'text-slate-600' : 'text-slate-300'}">{set.theme}</p>
 
                         <!-- Kanji preview (5 karakter) -->
                         <div class="flex gap-1 mt-3 flex-wrap">
                             {#each set.kanji.slice(0, 6) as k}
-                                <span class="w-7 h-7 rounded-lg bg-white/60 border border-slate-200/60 flex items-center justify-center text-base font-bold text-slate-700 shadow-sm">
+                                <span class="w-7 h-7 rounded-lg flex items-center justify-center text-base font-bold shadow-sm {$themeStore === 'light' ? 'bg-indigo-50 border border-indigo-200/80 text-indigo-900' : 'bg-white/60 border border-slate-200/60 text-slate-700'}">
                                     {k.id}
                                 </span>
                             {/each}
                             {#if set.kanji.length > 6}
-                                <span class="w-7 h-7 rounded-lg bg-slate-100/60 border border-slate-200/60 flex items-center justify-center text-[10px] font-black text-slate-400">
+                                <span class="w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-black shadow-sm {$themeStore === 'light' ? 'bg-slate-100 border border-slate-200 text-slate-500' : 'bg-slate-100/60 border border-slate-200/60 text-slate-400'}">
                                     +{set.kanji.length - 6}
                                 </span>
                             {/if}
@@ -285,15 +364,15 @@
     {:else if view === "study" && activeSetData}
         <div class="flex-grow overflow-hidden relative z-10 flex flex-col h-full" in:fly={{ x: 40, duration: 400 }}>
             <!-- Set Header -->
-            <div class="p-5 border-b border-white/20 flex items-center gap-3 flex-shrink-0">
+            <div class="p-5 border-b flex items-center gap-3 flex-shrink-0 {$themeStore === 'light' ? 'border-slate-200 bg-white/60' : 'border-white/20'}">
                 <div class="w-9 h-9 rounded-xl bg-gradient-to-br {setColors[kanjiSets.findIndex(s => s.id === activeSetData.id)]} flex items-center justify-center text-lg shadow-md">
                     {activeSetData.icon}
                 </div>
                 <div>
-                    <h3 class="font-black text-white text-sm">{activeSetData.title}</h3>
-                    <p class="text-[10px] text-slate-300 font-semibold">Fase 1 dari 2 — Hafal Kartu</p>
+                    <h3 class="font-black text-sm {$themeStore === 'light' ? 'text-slate-900' : 'text-white'}">{activeSetData.title}</h3>
+                    <p class="text-[10px] font-semibold {$themeStore === 'light' ? 'text-slate-600' : 'text-slate-300'}">Fase 1 dari 2 — Hafal Kartu</p>
                 </div>
-                <div class="ml-auto text-xs font-black text-slate-400">
+                <div class="ml-auto text-xs font-black {$themeStore === 'light' ? 'text-slate-600' : 'text-slate-400'}">
                     {activeSetIndex + 1} / {activeSetData.kanji.length}
                 </div>
             </div>
@@ -318,31 +397,31 @@
             <!-- Quiz Header -->
             <div class="w-full max-w-sm mb-6">
                 <div class="flex items-center gap-3 mb-3">
-                    <button on:click={backToDojo} class="w-8 h-8 rounded-lg bg-white/20 hover:bg-rose-100 text-slate-400 hover:text-rose-500 transition flex items-center justify-center text-xs">✕</button>
-                    <div class="flex-grow bg-slate-200/50 h-2 rounded-full overflow-hidden">
+                    <button on:click={backToDojo} class="w-8 h-8 rounded-lg transition flex items-center justify-center text-xs cursor-pointer {$themeStore === 'light' ? 'bg-slate-100 hover:bg-rose-100 text-slate-500 hover:text-rose-600 border border-slate-200' : 'bg-white/20 hover:bg-rose-100 text-slate-400'}">✕</button>
+                    <div class="flex-grow h-2 rounded-full overflow-hidden {$themeStore === 'light' ? 'bg-slate-200 border border-slate-300' : 'bg-slate-200/50'}">
                         <div class="bg-gradient-to-r from-amber-400 to-orange-500 h-full rounded-full transition-all duration-500"
                              style="width: {(quizIndex / quizQueue.length) * 100}%"></div>
                     </div>
-                    <span class="text-xs font-black text-slate-400">{quizIndex + 1}/{quizQueue.length}</span>
+                    <span class="text-xs font-black {$themeStore === 'light' ? 'text-slate-600' : 'text-slate-400'}">{quizIndex + 1}/{quizQueue.length}</span>
                 </div>
-                <p class="text-[10px] font-black text-amber-400 uppercase tracking-widest text-center">Fase 2 — Ujian Kanji</p>
+                <p class="text-[10px] font-black text-amber-500 uppercase tracking-widest text-center">Fase 2 — Ujian Kanji</p>
             </div>
 
             <!-- Soal Kanji -->
             {#key currentQuizKanji.id + quizIndex}
                 <div class="w-full max-w-sm" in:fly={{ y: 20, duration: 400, easing: backOut }}>
-                    <div class="bg-white/90 backdrop-blur-xl rounded-[2rem] p-8 shadow-2xl border border-white/80 text-center">
+                    <div class="backdrop-blur-xl rounded-[2rem] p-8 shadow-2xl border text-center transition-colors duration-300 {$themeStore === 'light' ? 'bg-white/95 border-indigo-100 shadow-slate-200' : 'bg-white/90 border-white/80'}">
                         <!-- Kanji besar -->
                         <div class="text-[6rem] leading-none font-bold text-slate-900 mb-2 select-none"
                              style="font-family: 'Noto Serif JP', serif;">
                             {currentQuizKanji.id}
                         </div>
-                        <p class="text-xs text-slate-400 font-semibold mb-6">Apa artinya dalam bahasa Indonesia?</p>
+                        <p class="text-xs font-semibold mb-6 {$themeStore === 'light' ? 'text-slate-500' : 'text-slate-400'}">Apa artinya dalam bahasa Indonesia?</p>
 
                         <!-- Hint onyomi (toggle) -->
                         {#if !showQuizHint}
                             <button on:click={() => showQuizHint = true}
-                                class="text-xs text-slate-400 hover:text-amber-500 font-semibold transition mb-4 block w-full">
+                                class="text-xs font-semibold transition mb-4 block w-full cursor-pointer {$themeStore === 'light' ? 'text-slate-500 hover:text-amber-600' : 'text-slate-400 hover:text-amber-500'}">
                                 💡 Lihat petunjuk bacaan
                             </button>
                         {:else}
@@ -370,7 +449,7 @@
                             <button
                                 on:click={checkAnswer}
                                 disabled={!quizInput.trim()}
-                                class="w-full py-4 bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-300 text-white font-black rounded-2xl shadow-xl shadow-amber-500/25 transition active:scale-95 disabled:opacity-30 uppercase tracking-widest text-sm"
+                                class="w-full py-4 bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-300 text-white font-black rounded-2xl shadow-xl shadow-amber-500/25 transition active:scale-95 disabled:opacity-30 uppercase tracking-widest text-sm cursor-pointer"
                             >
                                 Periksa Jawaban
                             </button>
@@ -385,7 +464,7 @@
                             </div>
                             <button
                                 on:click={nextQuiz}
-                                class="w-full py-4 bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-black rounded-2xl shadow-xl shadow-indigo-500/25 transition active:scale-95 uppercase tracking-widest text-sm"
+                                class="w-full py-4 bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-black rounded-2xl shadow-xl shadow-indigo-500/25 transition active:scale-95 uppercase tracking-widest text-sm cursor-pointer"
                             >
                                 {quizIndex + 1 < quizQueue.length ? 'Lanjut →' : 'Lihat Hasil'}
                             </button>
@@ -400,7 +479,7 @@
     ══════════════════════════════════════════════════════════ -->
     {:else if view === "set_result" && sessionResults}
         <div class="flex-grow overflow-y-auto p-6 flex flex-col items-center justify-center relative z-10" in:fly={{ y: 40, duration: 500, easing: backOut }}>
-            <div class="w-full max-w-sm bg-white/90 backdrop-blur-xl rounded-[2.5rem] p-10 shadow-2xl border border-white/80 text-center">
+            <div class="w-full max-w-sm backdrop-blur-xl rounded-[2.5rem] p-10 shadow-2xl border text-center transition-colors duration-300 {$themeStore === 'light' ? 'bg-white/95 border-indigo-100 shadow-slate-200' : 'bg-white/90 border-white/80'}">
                 <!-- Emoji besar -->
                 <div class="text-6xl mb-4">{sessionResults.passed ? '🎉' : '💪'}</div>
 
@@ -441,16 +520,82 @@
                 <div class="flex flex-col gap-3">
                     {#if !sessionResults.passed}
                         <button on:click={() => startStudy(activeSetData)}
-                            class="w-full py-4 bg-gradient-to-r from-amber-400 to-orange-500 text-white font-black rounded-2xl shadow-xl transition active:scale-95 uppercase tracking-widest text-sm">
+                            class="w-full py-4 bg-gradient-to-r from-amber-400 to-orange-500 text-white font-black rounded-2xl shadow-xl transition active:scale-95 uppercase tracking-widest text-sm cursor-pointer">
                             Ulangi Set Ini
                         </button>
                     {/if}
                     <button on:click={backToDojo}
-                        class="w-full py-4 bg-slate-800 hover:bg-slate-900 text-white font-black rounded-2xl shadow-lg transition active:scale-95 uppercase tracking-widest text-sm">
+                        class="w-full py-4 font-black rounded-2xl shadow-lg transition active:scale-95 uppercase tracking-widest text-sm cursor-pointer {$themeStore === 'light' ? 'bg-slate-200 hover:bg-slate-300 text-slate-800' : 'bg-slate-800 hover:bg-slate-900 text-white'}">
                         Kembali ke Dojo Map
                     </button>
                 </div>
             </div>
         </div>
     {/if}
+
+    <!-- ALISA Sticker Overlay -->
+    <div class="alisa-stickers-container">
+        {#each activeStickers as sticker (sticker.id)}
+            <div
+                class="alisa-sticker-overlay {sticker.side}"
+                style="top: {sticker.y}%; --rot: {sticker.rotation}deg;"
+                in:fly={{
+                    x: sticker.side === "left" ? -100 : 100,
+                    duration: 550,
+                }}
+                out:fly={{
+                    x: sticker.side === "left" ? -100 : 100,
+                    duration: 450,
+                }}
+            >
+                <img
+                    src={sticker.img}
+                    alt="Alisa Sticker"
+                    class="alisa-sticker-img"
+                />
+            </div>
+        {/each}
+    </div>
 </div>
+
+<style>
+    .alisa-stickers-container {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 9999;
+        overflow: hidden;
+    }
+    .alisa-sticker-overlay {
+        position: absolute;
+        width: 300px;
+        height: 300px;
+        margin-top: -150px;
+        filter: drop-shadow(0 12px 25px rgba(0, 0, 0, 0.45));
+    }
+    .alisa-sticker-overlay.left {
+        left: -225px; /* Peek exactly half of the sticker */
+    }
+    .alisa-sticker-overlay.right {
+        right: -235px; /* Peek exactly half of the sticker */
+    }
+    .alisa-sticker-img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        transform: rotate(var(--rot));
+        animation: stickerSway 3s ease-in-out infinite alternate;
+        transform-origin: bottom center;
+    }
+    @keyframes stickerSway {
+        0% {
+            transform: rotate(calc(var(--rot) - 4deg));
+        }
+        100% {
+            transform: rotate(calc(var(--rot) + 4deg));
+        }
+    }
+</style>

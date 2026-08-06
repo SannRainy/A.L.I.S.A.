@@ -57,6 +57,8 @@ class N5GraphIngestor:
                         k.frequency = toInteger(row.frequency),
                         k.description = row.description
                 """, data=kanji_data)
+                valid_kanji_ids = [row["kanji_id"] for row in kanji_data if row.get("kanji_id")]
+                session.run("MATCH (k:Kanji) WHERE NOT k.id IN $valid_ids DETACH DELETE k", valid_ids=valid_kanji_ids)
 
             self._ingest_nodes(session, "nodes_grammar.csv", "Grammar", "grammar_id", {
                 "name": "row.name",
@@ -128,7 +130,7 @@ class N5GraphIngestor:
                     MERGE (v1)-[:SYNONYM_OF]->(v2)
                 """, data=rel_data)
 
-            print("Knowledge Graph N5 berhasil di-ingest (FULL GRAPH via Python-side loading)")
+            print("Knowledge Graph N5 berhasil di-ingest (FULL GRAPH via Python-side loading & Sync)")
 
     def _ingest_nodes(self, session, filename, label, id_col, attr_map):
         data = self.load_csv(filename)
@@ -143,6 +145,15 @@ class N5GraphIngestor:
         """
         session.run(query, data=data)
 
+        # Cleanup nodes that were deleted from CSV
+        valid_ids = [row[id_col] for row in data if row.get(id_col)]
+        cleanup_query = f"""
+            MATCH (n:{label})
+            WHERE NOT n.id IN $valid_ids
+            DETACH DELETE n
+        """
+        session.run(cleanup_query, valid_ids=valid_ids)
+
     def _ingest_edges(self, session, filename, from_label, from_col, to_label, to_col, rel_type):
         data = self.load_csv(filename)
         if not data: return
@@ -152,9 +163,18 @@ class N5GraphIngestor:
             UNWIND $data AS row
             MATCH (a:{from_label} {{id: row.{from_col}}})
             MATCH (b:{to_label} {{id: row.{to_col}}})
-            MERGE (a)-[:{rel_type}]->(b)
+            MERGE (a)-[r:{rel_type}]->(b)
         """
         session.run(query, data=data)
+
+        # Cleanup edges that were deleted from CSV
+        valid_pairs = [{"from_id": row[from_col], "to_id": row[to_col]} for row in data if row.get(from_col) and row.get(to_col)]
+        cleanup_query = f"""
+            MATCH (a:{from_label})-[r:{rel_type}]->(b:{to_label})
+            WHERE NOT any(pair IN $valid_pairs WHERE pair.from_id = a.id AND pair.to_id = b.id)
+            DELETE r
+        """
+        session.run(cleanup_query, valid_pairs=valid_pairs)
 
 def run_ingestion():
     """

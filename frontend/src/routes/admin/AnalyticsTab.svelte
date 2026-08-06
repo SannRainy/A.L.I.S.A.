@@ -31,6 +31,36 @@
     const donutColors = ["#6366f1", "#ec4899", "#10b981", "#f59e0b", "#8b5cf6", "#6b7280"];
     const genderColors = ["#3b82f6", "#f43f5e", "#6b7280"];
 
+    async function exportUsers(format) {
+        try {
+            const res = await fetch(
+                `${API}/export/users?admin_id=${user.id}&format=${format}`,
+            );
+            const data = await res.json();
+            if (format === "csv") {
+                const blob = new Blob([data.csv], { type: "text/csv" });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = "tvjp_users_export.csv";
+                a.click();
+                URL.revokeObjectURL(url);
+            } else {
+                const blob = new Blob([JSON.stringify(data.data, null, 2)], {
+                    type: "application/json",
+                });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = "tvjp_users_export.json";
+                a.click();
+                URL.revokeObjectURL(url);
+            }
+        } catch (e) {
+            alert("Export failed: " + e.message);
+        }
+    }
+
     onMount(async () => {
         await loadData();
     });
@@ -414,13 +444,23 @@
         <div class="evaluation-container">
             <div class="box-header-row">
                 <h3>👥 Daftar Evaluasi & Progres Siswa</h3>
-                <div class="sorting-controls">
-                    <span class="sort-lbl">Urutkan:</span>
-                    <select bind:value={sortBy} class="admin-select select-mini">
-                        <option value="xp">XP Tertinggi</option>
-                        <option value="score">Nilai Quest</option>
-                        <option value="name">Nama (A-Z)</option>
-                    </select>
+                <div class="header-actions-group">
+                    <div class="sorting-controls">
+                        <span class="sort-lbl">Urutkan:</span>
+                        <select bind:value={sortBy} class="admin-select select-mini">
+                            <option value="xp">XP Tertinggi</option>
+                            <option value="score">Nilai Quest</option>
+                            <option value="name">Nama (A-Z)</option>
+                        </select>
+                    </div>
+                    <div class="export-btns">
+                        <button class="btn-export" on:click={() => exportUsers("csv")}>
+                            📥 Export CSV
+                        </button>
+                        <button class="btn-export" on:click={() => exportUsers("json")}>
+                            📥 Export JSON
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -855,12 +895,39 @@
         align-items: center;
         margin-bottom: 16px;
         flex-shrink: 0;
+        flex-wrap: wrap;
+        gap: 12px;
     }
     .box-header-row h3 {
         font-size: 15px;
         font-weight: 800;
         color: #fff;
         margin: 0;
+    }
+    .header-actions-group {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+    .export-btns {
+        display: flex;
+        gap: 6px;
+    }
+    .btn-export {
+        padding: 5px 12px;
+        border-radius: 8px;
+        font-size: 11px;
+        font-weight: 700;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        cursor: pointer;
+        transition: all 0.2s;
+        background: rgba(99, 102, 241, 0.12);
+        color: #a5b4fc;
+    }
+    .btn-export:hover {
+        background: rgba(99, 102, 241, 0.28);
+        color: #ffffff;
     }
 
     /* Filters inside evaluation box */

@@ -4,6 +4,7 @@
     import { fly, fade } from "svelte/transition";
     import { chatStore, clearChat } from "../stores/chat_store";
     import { applyFurigana } from "../lib/furigana";
+    import { themeStore } from "../stores/theme_store";
 
     import {
         user,
@@ -25,7 +26,7 @@
     import DiscoveryMode from "../components/DiscoveryMode.svelte";
     import QuestMode from "../components/QuestMode.svelte";
     import VoiceMode from "../components/VoiceMode.svelte";
-    // import ReadingMode from "../components/ReadingMode.svelte";
+    import ReadingMode from "../components/ReadingMode.svelte";
 
     let mainTab = "study"; // 'study' | 'profile' | 'achievement'
     if (browser) {
@@ -40,10 +41,11 @@
     let animationFrameId;
     let renderer = null;
     let ro = null;
-    let mode = "discovery"; // 'discovery' | 'quest' | 'voice'
+    let unsubTheme = null;
+    let mode = "discovery"; // 'discovery' | 'quest' | 'voice' | 'reading'
     if (browser) {
         const savedMode = localStorage.getItem("tvjp_mode");
-        const validModes = ["discovery", "quest", "voice"];
+        const validModes = ["discovery", "quest", "voice", "reading"];
         mode = validModes.includes(savedMode) ? savedMode : "discovery";
     }
 
@@ -295,20 +297,89 @@
         renderer.setSize(canvas.clientWidth, canvas.clientHeight);
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
         renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         renderer.outputColorSpace = THREE.SRGBColorSpace;
-        renderer.toneMapping = THREE.ACESFilmicToneMapping;
-        renderer.toneMappingExposure = 1.1;
 
-        scene.add(new THREE.AmbientLight(0xffffff, 1.0));
-        const hemi = new THREE.HemisphereLight(0xe8f4ff, 0xfff4e0, 0.6);
+        // ── Lighting nodes & Shadow Setup ─────────────────────────────────────
+        const ambient = new THREE.AmbientLight();
+        scene.add(ambient);
+
+        const hemi = new THREE.HemisphereLight();
         scene.add(hemi);
-        const key = new THREE.DirectionalLight(0xfff8f0, 1.5);
-        key.position.set(2, 4, 4);
+
+        // Key Light: Sinar utama dari arah atas-kanan-depan
+        const key = new THREE.DirectionalLight();
+        key.position.set(2.0, 3.5, 2.5);
         key.castShadow = true;
+
+        // Targetkan sinar ke tengah badan/leher karakter (Y = 0.5)
+        key.target.position.set(0, 0.5, 0);
+        scene.add(key.target);
+
+        // Konfigurasi kamera shadow agar fokus tajam khusus pada tubuh karakter
+        key.shadow.mapSize.width = 2048;
+        key.shadow.mapSize.height = 2048;
+        key.shadow.camera.near = 0.5;
+        key.shadow.camera.far = 10;
+        key.shadow.camera.left = -1.5;
+        key.shadow.camera.right = 1.5;
+        key.shadow.camera.top = 2.5;
+        key.shadow.camera.bottom = -1.5;
+        key.shadow.bias = -0.0003;
         scene.add(key);
-        const rim = new THREE.DirectionalLight(0xb0d8ff, 0.5);
-        rim.position.set(-2, 2, -3);
+
+        const rim = new THREE.DirectionalLight();
+        rim.position.set(-2, 1, -3);
         scene.add(rim);
+
+        /**
+         * Terapkan preset pencahayaan sesuai tema.
+         * Sinar utama (key light) menghasilkan bayangan nyata (real directional shadow) dari rambut ke wajah,
+         * dagu ke leher, dan lengan ke pakaian.
+         */
+        function applySceneLighting(theme) {
+            if (theme === "light") {
+                // ── Light Mode: Terang dengan bayangan sinar tajam dari atas-kanan ──
+                renderer.toneMapping = THREE.LinearToneMapping;
+                renderer.toneMappingExposure = 0.95;
+
+                ambient.color.set(0xffffff);
+                ambient.intensity = 0.35; // Cukup sedang agar daerah bayangan tidak terlalu gelap namun bayangan sinar tetap kontras
+
+                hemi.color.set(0xe8f4ff);
+                hemi.groundColor.set(0xfff4e0);
+                hemi.intensity = 0.25;
+
+                key.color.set(0xfffaf0);
+                key.intensity = 1.95; // Sinar kuat penentu arah bayangan
+
+                rim.color.set(0xb0d8ff);
+                rim.intensity = 0.2;
+            } else {
+                // ── Dark Mode: Soft dramatic dengan bayangan sinar lembut ──────────
+                renderer.toneMapping = THREE.LinearToneMapping;
+                renderer.toneMappingExposure = 0.85;
+
+                ambient.color.set(0xfff5e8);
+                ambient.intensity = 0.25;
+
+                hemi.color.set(0xd6eaf8);
+                hemi.groundColor.set(0xfdebd0);
+                hemi.intensity = 0.2;
+
+                key.color.set(0xfff8f0);
+                key.intensity = 1.5;
+
+                rim.color.set(0xaac8e8);
+                rim.intensity = 0.15;
+            }
+        }
+
+        // Set lighting awal sesuai tema yang tersimpan
+        applySceneLighting($themeStore);
+
+        // Subscribe: update lighting real-time saat user toggle tema
+        unsubTheme = themeStore.subscribe((theme) => applySceneLighting(theme));
 
         vrmController = new VRMController(scene, camera);
         try {
@@ -353,16 +424,16 @@
                         vocab: [],
                         grammar: [],
                         suggestions: [
-                            "Ajari aku kanji N5",
+                            "Bisa ajari aku beberapa kanji",
                             "Berikan 3 kosakata",
-                            "Apa itu tata bahasa です？",
+                            "Hallo Alisa",
                         ],
                     },
                 ],
                 suggestions: [
-                    "Ajari aku kanji N5",
+                    "Bisa ajari aku beberapa kanji",
                     "Berikan 3 kosakata",
-                    "Apa itu tata bahasa です？",
+                    "Hallo Alisa",
                 ],
             };
         });
@@ -370,6 +441,7 @@
 
     onDestroy(() => {
         clearThinkingTimers();
+        if (unsubTheme) unsubTheme();
         if (browser && typeof window !== "undefined") {
             window.removeEventListener("mousemove", handleMouseMove);
         }
@@ -1293,7 +1365,7 @@
             icon: "💬",
             color: "from-sky-500 to-indigo-600",
             ring: "ring-sky-400/40",
-            badge: "bg-sky-500/20 text-sky-300 border-sky-400/30",
+            badge: "bg-sky-500/20 text-sky-700 dark:text-sky-300 border-sky-400/40 font-bold",
             placeholder: "Tanya apa saja tentang N5...",
         },
         quest: {
@@ -1301,7 +1373,7 @@
             icon: "⚔️",
             color: "from-emerald-500 to-teal-600",
             ring: "ring-emerald-400/40",
-            badge: "bg-emerald-500/20 text-emerald-300 border-emerald-400/30",
+            badge: "bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border-emerald-400/40 font-bold",
             placeholder: "Ketik jawaban atau minta soal baru...",
         },
         voice: {
@@ -1309,7 +1381,15 @@
             icon: "🎤",
             color: "from-violet-500 to-purple-600",
             ring: "ring-violet-400/40",
-            badge: "bg-violet-500/20 text-violet-300 border-violet-400/30",
+            badge: "bg-violet-500/20 text-violet-700 dark:text-violet-300 border-violet-400/40 font-bold",
+            placeholder: "",
+        },
+        reading: {
+            label: "Reading",
+            icon: "📖",
+            color: "from-amber-500 to-orange-600",
+            ring: "ring-amber-400/40",
+            badge: "bg-amber-500/20 text-amber-800 dark:text-amber-300 border-amber-400/40 font-bold",
             placeholder: "",
         },
     };
@@ -1907,6 +1987,14 @@
                             {liveTranscript}
                             {vrmController}
                         />
+                    </div>
+
+                    <div
+                        class="flex-1 min-h-0 flex flex-col"
+                        style="display: {mode === 'reading' ? 'flex' : 'none'}"
+                    >
+                        <!-- ── READING: Japanese Reading Practice ── -->
+                        <ReadingMode {vrmController} />
                     </div>
 
                     <div
@@ -2582,9 +2670,14 @@
         font-weight: 700;
         letter-spacing: 0.05em;
         backdrop-filter: blur(12px);
-        background: rgba(255, 255, 255, 0.08);
+        background: rgba(255, 255, 255, 0.25);
         color: inherit;
         transition: all 0.3s;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+    :global(body.light) .vrm-mode-badge {
+        background: rgba(255, 255, 255, 0.85);
+        box-shadow: 0 4px 14px rgba(15, 23, 42, 0.1);
     }
     .vrm-status-card {
         position: absolute;
@@ -3414,7 +3507,9 @@
     :global(body.light) .chat-shell {
         background: var(--chat-bg);
         border: 1px solid var(--chat-border);
-        box-shadow: 0 24px 64px rgba(0, 0, 0, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+        box-shadow:
+            0 24px 64px rgba(0, 0, 0, 0.05),
+            inset 0 1px 0 rgba(255, 255, 255, 0.5);
     }
     :global(body.light) .chat-header {
         border-bottom: 1px solid var(--chat-header-border);
@@ -3487,7 +3582,9 @@
     :global(body.light) .accuracy-popup {
         background: rgba(255, 255, 255, 0.98) !important;
         border-color: rgba(99, 102, 241, 0.2) !important;
-        box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.1), 0 8px 10px -6px rgba(99, 102, 241, 0.05) !important;
+        box-shadow:
+            0 10px 25px -5px rgba(99, 102, 241, 0.1),
+            0 8px 10px -6px rgba(99, 102, 241, 0.05) !important;
     }
     :global(body.light) .popup-header {
         background: rgba(99, 102, 241, 0.05) !important;
@@ -3593,7 +3690,11 @@
         color: #991b1b !important;
     }
     :global(body.light) .login-overlay {
-        background: linear-gradient(135deg, rgba(241, 245, 249, 0.92), rgba(226, 232, 240, 0.95));
+        background: linear-gradient(
+            135deg,
+            rgba(241, 245, 249, 0.92),
+            rgba(226, 232, 240, 0.95)
+        );
     }
     :global(body.light) .login-card {
         background: rgba(255, 255, 255, 0.85);
@@ -3620,7 +3721,9 @@
         box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
     }
     :global(body.light) .login-avatar {
-        box-shadow: 0 8px 24px rgba(99, 102, 241, 0.25), 0 0 0 4px rgba(99, 102, 241, 0.15);
+        box-shadow:
+            0 8px 24px rgba(99, 102, 241, 0.25),
+            0 0 0 4px rgba(99, 102, 241, 0.15);
     }
     :global(body.light) .login-avatar-badge {
         border-color: #f8fafc;
@@ -3632,7 +3735,7 @@
         color: #64748b;
     }
     :global(body.light) .bg-scene {
-        filter: brightness(1.05) saturate(1.1) contrast(1.0);
+        filter: brightness(1.05) saturate(1.1) contrast(1);
     }
     :global(body.light) .vrm-status-card {
         background: rgba(255, 255, 255, 0.8) !important;

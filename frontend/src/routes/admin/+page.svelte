@@ -5,7 +5,6 @@
 
     // Import modular components
     import AnalyticsTab from "./AnalyticsTab.svelte";
-    import UsersTab from "./UsersTab.svelte";
     import DataPipelineTab from "./DataPipelineTab.svelte";
     // import AiModelsTab from "./AiModelsTab.svelte";
 
@@ -89,7 +88,7 @@
 
         <!-- Tab Nav -->
         <nav class="admin-nav">
-            {#each [{ id: "analytics", icon: "📊", label: "Analisis & Grafik" }, { id: "users", icon: "👥", label: "Users" }, { id: "data", icon: "📚", label: "Data Pipeline" }] as tab}
+            {#each [{ id: "analytics", icon: "📊", label: "Analisis & Grafik" }, { id: "data", icon: "📚", label: "Data Pipeline" }] as tab}
                 <button
                     class="nav-tab"
                     class:active={activeTab === tab.id}
@@ -105,8 +104,6 @@
         <main class="admin-content">
             {#if activeTab === "analytics"}
                 <AnalyticsTab user={$user} {API} />
-            {:else if activeTab === "users"}
-                <UsersTab user={$user} {API} />
             {:else if activeTab === "data"}
                 <DataPipelineTab user={$user} {API} />
             {/if}

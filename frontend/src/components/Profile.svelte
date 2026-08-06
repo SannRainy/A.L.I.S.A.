@@ -599,7 +599,7 @@
             style="background: linear-gradient(135deg, rgba(99,102,241,0.4), rgba(217,70,239,0.3), rgba(99,102,241,0.1));"
         >
             <div
-                class="bg-slate-800/80 backdrop-blur-2xl rounded-[1.9rem] p-6 flex flex-col sm:flex-row items-center sm:items-start gap-6 relative"
+                class="backdrop-blur-2xl rounded-[1.9rem] p-6 flex flex-col sm:flex-row items-center sm:items-start gap-6 relative transition-all duration-300 {$themeStore === 'light' ? 'bg-white/90 border border-indigo-100 shadow-xl' : 'bg-slate-800/80'}"
             >
                 <!-- Hover shimmer -->
                 <div
@@ -632,15 +632,15 @@
                     >
                         <div class="text-center sm:text-left">
                             <h2
-                                class="text-xl md:text-2xl font-black text-white tracking-tight capitalize leading-none truncate max-w-[180px]"
+                                class="text-xl md:text-2xl font-black tracking-tight capitalize leading-none truncate max-w-[180px] {$themeStore === 'light' ? 'text-slate-900' : 'text-white'}"
                             >
                                 {username}
                             </h2>
                             <!-- Rank Badge -->
                             <div
-                                class="inline-flex items-center gap-1.5 mt-2 px-3 py-1 rounded-xl bg-indigo-900/50 border border-indigo-400/30"
+                                class="inline-flex items-center gap-1.5 mt-2 px-3 py-1 rounded-xl {$themeStore === 'light' ? 'bg-indigo-50 border border-indigo-200' : 'bg-indigo-900/50 border border-indigo-400/30'}"
                             >
-                                <span class="text-sm font-black text-white"
+                                <span class="text-sm font-black {$themeStore === 'light' ? 'text-indigo-900' : 'text-white'}"
                                     >{currentRank.kanji}</span
                                 >
                                 <span
@@ -674,7 +674,7 @@
                             {/if}
                             <button
                                 on:click={handleLogout}
-                                class="text-[10px] uppercase font-bold text-slate-400 hover:text-rose-500 bg-white/40 border border-white/60 px-3 py-1.5 rounded-lg transition-all backdrop-blur-sm"
+                                class="text-[10px] uppercase font-bold px-3 py-1.5 rounded-lg transition-all backdrop-blur-sm cursor-pointer {$themeStore === 'light' ? 'bg-slate-100 text-slate-700 hover:text-rose-600 border border-slate-300' : 'text-slate-400 hover:text-rose-500 bg-white/40 border border-white/60'}"
                             >
                                 Keluar
                             </button>
@@ -682,7 +682,7 @@
                                 class="flex flex-col items-center sm:items-end"
                             >
                                 <div
-                                    class="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-0.5"
+                                    class="text-[9px] font-black uppercase tracking-widest mb-0.5 {$themeStore === 'light' ? 'text-slate-500' : 'text-slate-400'}"
                                 >
                                     Streak
                                 </div>
@@ -699,24 +699,24 @@
                     <!-- XP Bar -->
                     <div class="mt-5">
                         <div
-                            class="flex justify-between text-[10px] font-black text-slate-200 mb-1.5 tracking-widest uppercase"
+                            class="flex justify-between text-[10px] font-black mb-1.5 tracking-widest uppercase {$themeStore === 'light' ? 'text-slate-600' : 'text-slate-200'}"
                         >
                             <span
-                                >Total XP: <span class="text-indigo-300"
+                                >Total XP: <span class={$themeStore === 'light' ? 'text-indigo-600 font-bold' : 'text-indigo-300'}
                                     >{$profile.xp}</span
                                 ></span
                             >
-                            <span class="text-slate-300"
+                            <span class={$themeStore === 'light' ? 'text-slate-600' : 'text-slate-300'}
                                 >{progressXp} / {xpNeeded} XP level ini</span
                             >
                             <span
-                                >Level berikutnya: <span class="text-indigo-300"
+                                >Level berikutnya: <span class={$themeStore === 'light' ? 'text-indigo-600 font-bold' : 'text-indigo-300'}
                                     >{xpForNextLevel} XP</span
                                 ></span
                             >
                         </div>
                         <div
-                            class="w-full bg-slate-200/60 rounded-full h-3.5 p-[2px] border border-white/50 shadow-inner"
+                            class="w-full rounded-full h-3.5 p-[2px] border shadow-inner {$themeStore === 'light' ? 'bg-slate-200/80 border-slate-300' : 'bg-slate-200/60 border-white/50'}"
                         >
                             <div
                                 class="bg-gradient-to-r from-indigo-500 via-purple-500 to-fuchsia-400 h-full rounded-full relative overflow-hidden"
@@ -739,8 +739,9 @@
             <!-- ── LEFT: Stats ── -->
             <div class="col-span-12 lg:col-span-7 space-y-6">
                 <!-- Section Header -->
+                <!-- Section Header -->
                 <h3
-                    class="flex items-center gap-3 text-xs font-black text-slate-300 uppercase tracking-[0.25em]"
+                    class="flex items-center gap-3 text-xs font-black uppercase tracking-[0.25em] {$themeStore === 'light' ? 'text-indigo-900 font-black' : 'text-slate-300'}"
                 >
                     <span class="w-1.5 h-5 bg-indigo-400 rounded-full"></span>
                     Statistik Pembelajaran
@@ -758,16 +759,16 @@
                             漢字
                         </div>
                         <p
-                            class="text-slate-300 text-[9px] md:text-[10px] font-black uppercase tracking-widest mb-2 md:mb-3"
+                            class="text-[9px] md:text-[10px] font-black uppercase tracking-widest mb-2 md:mb-3 {$themeStore === 'light' ? 'text-slate-500' : 'text-slate-300'}"
                         >
                             Kanji
                         </p>
                         <div class="flex items-baseline gap-1">
                             <span
-                                class="text-2xl md:text-3xl font-black text-white leading-none tabular-nums"
+                                class="text-2xl md:text-3xl font-black leading-none tabular-nums {$themeStore === 'light' ? 'text-slate-900' : 'text-white'}"
                                 >{$profile.stats.kanji_mastered}</span
                             >
-                            <span class="text-xs font-bold text-slate-300"
+                            <span class="text-xs font-bold {$themeStore === 'light' ? 'text-slate-500' : 'text-slate-300'}"
                                 >/{$profile.stats.kanji_total}</span
                             >
                         </div>
@@ -777,7 +778,7 @@
                             {kanjiPct}%
                         </div>
                         <div
-                            class="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden"
+                            class="w-full rounded-full h-1.5 overflow-hidden {$themeStore === 'light' ? 'bg-slate-200' : 'bg-slate-700'}"
                         >
                             <div
                                 class="bg-gradient-to-r from-emerald-400 to-teal-400 h-full rounded-full transition-all duration-1000 shadow-[0_0_8px_rgba(52,211,153,0.4)]"
@@ -796,16 +797,16 @@
                             語彙
                         </div>
                         <p
-                            class="text-slate-300 text-[9px] md:text-[10px] font-black uppercase tracking-widest mb-2 md:mb-3"
+                            class="text-[9px] md:text-[10px] font-black uppercase tracking-widest mb-2 md:mb-3 {$themeStore === 'light' ? 'text-slate-500' : 'text-slate-300'}"
                         >
                             Kosakata
                         </p>
                         <div class="flex items-baseline gap-1">
                             <span
-                                class="text-2xl md:text-3xl font-black text-white leading-none tabular-nums"
+                                class="text-2xl md:text-3xl font-black leading-none tabular-nums {$themeStore === 'light' ? 'text-slate-900' : 'text-white'}"
                                 >{$profile.stats.vocab_learned}</span
                             >
-                            <span class="text-xs font-bold text-slate-300"
+                            <span class="text-xs font-bold {$themeStore === 'light' ? 'text-slate-500' : 'text-slate-300'}"
                                 >/{$profile.stats.vocab_total}</span
                             >
                         </div>
@@ -813,7 +814,7 @@
                             {vocabPct}%
                         </div>
                         <div
-                            class="w-full bg-slate-700 rounded-full h-1.5 overflow-hidden"
+                            class="w-full rounded-full h-1.5 overflow-hidden {$themeStore === 'light' ? 'bg-slate-200' : 'bg-slate-700'}"
                         >
                             <div
                                 class="bg-gradient-to-r from-blue-400 to-cyan-400 h-full rounded-full transition-all duration-1000 shadow-[0_0_8px_rgba(96,165,250,0.4)]"
@@ -832,24 +833,24 @@
                             文法
                         </div>
                         <p
-                            class="text-slate-300 text-[9px] md:text-[10px] font-black uppercase tracking-widest mb-2 md:mb-3"
+                            class="text-[9px] md:text-[10px] font-black uppercase tracking-widest mb-2 md:mb-3 {$themeStore === 'light' ? 'text-slate-500' : 'text-slate-300'}"
                         >
                             Grammar
                         </p>
                         <div class="flex items-baseline gap-1">
                             <span
-                                class="text-2xl md:text-3xl font-black text-white leading-none tabular-nums"
+                                class="text-2xl md:text-3xl font-black leading-none tabular-nums {$themeStore === 'light' ? 'text-slate-900' : 'text-white'}"
                                 >{$profile.stats.grammar_learned}</span
                             >
-                            <span class="text-xs font-bold text-slate-300"
+                            <span class="text-xs font-bold {$themeStore === 'light' ? 'text-slate-500' : 'text-slate-300'}"
                                 >/{$profile.stats.grammar_total}</span
                             >
                         </div>
-                        <div class="text-[10px] font-bold text-rose-300 mb-2">
+                        <div class="text-[10px] font-bold text-rose-400 mb-2">
                             {grammarPct}%
                         </div>
                         <div
-                            class="w-full bg-slate-700 rounded-full h-1.5 overflow-hidden"
+                            class="w-full rounded-full h-1.5 overflow-hidden {$themeStore === 'light' ? 'bg-slate-200' : 'bg-slate-700'}"
                         >
                             <div
                                 class="bg-gradient-to-r from-rose-400 to-pink-400 h-full rounded-full transition-all duration-1000 shadow-[0_0_8px_rgba(251,113,133,0.4)]"
@@ -864,34 +865,35 @@
                     <div class="flex justify-between items-center mb-3">
                         <div>
                             <p
-                                class="text-slate-300 text-[10px] font-black uppercase tracking-widest mb-1"
+                                class="text-[10px] font-black uppercase tracking-widest mb-1 {$themeStore === 'light' ? 'text-slate-500' : 'text-slate-300'}"
                             >
                                 Tingkat Asimilasi
                             </p>
                             <p
-                                class="text-2xl font-black text-white tabular-nums"
+                                class="text-2xl font-black tabular-nums {$themeStore === 'light' ? 'text-slate-900' : 'text-white'}"
                             >
                                 {$profile.stats.assimilation_rate}<span
-                                    class="text-base text-slate-300">%</span
+                                    class="text-base {$themeStore === 'light' ? 'text-slate-500' : 'text-slate-300'}"
+                                    >%</span
                                 >
                             </p>
                         </div>
                         <div class="text-right">
                             <div
-                                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-900/40 border border-emerald-400/30"
+                                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl {$themeStore === 'light' ? 'bg-emerald-50 border border-emerald-200' : 'bg-emerald-900/40 border border-emerald-400/30'}"
                             >
                                 <span
                                     class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"
                                 ></span>
                                 <span
-                                    class="text-[10px] font-black text-emerald-300 uppercase tracking-wide"
+                                    class="text-[10px] font-black uppercase tracking-wide {$themeStore === 'light' ? 'text-emerald-700' : 'text-emerald-300'}"
                                     >Aktif Belajar</span
                                 >
                             </div>
                         </div>
                     </div>
                     <div
-                        class="relative h-4 w-full bg-slate-700 rounded-full border border-white/20 overflow-hidden shadow-inner"
+                        class="relative h-4 w-full rounded-full border overflow-hidden shadow-inner {$themeStore === 'light' ? 'bg-slate-200 border-slate-300' : 'bg-slate-700 border-white/20'}"
                     >
                         <div
                             class="h-full bg-gradient-to-r from-emerald-400 to-teal-400 rounded-full transition-all duration-1000 relative"
@@ -905,7 +907,7 @@
                             </div>
                         </div>
                     </div>
-                    <p class="text-[10px] text-slate-300 mt-2">
+                    <p class="text-[10px] mt-2 {$themeStore === 'light' ? 'text-slate-500' : 'text-slate-300'}">
                         Kombinasi dari progres kanji, vocab, dan grammar yang
                         dikuasai.
                     </p>
@@ -913,7 +915,7 @@
 
                 <!-- Target Belajar Harian (Daily Goals) -->
                 <h3
-                    class="flex items-center justify-between text-xs font-black text-slate-300 uppercase tracking-[0.25em]"
+                    class="flex items-center justify-between text-xs font-black uppercase tracking-[0.25em] {$themeStore === 'light' ? 'text-indigo-900 font-black' : 'text-slate-300'}"
                 >
                     <span class="flex items-center gap-3">
                         <span
@@ -923,7 +925,7 @@
                     </span>
                     <button
                         on:click={startEditGoals}
-                        class="text-[9px] font-black uppercase tracking-wider text-indigo-300 hover:text-white hover:bg-indigo-600 bg-indigo-900/40 border border-indigo-400/30 px-2.5 py-1 rounded-xl transition-all shadow-sm cursor-pointer"
+                        class="text-[9px] font-black uppercase tracking-wider px-2.5 py-1 rounded-xl transition-all shadow-sm cursor-pointer {$themeStore === 'light' ? 'bg-indigo-50 border border-indigo-200 text-indigo-700 hover:bg-indigo-600 hover:text-white' : 'text-indigo-300 hover:text-white hover:bg-indigo-600 bg-indigo-900/40 border border-indigo-400/30'}"
                     >
                         ⚙️ Target
                     </button>
@@ -931,7 +933,7 @@
                 <div class="glass-card p-5 space-y-4">
                     {#if loadingGoals}
                         <div class="flex items-center justify-center py-6">
-                            <span class="text-xs text-slate-400 animate-pulse"
+                            <span class="text-xs animate-pulse {$themeStore === 'light' ? 'text-slate-500' : 'text-slate-400'}"
                                 >Memuat target harian...</span
                             >
                         </div>
@@ -941,16 +943,16 @@
                             <div
                                 class="flex justify-between items-baseline text-xs"
                             >
-                                <span class="font-bold text-slate-200"
+                                <span class="font-bold {$themeStore === 'light' ? 'text-slate-700' : 'text-slate-200'}"
                                     >⏱️ Waktu Belajar</span
                                 >
-                                <span class="text-slate-300 font-medium"
+                                <span class="font-medium {$themeStore === 'light' ? 'text-slate-600' : 'text-slate-300'}"
                                     >{dailyProgress.activity.study_minutes} / {dailyProgress
                                         .goals.study_minutes_target} menit</span
                                 >
                             </div>
                             <div
-                                class="relative w-full h-3 bg-slate-700/60 rounded-full overflow-hidden border border-white/10"
+                                class="relative w-full h-3 rounded-full overflow-hidden border {$themeStore === 'light' ? 'bg-slate-200 border-slate-300' : 'bg-slate-700/60 border-white/10'}"
                             >
                                 <div
                                     class="h-full bg-gradient-to-r from-blue-400 to-cyan-400 rounded-full transition-all duration-700 relative"
@@ -971,16 +973,16 @@
                             <div
                                 class="flex justify-between items-baseline text-xs"
                             >
-                                <span class="font-bold text-slate-200"
+                                <span class="font-bold {$themeStore === 'light' ? 'text-slate-700' : 'text-slate-200'}"
                                     >🗂️ Ulasan Kartu (SRS)</span
                                 >
-                                <span class="text-slate-300 font-medium"
+                                <span class="font-medium {$themeStore === 'light' ? 'text-slate-600' : 'text-slate-300'}"
                                     >{dailyProgress.activity.items_reviewed} / {dailyProgress
                                         .goals.review_target} kartu</span
                                 >
                             </div>
                             <div
-                                class="relative w-full h-3 bg-slate-700/60 rounded-full overflow-hidden border border-white/10"
+                                class="relative w-full h-3 rounded-full overflow-hidden border {$themeStore === 'light' ? 'bg-slate-200 border-slate-300' : 'bg-slate-700/60 border-white/10'}"
                             >
                                 <div
                                     class="h-full bg-gradient-to-r from-indigo-400 to-purple-400 rounded-full transition-all duration-700 relative"
@@ -1001,16 +1003,16 @@
                             <div
                                 class="flex justify-between items-baseline text-xs"
                             >
-                                <span class="font-bold text-slate-200"
+                                <span class="font-bold {$themeStore === 'light' ? 'text-slate-700' : 'text-slate-200'}"
                                     >語彙 Kosakata Baru</span
                                 >
-                                <span class="text-slate-300 font-medium"
+                                <span class="font-medium {$themeStore === 'light' ? 'text-slate-600' : 'text-slate-300'}"
                                     >{dailyProgress.completion.vocab_progress} /
                                     {dailyProgress.goals.vocab_target} kata</span
                                 >
                             </div>
                             <div
-                                class="relative w-full h-3 bg-slate-700/60 rounded-full overflow-hidden border border-white/10"
+                                class="relative w-full h-3 rounded-full overflow-hidden border {$themeStore === 'light' ? 'bg-slate-200 border-slate-300' : 'bg-slate-700/60 border-white/10'}"
                             >
                                 <div
                                     class="h-full bg-gradient-to-r from-emerald-400 to-teal-400 rounded-full transition-all duration-700 relative"
@@ -1031,16 +1033,16 @@
                             <div
                                 class="flex justify-between items-baseline text-xs"
                             >
-                                <span class="font-bold text-slate-200"
+                                <span class="font-bold {$themeStore === 'light' ? 'text-slate-700' : 'text-slate-200'}"
                                     >文法 Tata Bahasa</span
                                 >
-                                <span class="text-slate-300 font-medium"
+                                <span class="font-medium {$themeStore === 'light' ? 'text-slate-600' : 'text-slate-300'}"
                                     >{dailyProgress.completion.grammar_progress}
                                     / {dailyProgress.goals.grammar_target} node</span
                                 >
                             </div>
                             <div
-                                class="relative w-full h-3 bg-slate-700/60 rounded-full overflow-hidden border border-white/10"
+                                class="relative w-full h-3 rounded-full overflow-hidden border {$themeStore === 'light' ? 'bg-slate-200 border-slate-300' : 'bg-slate-700/60 border-white/10'}"
                             >
                                 <div
                                     class="h-full bg-gradient-to-r from-rose-400 to-pink-400 rounded-full transition-all duration-700 relative"
@@ -1061,15 +1063,15 @@
                             <div
                                 class="flex justify-between items-baseline text-xs"
                             >
-                                <span class="font-bold text-slate-200"
+                                <span class="font-bold {$themeStore === 'light' ? 'text-slate-700' : 'text-slate-200'}"
                                     >🔥 XP Hari Ini</span
                                 >
-                                <span class="text-slate-300 font-medium"
+                                <span class="font-medium {$themeStore === 'light' ? 'text-slate-600' : 'text-slate-300'}"
                                     >{dailyProgress.activity.xp_earned} / 50 XP</span
                                 >
                             </div>
                             <div
-                                class="relative w-full h-3 bg-slate-700/60 rounded-full overflow-hidden border border-white/10"
+                                class="relative w-full h-3 rounded-full overflow-hidden border {$themeStore === 'light' ? 'bg-slate-200 border-slate-300' : 'bg-slate-700/60 border-white/10'}"
                             >
                                 <div
                                     class="h-full bg-gradient-to-r from-amber-400 to-orange-400 rounded-full transition-all duration-700 relative"
@@ -1092,10 +1094,9 @@
                         </div>
                     {/if}
                 </div>
-
-                <!-- Radar Penguasaan -->
+                                               <!-- Radar Penguasaan -->
                 <h3
-                    class="flex items-center gap-3 text-xs font-black text-slate-300 uppercase tracking-[0.25em]"
+                    class="flex items-center gap-3 text-xs font-black uppercase tracking-[0.25em] {$themeStore === 'light' ? 'text-indigo-900 font-black' : 'text-slate-300'}"
                 >
                     <span class="w-1.5 h-5 bg-fuchsia-400 rounded-full"></span>
                     Radar Penguasaan
@@ -1106,7 +1107,7 @@
 
                 <!-- Kalender Aktivitas Belajar (Heatmap) -->
                 <h3
-                    class="flex items-center gap-3 text-xs font-black text-slate-300 uppercase tracking-[0.25em]"
+                    class="flex items-center gap-3 text-xs font-black uppercase tracking-[0.25em] {$themeStore === 'light' ? 'text-indigo-900 font-black' : 'text-slate-300'}"
                 >
                     <span class="w-1.5 h-5 bg-indigo-400 rounded-full"></span>
                     Kalender Aktivitas Belajar
@@ -1114,7 +1115,7 @@
                 <div class="glass-card p-5 overflow-hidden">
                     {#if loadingCalendar}
                         <div class="flex items-center justify-center py-6">
-                            <span class="text-xs text-slate-400 animate-pulse"
+                            <span class="text-xs animate-pulse {$themeStore === 'light' ? 'text-slate-500' : 'text-slate-400'}"
                                 >Memuat kalender aktivitas...</span
                             >
                         </div>
@@ -1124,7 +1125,7 @@
                         >
                             <!-- Day names column -->
                             <div
-                                class="flex flex-col justify-between text-[8px] font-bold text-slate-400 pr-1 select-none pt-2 pb-2"
+                                class="flex flex-col justify-between text-[8px] font-bold pr-1 select-none pt-2 pb-2 {$themeStore === 'light' ? 'text-slate-500' : 'text-slate-400'}"
                             >
                                 <span>Min</span>
                                 <span>Sel</span>
@@ -1150,7 +1151,7 @@
                                                 activity?.items_reviewed ?? 0}
                                             {@const bgClass =
                                                 xp === 0
-                                                    ? "bg-slate-700/30"
+                                                    ? ($themeStore === 'light' ? 'bg-slate-200/80' : 'bg-slate-700/30')
                                                     : xp <= 15
                                                       ? "bg-indigo-900/40 border border-indigo-500/20"
                                                       : xp <= 35
@@ -1208,13 +1209,13 @@
                         </div>
 
                         <div
-                            class="flex justify-between items-center text-[10px] text-slate-400 mt-3 border-t border-slate-700/30 pt-2 select-none"
+                            class="flex justify-between items-center text-[10px] mt-3 border-t pt-2 select-none {$themeStore === 'light' ? 'text-slate-500 border-slate-200' : 'text-slate-400 border-slate-700/30'}"
                         >
                             <span>90 Hari Terakhir</span>
                             <div class="flex items-center gap-1.5">
                                 <span>Mulai</span>
                                 <div
-                                    class="w-2.5 h-2.5 rounded-sm bg-slate-700/30"
+                                    class="w-2.5 h-2.5 rounded-sm {$themeStore === 'light' ? 'bg-slate-200' : 'bg-slate-700/30'}"
                                 ></div>
                                 <div
                                     class="w-2.5 h-2.5 rounded-sm bg-indigo-900/40 border border-indigo-500/20"
@@ -1233,67 +1234,23 @@
                         </div>
                     {/if}
                 </div>
-
-                <!-- Status Knowledge Graph -->
-                <h3
-                    class="flex items-center gap-3 text-xs font-black text-slate-300 uppercase tracking-[0.25em]"
-                >
-                    <span class="w-1.5 h-5 bg-teal-400 rounded-full"></span>
-                    Status Knowledge Graph
-                </h3>
-                <div
-                    class="glass-card p-5 border-indigo-400/30 bg-indigo-900/30"
-                >
-                    <div class="space-y-2">
-                        <div class="flex justify-between items-center">
-                            <span class="text-xs text-slate-300 font-medium"
-                                >Node Grammar Dikuasai</span
-                            >
-                            <span class="text-xs font-black text-indigo-400"
-                                >{$profile.stats.grammar_learned} node</span
-                            >
-                        </div>
-                        <div class="flex justify-between items-center">
-                            <span class="text-xs text-slate-300 font-medium"
-                                >Node Dipelajari</span
-                            >
-                            <span class="text-xs font-black text-blue-400"
-                                >{$profile.mastery_path?.filter(
-                                    (n) => n.status !== "LOCKED",
-                                ).length ?? 0} node</span
-                            >
-                        </div>
-                        <div class="flex justify-between items-center">
-                            <span class="text-xs text-slate-300 font-medium"
-                                >Peta Materi</span
-                            >
-                            <span class="text-xs font-black text-emerald-400"
-                                >{$profile.mastery_path?.length ?? 0} total node</span
-                            >
-                        </div>
-                    </div>
-                    <p class="text-[9px] text-slate-300 mt-3 leading-relaxed">
-                        Data diambil dari Knowledge Graph N5. Node yang MASTERED
-                        digunakan untuk membuka level Quest berikutnya.
-                    </p>
-                </div>
             </div>
 
-            <!-- ── RIGHT: Profile + Quests + Emblems ── -->
+            <!-- ── RIGHT: Biodata + Quests + Emblems + Knowledge Graph ── -->
             <div class="col-span-12 lg:col-span-5 space-y-6">
                 <!-- Biodata Profil -->
                 <h3
-                    class="flex items-center gap-3 text-xs font-black text-slate-300 uppercase tracking-[0.25em]"
+                    class="flex items-center gap-3 text-xs font-black uppercase tracking-[0.25em] {$themeStore === 'light' ? 'text-indigo-900 font-black' : 'text-slate-300'}"
                 >
                     <span class="w-1.5 h-5 bg-indigo-500 rounded-full"></span>
                     Biodata Profil
                 </h3>
                 <div
-                    class="glass-card p-5 relative overflow-hidden group border-indigo-400/30"
+                    class="glass-card p-5 relative overflow-hidden group border {$themeStore === 'light' ? 'border-indigo-200 bg-white/90' : 'border-indigo-400/30'}"
                 >
                     <button
                         on:click={startEdit}
-                        class="absolute top-4 right-4 text-[10px] uppercase font-black tracking-wider text-indigo-300 hover:text-white hover:bg-indigo-600 bg-indigo-900/40 border border-indigo-400/30 px-3 py-1.5 rounded-xl transition-all shadow-sm cursor-pointer animate-pulse-subtle"
+                        class="absolute top-4 right-4 text-[10px] uppercase font-black tracking-wider px-3 py-1.5 rounded-xl transition-all shadow-sm cursor-pointer animate-pulse-subtle {$themeStore === 'light' ? 'bg-indigo-50 border border-indigo-200 text-indigo-700 hover:bg-indigo-600 hover:text-white' : 'text-indigo-300 hover:text-white hover:bg-indigo-600 bg-indigo-900/40 border border-indigo-400/30'}"
                     >
                         ✏️ Edit
                     </button>
@@ -1301,20 +1258,20 @@
                     <div class="space-y-3 mt-1">
                         <div>
                             <span
-                                class="text-[9px] font-black text-slate-300 uppercase tracking-widest block mb-0.5"
+                                class="text-[9px] font-black uppercase tracking-widest block mb-0.5 {$themeStore === 'light' ? 'text-slate-500' : 'text-slate-300'}"
                                 >Nama Lengkap</span
                             >
-                            <span class="text-sm font-bold text-white"
+                            <span class="text-sm font-bold {$themeStore === 'light' ? 'text-slate-900' : 'text-white'}"
                                 >{$profile.full_name || "-"}</span
                             >
                         </div>
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <span
-                                    class="text-[9px] font-black text-slate-300 uppercase tracking-widest block mb-0.5"
+                                    class="text-[9px] font-black uppercase tracking-widest block mb-0.5 {$themeStore === 'light' ? 'text-slate-500' : 'text-slate-300'}"
                                     >Umur</span
                                 >
-                                <span class="text-sm font-bold text-white"
+                                <span class="text-sm font-bold {$themeStore === 'light' ? 'text-slate-900' : 'text-white'}"
                                     >{$profile.age
                                         ? `${$profile.age} Tahun`
                                         : "-"}</span
@@ -1322,10 +1279,10 @@
                             </div>
                             <div>
                                 <span
-                                    class="text-[9px] font-black text-slate-300 uppercase tracking-widest block mb-0.5"
+                                    class="text-[9px] font-black uppercase tracking-widest block mb-0.5 {$themeStore === 'light' ? 'text-slate-500' : 'text-slate-300'}"
                                     >Gender</span
                                 >
-                                <span class="text-sm font-bold text-white"
+                                <span class="text-sm font-bold {$themeStore === 'light' ? 'text-slate-900' : 'text-white'}"
                                     >{$profile.gender === "male"
                                         ? "Laki-laki"
                                         : $profile.gender === "female"
@@ -1339,19 +1296,19 @@
                         </div>
                         <div>
                             <span
-                                class="text-[9px] font-black text-slate-300 uppercase tracking-widest block mb-0.5"
+                                class="text-[9px] font-black uppercase tracking-widest block mb-0.5 {$themeStore === 'light' ? 'text-slate-500' : 'text-slate-300'}"
                                 >Asal Negara</span
                             >
-                            <span class="text-sm font-bold text-white"
+                            <span class="text-sm font-bold {$themeStore === 'light' ? 'text-slate-900' : 'text-white'}"
                                 >{$profile.country || "-"}</span
                             >
                         </div>
                         <div>
                             <span
-                                class="text-[9px] font-black text-slate-300 uppercase tracking-widest block mb-0.5"
+                                class="text-[9px] font-black uppercase tracking-widest block mb-0.5 {$themeStore === 'light' ? 'text-slate-500' : 'text-slate-300'}"
                                 >Tujuan Belajar</span
                             >
-                            <span class="text-sm font-bold text-white"
+                            <span class="text-sm font-bold {$themeStore === 'light' ? 'text-slate-900' : 'text-white'}"
                                 >{$profile.study_purpose === "akademik"
                                     ? "Akademik / Sekolah"
                                     : $profile.study_purpose === "kerja"
@@ -1365,10 +1322,10 @@
                         </div>
                         <div>
                             <span
-                                class="text-[9px] font-black text-slate-300 uppercase tracking-widest block mb-0.5"
+                                class="text-[9px] font-black uppercase tracking-widest block mb-0.5 {$themeStore === 'light' ? 'text-slate-500' : 'text-slate-300'}"
                                 >Level Bahasa Jepang</span
                             >
-                            <span class="text-sm font-bold text-white"
+                            <span class="text-sm font-bold {$themeStore === 'light' ? 'text-slate-900' : 'text-white'}"
                                 >{$profile.japanese_level === "beginner"
                                     ? "Pemula (belum bisa)"
                                     : $profile.japanese_level === "basic"
@@ -1384,7 +1341,7 @@
 
                 <!-- Misi & Quest N5 -->
                 <h3
-                    class="flex items-center gap-3 text-xs font-black text-slate-300 uppercase tracking-[0.25em]"
+                    class="flex items-center gap-3 text-xs font-black uppercase tracking-[0.25em] {$themeStore === 'light' ? 'text-indigo-900 font-black' : 'text-slate-300'}"
                 >
                     <span class="w-1.5 h-5 bg-amber-500 rounded-full"></span>
                     Misi & Quest N5
@@ -1393,13 +1350,13 @@
                     <div class="flex items-center justify-between mb-4">
                         <div>
                             <p
-                                class="text-slate-300 text-[10px] font-black uppercase tracking-widest mb-1"
+                                class="text-[10px] font-black uppercase tracking-widest mb-1 {$themeStore === 'light' ? 'text-slate-500' : 'text-slate-300'}"
                             >
                                 Quest N5
                             </p>
-                            <p class="text-xl font-black text-white">
+                            <p class="text-xl font-black {$themeStore === 'light' ? 'text-slate-900' : 'text-white'}">
                                 {completedQuestCount}
-                                <span class="text-slate-400 font-bold text-base"
+                                <span class="font-bold text-base {$themeStore === 'light' ? 'text-slate-500' : 'text-slate-400'}"
                                     >/ {totalQuestCount} Level</span
                                 >
                             </p>
@@ -1416,11 +1373,11 @@
                                 class="flex-1 h-2 rounded-full transition-all duration-700
                                 {i < completedQuestCount
                                     ? 'bg-gradient-to-r from-amber-400 to-orange-400'
-                                    : 'bg-slate-600/70'}"
+                                    : ($themeStore === 'light' ? 'bg-slate-200' : 'bg-slate-600/70')}"
                             ></div>
                         {/each}
                     </div>
-                    <p class="text-[10px] text-slate-300 mt-2">
+                    <p class="text-[10px] mt-2 {$themeStore === 'light' ? 'text-slate-500' : 'text-slate-300'}">
                         {completedQuestCount === 0
                             ? "Mulai Quest untuk mengumpulkan XP!"
                             : `${totalQuestCount - completedQuestCount} level lagi untuk jadi N5 Sage! 🌿`}
@@ -1429,13 +1386,57 @@
 
                 <!-- Emblem Aktif -->
                 <h3
-                    class="flex items-center gap-3 text-xs font-black text-slate-300 uppercase tracking-[0.25em]"
+                    class="flex items-center gap-3 text-xs font-black uppercase tracking-[0.25em] {$themeStore === 'light' ? 'text-indigo-900 font-black' : 'text-slate-300'}"
                 >
                     <span class="w-1.5 h-5 bg-orange-400 rounded-full"></span>
                     Emblem Aktif
                 </h3>
                 <div class="glass-card p-2">
                     <EquippedEmblems profile={$profile} />
+                </div>
+
+                <!-- Status Knowledge Graph -->
+                <h3
+                    class="flex items-center gap-3 text-xs font-black uppercase tracking-[0.25em] {$themeStore === 'light' ? 'text-indigo-900 font-black' : 'text-slate-300'}"
+                >
+                    <span class="w-1.5 h-5 bg-teal-400 rounded-full"></span>
+                    Status Knowledge Graph
+                </h3>
+                <div
+                    class="glass-card p-5 border {$themeStore === 'light' ? 'border-indigo-200 bg-indigo-50/50' : 'border-indigo-400/30 bg-indigo-900/30'}"
+                >
+                    <div class="space-y-2.5">
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs font-medium {$themeStore === 'light' ? 'text-slate-700' : 'text-slate-300'}"
+                                >Node Grammar Dikuasai</span
+                            >
+                            <span class="text-xs font-black text-indigo-500"
+                                >{$profile.stats.grammar_learned} node</span
+                            >
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs font-medium {$themeStore === 'light' ? 'text-slate-700' : 'text-slate-300'}"
+                                >Node Dipelajari</span
+                            >
+                            <span class="text-xs font-black text-blue-500"
+                                >{$profile.mastery_path?.filter(
+                                    (n) => n.status !== "LOCKED",
+                                ).length ?? 0} node</span
+                            >
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs font-medium {$themeStore === 'light' ? 'text-slate-700' : 'text-slate-300'}"
+                                >Peta Materi</span
+                            >
+                            <span class="text-xs font-black text-emerald-500"
+                                >{$profile.mastery_path?.length ?? 0} total node</span
+                            >
+                        </div>
+                    </div>
+                    <p class="text-[10px] mt-3 leading-relaxed {$themeStore === 'light' ? 'text-slate-500' : 'text-slate-300'}">
+                        Data diambil dari Knowledge Graph N5. Node yang MASTERED
+                        digunakan untuk membuka level Quest berikutnya.
+                    </p>
                 </div>
             </div>
         </div>

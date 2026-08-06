@@ -36,9 +36,9 @@ export const clearChat = () => {
                 vocab: [],
                 grammar: [],
                 suggestions: [
-                    "Ajari aku kanji N5",
+                    "Bisa ajari aku beberapa kanji",
                     "Berikan 3 kosakata",
-                    "Apa itu tata bahasa です？",
+                    "Hallo Alisa",
                 ],
             },
         ],
@@ -46,9 +46,9 @@ export const clearChat = () => {
         mode: 'chat',
         currentTopic: null,
         suggestions: [
-            "Ajari aku kanji N5",
+            "Bisa ajari aku beberapa kanji",
             "Berikan 3 kosakata",
-            "Apa itu tata bahasa です？",
+            "Hallo Alisa",
         ],
     });
 

@@ -44,9 +44,8 @@ def get_supabase_client() -> Client | MockSupabaseClient:
     url = settings.SUPABASE_URL.strip()
     key = settings.SUPABASE_KEY.strip()
     
-    # DEBUG: Cek apakah env terbaca (Gunakan logger agar pasti muncul)
-    logger.info(f"DEBUG: Supabase URL from config: '{url}'")
-    
+    logger.debug(f"Supabase URL: '{url[:40]}...'")
+
     if url and key:
         try:
             return create_client(url, key)

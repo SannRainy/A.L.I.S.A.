@@ -10,15 +10,14 @@ from api import admin_router
 from api import feature_router
 from core.config import settings
 
-# Setup logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# --- Lifespan: menggantikan @app.on_event("startup") yang deprecated ---
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Startup & shutdown logic untuk FastAPI."""
-    # ── STARTUP ──────────────────────────────────────────────────────────
+    # STARTUP
     logger.info("🚀 Memulai TVJP API Server...")
 
     # Cek & Preload LLM (Llama.cpp) jika default provider bukan cloud
@@ -30,13 +29,13 @@ async def lifespan(app: FastAPI):
             model_path = settings.UNSLOTH_MODEL_PATH
             if os.path.exists(model_path):
                 logger.info(f"✅ Model file ditemukan di '{model_path}'. Melakukan preloading ke VRAM...")
-                await get_llama_model_async()  # Memaksa model diload saat startup
+                await get_llama_model_async()
             else:
-                logger.warning(f"⚠️ WARNING: Model file TIDAK ditemukan di '{model_path}'. Cek UNSLOTH_MODEL_PATH di .env atau config.py!")
+                logger.warning(f"⚠️ Model file TIDAK ditemukan di '{model_path}'. Cek UNSLOTH_MODEL_PATH di .env!")
         else:
-            logger.info("Default provider adalah Cloud (HF). Melewati preloading Local LLM ke VRAM untuk menghemat memori.")
+            logger.info("Default provider adalah Cloud (HF). Melewati preloading Local LLM.")
     except Exception as e:
-        logger.error(f"❌ ERROR: Gagal mengecek konfigurasi LLM! Detail: {e}")
+        logger.error(f"❌ Gagal mengecek konfigurasi LLM: {e}")
 
     # Cek koneksi Neo4j
     logger.info("Mengecek koneksi ke Neo4j...")
@@ -48,29 +47,24 @@ async def lifespan(app: FastAPI):
         )
         driver.verify_connectivity()
         driver.close()
-        logger.info("✅ SUCCESS: API terhubung dengan Neo4j!")
+        logger.info("✅ API terhubung dengan Neo4j.")
     except Exception as e:
-        logger.warning(f"⚠️ WARNING: Neo4j tidak tersedia. Knowledge Graph akan dinonaktifkan. Detail: {e}")
+        logger.warning(f"⚠️ Neo4j tidak tersedia. Knowledge Graph dinonaktifkan. Detail: {e}")
 
     # Cek kredensial Supabase
-    logger.info(f"DEBUG: SUPABASE_URL diatur ke: '{settings.SUPABASE_URL}'")
-    
-    # DNS Check untuk Supabase URL
+    logger.info(f"Supabase URL: '{settings.SUPABASE_URL}'")
     if settings.SUPABASE_URL:
         try:
             domain = settings.SUPABASE_URL.replace("https://", "").replace("http://", "").split("/")[0]
             ip = socket.gethostbyname(domain)
-            logger.info(f"✅ DNS SUCCESS: {domain} terurai ke {ip}")
+            logger.info(f"✅ DNS resolved: {domain} → {ip}")
         except Exception as dns_err:
-            logger.error(f"❌ DNS ERROR: Gagal mengurai {settings.SUPABASE_URL}. Detail: {dns_err}")
-            logger.warning("Saran: Jalankan 'ipconfig /flushdns' atau ganti DNS ke 8.8.8.8")
+            logger.error(f"❌ DNS error untuk {settings.SUPABASE_URL}: {dns_err}")
 
     if not settings.SUPABASE_URL or not settings.SUPABASE_KEY:
-        logger.warning("⚠️ WARNING: Kredensial Supabase belum lengkap. Fitur Auth & Quest akan berjalan dalam mode Simulasi (Mock).")
+        logger.warning("⚠️ Kredensial Supabase belum lengkap. Auth & Quest berjalan dalam mode Mock.")
 
-    # ── WARMUP: Pre-warm Neo4j & LLM di background ───────────────────────
-    # Dijalankan sebagai background task agar server langsung siap menerima
-    # request. Warmup berjalan paralel — user tidak perlu menunggu.
+    # Pre-warm Neo4j & LLM di background agar server langsung siap
     try:
         from services.warmup_service import run_warmup
         from api.chat_router import graph as _graph_instance
@@ -81,16 +75,15 @@ async def lifespan(app: FastAPI):
 
     yield  # Server berjalan
 
-    # ── SHUTDOWN ─────────────────────────────────────────────────────────
+    # SHUTDOWN
     logger.info("👋 Shutting down TVJP API Server...")
 
 
 app = FastAPI(title="TVJP - Japanese Virtual Tutor API", lifespan=lifespan)
 
-# Configure CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # In production, specify the frontend URL
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*", "Upgrade", "Connection"],
@@ -100,11 +93,12 @@ app.include_router(chat_router.router, prefix="/api/v1")
 app.include_router(admin_router.router, prefix="/api/v1")
 app.include_router(feature_router.router, prefix="/api/v1")
 
+
 @app.get("/")
 async def root():
     return {"message": "Welcome to TVJP API"}
 
+
 if __name__ == "__main__":
     import uvicorn
-    # Menjalankan server FastAPI (Pastikan reload=False agar VRAM aman)
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=False)

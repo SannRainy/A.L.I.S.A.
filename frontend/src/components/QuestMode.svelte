@@ -237,6 +237,7 @@
 
     {:else if currentState === "kanji_dojo"}
         <KanjiStudyMode
+            {vrmController}
             onBack={handleBackToMap}
         />
 
